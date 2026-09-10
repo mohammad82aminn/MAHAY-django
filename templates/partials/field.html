@@ -1,0 +1,10 @@
+<div class="field{% if field.errors %} has-error{% endif %}">
+  <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+  {{ field }}
+  {% for error in field.errors %}
+    <p class="field-error">{{ error }}</p>
+  {% endfor %}
+  {% if field.help_text %}
+    <div class="field-help">{{ field.help_text|safe }}</div>
+  {% endif %}
+</div>

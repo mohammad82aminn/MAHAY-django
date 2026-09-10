@@ -1,0 +1,12 @@
+{% extends "accounts/auth_layout.html" %}
+
+{% block title %}پروفایل{% endblock %}
+{% block heading %}حساب کاربری{% endblock %}
+{% block subheading %}
+  شماره موبایل: <bdi dir="ltr">{{ user.mobile_display }}</bdi>
+{% endblock %}
+{% block submit %}ذخیره تغییرات{% endblock %}
+
+{% block foot %}
+  <a href="{% url 'accounts:password_change' %}">تغییر رمز عبور</a>
+{% endblock %}

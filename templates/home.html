@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}خانه{% endblock %}
+
+{% block content %}
+<section class="hero container">
+  <span class="hero-badge">به‌زودی</span>
+  <h1>یاد بگیر، بساز، رشد کن</h1>
+  <p class="muted">دوره‌ها و پروژه‌های آموزشی MAHAY به‌زودی اینجا قرار می‌گیرند.</p>
+
+  <div class="hero-actions">
+    {% if user.is_authenticated %}
+      <a class="btn btn-primary" href="{% url 'accounts:profile' %}">حساب کاربری من</a>
+    {% else %}
+      <a class="btn btn-primary" href="{% url 'accounts:signup' %}">شروع کنید</a>
+      <a class="btn btn-ghost" href="{% url 'accounts:login' %}">حساب دارم</a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

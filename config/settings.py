@@ -51,7 +51,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -109,3 +109,18 @@ USE_TZ = True
 # --- Static files ---------------------------------------------------------
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
+
+# --- Email ----------------------------------------------------------------
+# Development: emails are printed in the terminal instead of being sent.
+
+EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="MAHAY <noreply@mahay.local>")
+
+
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
+
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 2  # reset links expire after 2 hours

@@ -1,0 +1,10 @@
+{% extends "accounts/auth_layout.html" %}
+
+{% block title %}ثبت‌نام{% endblock %}
+{% block heading %}ساخت حساب کاربری{% endblock %}
+{% block subheading %}با شماره موبایل خود ثبت‌نام کنید{% endblock %}
+{% block submit %}ثبت‌نام{% endblock %}
+
+{% block foot %}
+  حساب دارید؟ <a href="{% url 'accounts:login' %}">وارد شوید</a>
+{% endblock %}

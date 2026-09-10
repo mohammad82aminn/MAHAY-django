@@ -1,0 +1,16 @@
+{% extends "accounts/auth_layout.html" %}
+
+{% block title %}ورود{% endblock %}
+{% block heading %}خوش برگشتید{% endblock %}
+{% block subheading %}با شماره موبایل و رمز عبور وارد شوید{% endblock %}
+{% block submit %}ورود{% endblock %}
+
+{% block extra_fields %}
+  {# After login, send the user back to the page they came from #}
+  <input type="hidden" name="next" value="{{ next }}">
+  <a class="field-link" href="{% url 'accounts:password_reset' %}">رمز عبور را فراموش کرده‌اید؟</a>
+{% endblock %}
+
+{% block foot %}
+  حساب ندارید؟ <a href="{% url 'accounts:signup' %}">ثبت‌نام کنید</a>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "accounts/auth_layout.html" %}
+{# Simple message page (e.g. "email sent", "password changed") #}
+
+{% block title %}{{ title }}{% endblock %}
+{% block heading %}{{ title }}{% endblock %}
+
+{% block body %}
+  <p class="message-text">{{ text }}</p>
+  {% if show_login %}
+    <a class="btn btn-primary btn-block" href="{% url 'accounts:login' %}">ورود به حساب</a>
+  {% else %}
+    <a class="btn btn-ghost btn-block" href="{% url 'home' %}">بازگشت به صفحه اصلی</a>
+  {% endif %}
+{% endblock %}

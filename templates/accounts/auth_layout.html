@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% comment %}
+  Shared layout for all account pages: a centered card with heading, form and footer links.
+  Child templates fill: heading, subheading, submit, foot (and optionally body / extra_fields).
+{% endcomment %}
+
+{% block content %}
+<section class="auth">
+  <div class="card auth-card">
+    <header class="auth-head">
+      <h1>{% block heading %}{% endblock %}</h1>
+      <p class="muted">{% block subheading %}{% endblock %}</p>
+    </header>
+
+    {% block body %}
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="alert alert-error">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+          </div>
+        {% endif %}
+
+        {% for field in form %}
+          {% include "partials/field.html" %}
+        {% endfor %}
+        {% block extra_fields %}{% endblock %}
+
+        <button type="submit" class="btn btn-primary btn-block">{% block submit %}ثبت{% endblock %}</button>
+      </form>
+    {% endblock %}
+
+    <footer class="auth-foot">{% block foot %}{% endblock %}</footer>
+  </div>
+</section>
+{% endblock %}

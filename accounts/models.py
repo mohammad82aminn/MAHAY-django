@@ -1,3 +1,4 @@
+from typing import ClassVar
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.db import models
@@ -28,7 +29,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(_("دسترسی پنل مدیریت"), default=False)
     date_joined = models.DateTimeField(_("تاریخ عضویت"), default=timezone.now)
 
-    objects = UserManager()
+       
+    objects: ClassVar[UserManager] = UserManager()
 
     USERNAME_FIELD = "mobile_number"
     EMAIL_FIELD = "email"
@@ -62,6 +64,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         # "" -> None (avoid unique collision); lowercase for case-insensitive uniqueness
         email = (email or "").strip().lower()
         return email or None
+
+    @property
+    def mobile_display(self):
+        """Friendly local format for templates: +989121234567 -> 0912 123 4567"""
+        n = f"0{self.mobile_number[3:]}"
+        return f"{n[:4]} {n[4:7]} {n[7:]}"
 
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}".strip()

@@ -13,7 +13,7 @@ class MobileNumberField(models.CharField):
     - Queries / login: lookup values are normalized, so "0912..." finds "+98912..." (get_prep_value).
     """
 
-    description = "Iranian mobile number (+989xxxxxxxxx)"
+    
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault("max_length", 13)

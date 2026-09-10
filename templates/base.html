@@ -1,0 +1,57 @@
+{% load static %}
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}MAHAY{% endblock %} | MAHAY</title>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <script src="{% static 'js/main.js' %}" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="{% url 'home' %}">
+        <span class="brand-mark">M</span>
+        <span>MAHAY</span>
+      </a>
+
+      <nav class="nav">
+        {% if user.is_authenticated %}
+          <a class="nav-user" href="{% url 'accounts:profile' %}">
+            <span class="avatar">{{ user.first_name|first|default:"؟" }}</span>
+            <span class="nav-user-name">{{ user.get_short_name|default:"پروفایل" }}</span>
+          </a>
+          {# Django 5: logout must be a POST request, not a simple link #}
+          <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-ghost btn-sm">خروج</button>
+          </form>
+        {% else %}
+          <a class="btn btn-ghost btn-sm" href="{% url 'accounts:login' %}">ورود</a>
+          <a class="btn btn-primary btn-sm" href="{% url 'accounts:signup' %}">ثبت‌نام</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  {% if messages %}
+    <div class="toasts">
+      {% for message in messages %}
+        <div class="toast toast-{{ message.tags }}" role="status">
+          <span>{{ message }}</span>
+          <button type="button" class="toast-close" aria-label="بستن">&times;</button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <main class="site-main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">© MAHAY</div>
+  </footer>
+</body>
+</html>
