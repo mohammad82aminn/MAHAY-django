@@ -66,6 +66,20 @@ class User(AbstractBaseUser, PermissionsMixin):
         return email or None
 
     @property
+    def is_site_admin(self):
+        """Superuser or member of the site admins group."""
+        from .roles import is_site_admin
+
+        return is_site_admin(self)
+
+    @property
+    def managed_domains(self):
+        """Domains this user manages (through the domain groups)."""
+        from domains.models import Domain
+
+        return Domain.objects.filter(group__user=self)
+
+    @property
     def mobile_display(self):
         """Friendly local format for templates: +989121234567 -> 0912 123 4567"""
         n = f"0{self.mobile_number[3:]}"
