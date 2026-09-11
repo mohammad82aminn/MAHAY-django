@@ -147,7 +147,7 @@ class GroupAdminTests(TestCase):
         return reverse("admin:auth_group_change", args=[group.pk])
 
     def test_admin_can_set_domain_group_permissions_and_they_stay(self):
-        change = Permission.objects.get(codename="change_domain")
+        change = Permission.objects.get(codename="change_product")
         response = self.client.post(self.change_url(self.domain.group), {"permissions": [change.pk]})
         self.assertEqual(response.status_code, 302)
         ensure_site_admins_group()  # what runs after every migrate
@@ -156,9 +156,10 @@ class GroupAdminTests(TestCase):
     def test_domain_group_only_offers_content_permissions(self):
         response = self.client.get(self.change_url(self.domain.group))
         choices = response.context["adminform"].form.fields["permissions"].queryset
-        self.assertTrue(choices.filter(codename="change_domain").exists())
+        self.assertTrue(choices.filter(codename="change_product").exists())
         self.assertFalse(choices.filter(codename="change_user").exists())
-        self.assertFalse(choices.filter(codename="delete_domain").exists())
+        self.assertFalse(choices.filter(codename="change_domain").exists())
+        self.assertFalse(choices.filter(codename="change_changerequest").exists())
 
     def test_domain_group_cannot_get_user_permissions(self):
         change_user = Permission.objects.get(codename="change_user")

@@ -4,6 +4,11 @@ from django.contrib.auth.models import Group, Permission
 # After creation, site admins can change each domain group's permissions in the admin panel ("گروه‌ها").
 DEFAULT_DOMAIN_MANAGER_PERMISSIONS = [
     "domains.view_domain",
+    "products.view_product",
+    "products.add_product",
+    "products.change_product",
+    "products.delete_product",
+    "approvals.view_changerequest",
 ]
 
 

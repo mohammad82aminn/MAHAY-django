@@ -15,10 +15,15 @@ SITE_ADMINS_GROUP = "مدیران کل"
 
 # Apps whose permissions may be given to domain groups (content only; never users or groups).
 # When courses and projects are built, their app labels are added here.
-DOMAIN_MANAGER_APPS = ("domains",)
+DOMAIN_MANAGER_APPS = ("domains", "products", "approvals")
 
-# Never offered to domain groups: creating or deleting domains affects the whole site, not one domain
-DOMAIN_MANAGER_FORBIDDEN = ("add_domain", "delete_domain")
+# Never offered to domain groups:
+# - domains: creating, editing or deleting a domain is the site admins' job
+# - approvals: managers may only VIEW requests; deciding is the site admins' job
+DOMAIN_MANAGER_FORBIDDEN = (
+    "add_domain", "change_domain", "delete_domain",
+    "add_changerequest", "change_changerequest", "delete_changerequest",
+)
 
 
 def is_site_admin(user):

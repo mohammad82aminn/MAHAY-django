@@ -18,6 +18,10 @@
 
       <nav class="nav">
         {% if user.is_authenticated %}
+          {# Only site admins and domain managers (members of a group) see this #}
+          {% if user.is_staff %}
+            <a class="btn btn-ghost btn-sm" href="{% url 'admin:index' %}">پنل مدیریت</a>
+          {% endif %}
           <a class="nav-user" href="{% url 'accounts:profile' %}">
             <span class="avatar">{{ user.first_name|first|default:"؟" }}</span>
             <span class="nav-user-name">{{ user.get_short_name|default:"پروفایل" }}</span>

@@ -34,6 +34,8 @@ THIRD_PARTY_APPS = []
 LOCAL_APPS = [
     "accounts",
     "domains",
+    "products",
+    "approvals",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -113,6 +115,10 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
+
+# Uploaded files (covers, ...). Heavy files (videos) will go to object storage later.
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # --- Email ----------------------------------------------------------------
 # Development: emails are printed in the terminal instead of being sent.
