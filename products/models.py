@@ -6,6 +6,9 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from content.models import PublishState
+from content.validators import validate_aparat_url
+
 
 class ProductQuerySet(models.QuerySet):
     def visible(self):
@@ -25,8 +28,9 @@ class Product(models.Model):
     """Base of everything that is sold: courses and projects."""
 
     class Type(models.TextChoices):
-        COURSE = "course", _("دوره")
+        COURSE = "course", _("دوره آموزشی")
         PROJECT = "project", _("پروژه")
+        SOURCE = "source", _("سورس‌کد و فایل")
 
     product_type = models.CharField(_("نوع محصول"), max_length=10, choices=Type.choices)
     title = models.CharField(_("عنوان"), max_length=200)
@@ -36,7 +40,14 @@ class Product(models.Model):
     )
     summary = models.CharField(_("خلاصه"), max_length=300, blank=True, help_text=_("یک یا دو جمله برای کارت محصول"))
     description = models.TextField(_("توضیحات کامل"), blank=True)
-    cover = models.ImageField(_("تصویر کاور"), upload_to="products/covers/", blank=True)
+    cover = models.ImageField(
+        _("تصویر کاور"), upload_to="products/covers/", blank=True,
+        help_text=_("در لیست محصولات نمایش داده می‌شود و برای انتشار لازم است. اندازه‌ی پیشنهادی: ۱۲۸۰×۷۲۰ (افقی ۱۶:۹)."),
+    )
+    intro_video_url = models.URLField(
+        _("ویدیوی معرفی (لینک آپارات)"), blank=True, validators=[validate_aparat_url],
+        help_text=_("برای همه نمایش داده می‌شود؛ مثلاً مدرس توضیح می‌دهد در دوره چه چیزی آموزش داده می‌شود."),
+    )
 
     primary_domain = models.ForeignKey(
         "domains.Domain", on_delete=models.PROTECT, related_name="products", verbose_name=_("حوزه اصلی"),
@@ -45,6 +56,15 @@ class Product(models.Model):
     related_domains = models.ManyToManyField(
         "domains.Domain", blank=True, related_name="related_products", verbose_name=_("حوزه‌های مرتبط"),
         help_text=_("محصول در این حوزه‌ها هم نمایش داده می‌شود."),
+    )
+
+    related_products = models.ManyToManyField(
+        "self", blank=True, verbose_name=_("محصولات مرتبط"),
+        help_text=_("در صفحه‌ی محصول لینکشان نمایش داده می‌شود؛ مثلاً دوره‌ی آموزشی همین پروژه. (دوطرفه)"),
+    )
+    included_products = models.ManyToManyField(
+        "self", symmetrical=False, blank=True, related_name="included_in", verbose_name=_("شامل محصولات"),
+        help_text=_("خریدار این محصول، این‌ها را هم دارد؛ مثلاً پروژه شامل «سورس‌کد پروژه» می‌شود."),
     )
 
     price = models.PositiveIntegerField(_("قیمت (تومان)"), default=0, help_text=_("صفر یعنی رایگان"))
@@ -76,7 +96,14 @@ class Product(models.Model):
     def __str__(self):
         return self.title
 
+    def approval_children(self):
+        from content.models import Section
+
+        return [*Section.objects.filter(product=self), *ProductImage.objects.filter(product=self)]
+
     def clean(self):
+        if self.is_published and not self.cover:
+            raise ValidationError({"cover": _("برای انتشار محصول، تصویر کاور لازم است.")})
         if self.sale_price is not None:
             if self.price == 0:
                 raise ValidationError({"sale_price": _("محصول رایگان تخفیف ندارد.")})
@@ -96,3 +123,18 @@ class Product(models.Model):
         if self.sale_price is None or not self.price:
             return 0
         return round((self.price - self.sale_price) * 100 / self.price)
+
+
+class ProductImage(PublishState):
+    """Gallery image shown on the product page (e.g. photos of a built project). Public, like the cover."""
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images", verbose_name=_("محصول"))
+    image = models.ImageField(_("تصویر"), upload_to="products/gallery/%Y/%m/")
+    caption = models.CharField(_("توضیح کوتاه"), max_length=200, blank=True)
+
+    class Meta(PublishState.Meta):
+        verbose_name = _("تصویر گالری")
+        verbose_name_plural = _("گالری تصاویر")
+
+    def __str__(self):
+        return self.caption or f"تصویر {self.pk} — {self.product}"

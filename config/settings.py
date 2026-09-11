@@ -35,6 +35,7 @@ LOCAL_APPS = [
     "accounts",
     "domains",
     "products",
+    "content",
     "approvals",
 ]
 
@@ -116,9 +117,13 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 
-# Uploaded files (covers, ...). Heavy files (videos) will go to object storage later.
+# Public uploaded files (covers, ...): anyone with the link can open them
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+# Paid content (lesson videos, attachments): NOT reachable by URL; served only through a view that checks access.
+# Later this can be moved to a cloud video/object storage by changing the storage, not the models.
+PROTECTED_MEDIA_ROOT = BASE_DIR / "protected_media"
 
 # --- Email ----------------------------------------------------------------
 # Development: emails are printed in the terminal instead of being sent.

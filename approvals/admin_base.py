@@ -1,8 +1,8 @@
 from django.contrib import admin, messages
 from django.db import models
+from django.db.models import Prefetch
 
 from accounts.roles import is_site_admin
-from domains.models import Domain
 
 from . import services
 from .models import ChangeRequest
@@ -31,15 +31,31 @@ class ApprovalModelAdmin(admin.ModelAdmin):
         return is_site_admin(request.user)
 
     def get_queryset(self, request):
-        queryset = super().get_queryset(request)
+        pending = ChangeRequest.objects.filter(status=ChangeRequest.Status.PENDING)
+        queryset = super().get_queryset(request).prefetch_related(
+            Prefetch("change_requests", queryset=pending, to_attr="pending_requests")
+        )
         if self.is_reviewer(request):
             return queryset
         return queryset.filter(**{f"{self.domain_field}__group__user": request.user})
 
+    @admin.display(description="وضعیت")
+    def state(self, obj):
+        waiting = {request.action for request in getattr(obj, "pending_requests", [])}
+        if obj.is_archived:
+            return "حذف‌شده"
+        if ChangeRequest.Action.ARCHIVE in waiting:
+            return "منتشرشده (درخواست حذف در انتظار)"
+        if obj.is_published:
+            return "منتشرشده (تغییرات در انتظار)" if ChangeRequest.Action.UPDATE in waiting else "منتشرشده"
+        return "در انتظار انتشار" if ChangeRequest.Action.CREATE in waiting else "پیش‌نویس"
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        # A manager can only put items in domains they manage
-        if db_field.name == self.domain_field and not self.is_reviewer(request):
-            kwargs["queryset"] = Domain.objects.filter(group__user=request.user)
+        # A manager can only attach items to their own domains (products: the domain; lessons: their sections...)
+        first, _, rest = self.domain_field.partition("__")
+        if db_field.name == first and not self.is_reviewer(request):
+            lookup = f"{rest}__group__user" if rest else "group__user"
+            kwargs["queryset"] = db_field.related_model._default_manager.filter(**{lookup: request.user})
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_readonly_fields(self, request, obj=None):

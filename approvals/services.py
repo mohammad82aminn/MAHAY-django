@@ -12,7 +12,6 @@ import uuid
 from decimal import Decimal
 
 from django.core.exceptions import FieldDoesNotExist
-from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
 from django.db import models, transaction
 from django.utils import timezone
@@ -44,10 +43,13 @@ def current_value(obj, field):
     return to_json(field, getattr(obj, field.name))
 
 
-def save_pending_file(uploaded):
-    """New files are stored under pending/ until the change is approved."""
+def save_pending_file(field, uploaded):
+    """
+    New files wait under pending/ until the change is approved.
+    They are saved in the field's own storage, so a paid video never lands in the public media folder.
+    """
     extension = os.path.splitext(uploaded.name)[1].lower()
-    return default_storage.save(f"{PENDING_FILES_DIR}/{uuid.uuid4().hex}{extension}", uploaded)
+    return field.storage.save(f"{PENDING_FILES_DIR}/{uuid.uuid4().hex}{extension}", uploaded)
 
 
 def form_changes(form, live):
@@ -61,7 +63,7 @@ def form_changes(form, live):
 
         if isinstance(field, models.FileField):
             if isinstance(value, UploadedFile):
-                changes[name] = save_pending_file(value)
+                changes[name] = save_pending_file(field, value)
             elif value is False and getattr(live, name):  # "clear" checkbox
                 changes[name] = ""
             continue
@@ -92,10 +94,12 @@ def apply_changes(obj, data):
         getattr(obj, name).set(ids)
 
 
-def delete_pending_files(data):
-    for value in data.values():
+def delete_pending_files(model, data):
+    for name, value in data.items():
         if isinstance(value, str) and value.startswith(f"{PENDING_FILES_DIR}/"):
-            default_storage.delete(value)
+            field = model._meta.get_field(name)
+            if isinstance(field, models.FileField):
+                field.storage.delete(value)
 
 
 # --- Requests ---------------------------------------------------------------------
@@ -118,7 +122,7 @@ def submit(obj, action, user, domain=None, data=None):
     if request is None:
         request = ChangeRequest(content_type=ContentType.objects.get_for_model(obj), object_id=obj.pk, action=action)
     elif request.data != (data or {}):
-        delete_pending_files({k: v for k, v in request.data.items() if (data or {}).get(k) != v})
+        delete_pending_files(type(obj), {k: v for k, v in request.data.items() if (data or {}).get(k) != v})
 
     request.object_repr = str(obj)[:200]
     request.domain = domain
@@ -133,7 +137,7 @@ def withdraw(obj, action):
     """Remove an open request (e.g. the manager undid all their edits)."""
     request = pending_request(obj, action)
     if request is not None:
-        delete_pending_files(request.data)
+        delete_pending_files(type(obj), request.data)
         request.delete()
 
 
@@ -142,7 +146,9 @@ def approve(request, reviewer, note=""):
     obj = request.target
     if request.action == ChangeRequest.Action.CREATE:
         obj.is_published = True
+        obj.full_clean()  # e.g. a product without a cover can't be published
         obj.save(update_fields=["is_published"])
+        approve_waiting_children(obj, reviewer)
     elif request.action == ChangeRequest.Action.UPDATE:
         apply_changes(obj, request.data)
     elif request.action == ChangeRequest.Action.ARCHIVE:
@@ -163,8 +169,22 @@ def close_answered_requests(obj, reviewer):
         if request is not None:
             _close(request, ChangeRequest.Status.APPROVED, reviewer, "مستقیم توسط مدیر کل انجام شد.")
 
+
+def approve_waiting_children(obj, reviewer):
+    """
+    Publishing a new product also publishes the new sections / lessons / files inside it
+    (the admin reviewed the whole thing at once, no need to approve every piece separately).
+    """
+    for child in getattr(obj, "approval_children", list)():
+        child_request = pending_request(child, ChangeRequest.Action.CREATE)
+        if child_request is not None:
+            approve(child_request, reviewer, "همراه با مورد بالاتر تأیید شد.")
+
+
 def reject(request, reviewer, note=""):
-    delete_pending_files(request.data)
+    model = request.content_type.model_class()
+    if model is not None:
+        delete_pending_files(model, request.data)
     _close(request, ChangeRequest.Status.REJECTED, reviewer, note)
 
 

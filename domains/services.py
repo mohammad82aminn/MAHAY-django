@@ -8,6 +8,11 @@ DEFAULT_DOMAIN_MANAGER_PERMISSIONS = [
     "products.add_product",
     "products.change_product",
     "products.delete_product",
+    "products.view_productimage", "products.add_productimage", "products.change_productimage",
+    "products.delete_productimage",
+    "content.view_section", "content.add_section", "content.change_section", "content.delete_section",
+    "content.view_lesson", "content.add_lesson", "content.change_lesson", "content.delete_lesson",
+    "content.view_attachment", "content.add_attachment", "content.change_attachment", "content.delete_attachment",
     "approvals.view_changerequest",
 ]
 

@@ -10,7 +10,7 @@ from . import services
 from .models import ChangeRequest
 
 
-def display_value(field, value):
+def display_value(field, value, change_request=None):
     """Human readable value for the changes table."""
     if isinstance(field, models.ManyToManyField):
         names = field.related_model._default_manager.filter(pk__in=value or [])
@@ -22,6 +22,9 @@ def display_value(field, value):
     if field.choices:
         return dict(field.flatchoices).get(value, value)
     if isinstance(field, models.FileField):
+        if value and change_request is not None and str(value).startswith(f"{services.PENDING_FILES_DIR}/"):
+            url = reverse("approvals:pending_file", args=[change_request.pk, field.name])
+            return format_html('<a href="{}" target="_blank">مشاهده فایل جدید</a>', url)
         return value or "—"
     if isinstance(value, int):
         return f"{value:,}"  # prices: 1,800,000
@@ -86,7 +89,7 @@ class ChangeRequestAdmin(admin.ModelAdmin):
         for name, new in obj.data.items():
             field = model._meta.get_field(name)
             old = services.current_value(target, field) if target is not None else None
-            rows.append((field.verbose_name, display_value(field, old), display_value(field, new)))
+            rows.append((field.verbose_name, display_value(field, old), display_value(field, new, obj)))
         body = format_html_join("", "<tr><td>{}</td><td>{}</td><td><strong>{}</strong></td></tr>", rows)
         return format_html(
             '<table><thead><tr><th>فیلد</th><th>مقدار فعلی</th><th>مقدار جدید</th></tr></thead>'

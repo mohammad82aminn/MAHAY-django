@@ -15,7 +15,7 @@ SITE_ADMINS_GROUP = "مدیران کل"
 
 # Apps whose permissions may be given to domain groups (content only; never users or groups).
 # When courses and projects are built, their app labels are added here.
-DOMAIN_MANAGER_APPS = ("domains", "products", "approvals")
+DOMAIN_MANAGER_APPS = ("domains", "products", "content", "approvals")
 
 # Never offered to domain groups:
 # - domains: creating, editing or deleting a domain is the site admins' job

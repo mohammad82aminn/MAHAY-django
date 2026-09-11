@@ -21,3 +21,6 @@ Thumbs.db
 
 # Uploaded files
 media/
+
+# Paid files (videos, attachments)
+protected_media/

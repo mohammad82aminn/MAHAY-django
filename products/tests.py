@@ -14,10 +14,11 @@ from accounts.roles import SITE_ADMINS_GROUP
 from approvals.models import ChangeRequest
 from domains.models import Domain
 
-from .models import Product
+from .models import Product, ProductImage
 
 PASSWORD = "S3cure-pass!"
 TEMP_MEDIA = tempfile.mkdtemp()
+COVER = "products/covers/test.png"  # published products need a cover
 
 
 def product_data(**overrides):
@@ -66,6 +67,7 @@ class ProductModelTests(TestCase):
         self.assertEqual(list(Product.objects.visible()), [shown])
 
 
+@override_settings(MEDIA_ROOT=TEMP_MEDIA)
 class ApprovalFlowTestCase(TestCase):
     def setUp(self):
         self.fpga = Domain.objects.create(name="FPGA", slug="fpga")
@@ -83,7 +85,7 @@ class ApprovalFlowTestCase(TestCase):
 
     def published(self, **kwargs):
         values = {"product_type": "course", "title": "مبانی FPGA", "slug": "fpga-basics",
-                  "primary_domain": self.fpga, "price": 1_000_000, "is_published": True}
+                  "primary_domain": self.fpga, "price": 1_000_000, "is_published": True, "cover": COVER}
         values.update(kwargs)
         return Product.objects.create(**values)
 
@@ -96,7 +98,7 @@ class ApprovalFlowTestCase(TestCase):
 class ManagerCreatesProductTests(ApprovalFlowTestCase):
     def test_new_product_waits_for_approval(self):
         self.client.force_login(self.manager)
-        response = self.client.post(self.add_url, product_data(primary_domain=self.fpga.pk))
+        response = self.client.post(self.add_url, product_data(primary_domain=self.fpga.pk, cover=image_file()))
         self.assertEqual(response.status_code, 302)
 
         product = Product.objects.get()
@@ -109,6 +111,15 @@ class ManagerCreatesProductTests(ApprovalFlowTestCase):
         self.approve_as_admin(request)
         product.refresh_from_db()
         self.assertTrue(product.is_published)
+
+    def test_product_without_cover_cannot_be_published(self):
+        self.client.force_login(self.manager)
+        self.client.post(self.add_url, product_data(primary_domain=self.fpga.pk))
+        request = ChangeRequest.objects.get(action="create")
+        self.approve_as_admin(request)
+        request.refresh_from_db()
+        self.assertEqual(request.status, "pending")  # the admin gets an error message instead
+        self.assertFalse(Product.objects.get().is_published)
 
     def test_manager_cannot_use_other_domain(self):
         self.client.force_login(self.manager)
@@ -130,6 +141,31 @@ class ManagerCreatesProductTests(ApprovalFlowTestCase):
         self.client.force_login(self.manager)
         self.client.post(self.add_url, product_data(primary_domain=self.fpga.pk, is_published="on"))
         self.assertFalse(Product.objects.get().is_published)
+
+
+class GalleryTests(ApprovalFlowTestCase):
+    def test_manager_adds_gallery_image_with_approval(self):
+        product = self.published()
+        self.client.force_login(self.manager)
+        self.client.post(reverse("admin:products_productimage_add"), {
+            "product": product.pk, "image": image_file("photo.png"), "caption": "برد ساخته‌شده", "order": 0,
+        })
+        image = ProductImage.objects.get()
+        self.assertFalse(image.is_published)
+        self.approve_as_admin(ChangeRequest.objects.get(action="create", content_type__model="productimage"))
+        image.refresh_from_db()
+        self.assertTrue(image.is_published)
+        self.assertTrue(image.image.url.startswith("/media/"))  # gallery is public, like the cover
+
+    def test_gallery_is_published_with_new_product(self):
+        self.client.force_login(self.manager)
+        self.client.post(self.add_url, product_data(primary_domain=self.fpga.pk, cover=image_file()))
+        product = Product.objects.get()
+        self.client.post(reverse("admin:products_productimage_add"), {
+            "product": product.pk, "image": image_file("photo.png"), "caption": "", "order": 0,
+        })
+        self.approve_as_admin(ChangeRequest.objects.get(action="create", content_type__model="product"))
+        self.assertTrue(ProductImage.objects.get().is_published)
 
 
 class ManagerEditsPublishedProductTests(ApprovalFlowTestCase):
@@ -186,7 +222,7 @@ class ManagerEditsPublishedProductTests(ApprovalFlowTestCase):
     def test_new_cover_waits_for_approval(self):
         self.edit(cover=image_file())
         self.product.refresh_from_db()
-        self.assertFalse(self.product.cover)
+        self.assertEqual(self.product.cover.name, COVER)  # the store still shows the old cover
 
         request = ChangeRequest.objects.get(action="update")
         self.assertTrue(request.data["cover"].startswith("pending/"))
@@ -239,7 +275,7 @@ class DraftAndAdminTests(ApprovalFlowTestCase):
 
     def test_site_admin_publishing_directly_closes_request(self):
         self.client.force_login(self.manager)
-        self.client.post(self.add_url, product_data(primary_domain=self.fpga.pk))
+        self.client.post(self.add_url, product_data(primary_domain=self.fpga.pk, cover=image_file()))
         product = Product.objects.get()
 
         self.client.force_login(self.admin)
