@@ -1,32 +1,39 @@
 {% load static %}
 <!doctype html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="rtl" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}MAHAY{% endblock %} | MAHAY</title>
+  {# Apply the saved theme before the page is drawn (no flash of the wrong colors) #}
+  <script>document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";</script>
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
   <script src="{% static 'js/main.js' %}" defer></script>
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <header class="site-header">
-    <div class="container header-inner">
+    <div class="container header-top">
       <a class="brand" href="{% url 'home' %}">
         <span class="brand-mark">M</span>
         <span>MAHAY</span>
       </a>
 
-      <nav class="main-links" aria-label="بخش‌های سایت">
-        <a href="{% url 'products:list' %}?type=course">دوره‌ها</a>
-        <a href="{% url 'products:list' %}?type=project">پروژه‌ها</a>
-        <a href="{% url 'products:list' %}?type=source">سورس‌کدها</a>
-      </nav>
+      <form class="header-search" action="{% url 'products:list' %}" method="get" role="search">
+        <input type="search" name="q" value="{{ request.GET.q }}" placeholder="جستجو در دوره‌ها و پروژه‌ها..." aria-label="جستجو">
+        <button type="submit" aria-label="جستجو">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </button>
+      </form>
 
       <nav class="nav">
+        <button type="button" class="icon-btn theme-toggle" aria-label="تغییر تم روشن و تیره">
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
         {% if user.is_authenticated %}
           {# Only site admins and domain managers (members of a group) see this #}
           {% if user.is_staff %}
-            <a class="btn btn-ghost btn-sm" href="{% url 'admin:index' %}">پنل مدیریت</a>
+            <a class="btn btn-ghost btn-sm btn-staff" href="{% url 'admin:index' %}">پنل مدیریت</a>
           {% endif %}
           <a class="nav-user" href="{% url 'accounts:profile' %}">
             <span class="avatar">{{ user.first_name|first|default:"؟" }}</span>
@@ -41,6 +48,18 @@
           <a class="btn btn-ghost btn-sm" href="{% url 'accounts:login' %}">ورود</a>
           <a class="btn btn-primary btn-sm" href="{% url 'accounts:signup' %}">ثبت‌نام</a>
         {% endif %}
+      </nav>
+    </div>
+
+    <div class="header-nav">
+      <nav class="container main-links" aria-label="بخش‌های سایت">
+        <a href="{% url 'products:list' %}?type=course">دوره‌های آموزشی</a>
+        <a href="{% url 'products:list' %}?type=project">پروژه‌ها</a>
+        <a href="{% url 'products:list' %}?type=source">سورس‌کدها</a>
+        {% if nav_domains %}<span class="divider"></span>{% endif %}
+        {% for domain in nav_domains %}
+          <a class="domain-link" href="{% url 'products:list' %}?domain={{ domain.slug }}">{{ domain.name }}</a>
+        {% endfor %}
       </nav>
     </div>
   </header>
@@ -61,7 +80,32 @@
   </main>
 
   <footer class="site-footer">
-    <div class="container">© MAHAY</div>
+    <div class="container footer-grid">
+      <div>
+        <a class="brand" href="{% url 'home' %}"><span class="brand-mark">M</span><span>MAHAY</span></a>
+        <p class="muted">آموزش تخصصی و پروژه‌محور؛ دوره‌ها، پروژه‌های واقعی و سورس‌کدها در حوزه‌های مختلف.</p>
+      </div>
+      <div>
+        <h4>بخش‌ها</h4>
+        <div class="footer-links">
+          <a href="{% url 'products:list' %}?type=course">دوره‌های آموزشی</a>
+          <a href="{% url 'products:list' %}?type=project">پروژه‌ها</a>
+          <a href="{% url 'products:list' %}?type=source">سورس‌کدها</a>
+        </div>
+      </div>
+      <div>
+        <h4>حساب کاربری</h4>
+        <div class="footer-links">
+          {% if user.is_authenticated %}
+            <a href="{% url 'accounts:profile' %}">پروفایل</a>
+          {% else %}
+            <a href="{% url 'accounts:login' %}">ورود</a>
+            <a href="{% url 'accounts:signup' %}">ثبت‌نام</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="container footer-bottom">© MAHAY — تمامی حقوق محفوظ است.</div>
   </footer>
 </body>
 </html>

@@ -4,23 +4,40 @@
 {% block title %}خانه{% endblock %}
 
 {% block content %}
-<section class="hero container">
-  <h1>یاد بگیر، بساز، رشد کن</h1>
-  <p class="muted">دوره‌های آموزشی و پروژه‌های واقعی در حوزه‌های تخصصی</p>
-  <form class="hero-search" action="{% url 'products:list' %}" method="get" role="search">
-    <input type="search" name="q" placeholder="جستجوی دوره یا پروژه..." aria-label="جستجو">
-    <button type="submit" class="btn btn-primary">جستجو</button>
-  </form>
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-text">
+      <span class="hero-kicker">آموزش تخصصی و پروژه‌محور</span>
+      <h1>یاد بگیر، بساز، <span>رشد کن</span></h1>
+      <p>دوره‌های آموزشی کاربردی، پروژه‌های واقعی و سورس‌کدهای کامل؛ از مبانی تا حرفه‌ای.</p>
+      <form class="hero-search" action="{% url 'products:list' %}" method="get" role="search">
+        <input type="search" name="q" placeholder="چه چیزی می‌خواهید یاد بگیرید؟" aria-label="جستجو">
+        <button type="submit" class="btn btn-primary">جستجو</button>
+      </form>
+      <div class="hero-stats">
+        <div><strong>{{ stats.courses|fa_num }}</strong><span>دوره‌ی آموزشی</span></div>
+        <div><strong>{{ stats.projects|fa_num }}</strong><span>پروژه</span></div>
+        <div><strong>{{ stats.domains|fa_num }}</strong><span>حوزه‌ی تخصصی</span></div>
+      </div>
+    </div>
+    {# Decorative only #}
+    <div class="hero-art" aria-hidden="true">
+      <div class="blob"></div>
+      <div class="float"><i>▶</i>ویدیوهای آموزشی</div>
+      <div class="float"><i>✓</i>پروژه‌های واقعی</div>
+      <div class="float"><i>{ }</i>سورس‌کد کامل</div>
+    </div>
+  </div>
 </section>
 
 {% if domains %}
   <section class="container section">
-    <div class="section-head"><h2>حوزه‌ها</h2></div>
+    <div class="section-head"><h2>حوزه‌های آموزشی</h2></div>
     <div class="domain-grid">
       {% for domain in domains %}
         <a class="domain-card" href="{% url 'products:list' %}?domain={{ domain.slug }}">
-          <strong>{{ domain.name }}</strong>
-          <span class="muted">{{ domain.product_count|fa_num }} محصول</span>
+          <span class="domain-icon">{{ domain.name|first }}</span>
+          <span><strong>{{ domain.name }}</strong><span class="muted">{{ domain.product_count|fa_num }} محصول</span></span>
         </a>
       {% endfor %}
     </div>
@@ -31,7 +48,7 @@
   <section class="container section">
     <div class="section-head">
       <h2>جدیدترین دوره‌ها</h2>
-      <a href="{% url 'products:list' %}?type=course">همه‌ی دوره‌ها</a>
+      <a href="{% url 'products:list' %}?type=course">مشاهده همه ←</a>
     </div>
     <div class="product-grid">
       {% for product in latest_courses %}{% include "partials/product_card.html" %}{% endfor %}
@@ -43,7 +60,7 @@
   <section class="container section">
     <div class="section-head">
       <h2>جدیدترین پروژه‌ها</h2>
-      <a href="{% url 'products:list' %}?type=project">همه‌ی پروژه‌ها</a>
+      <a href="{% url 'products:list' %}?type=project">مشاهده همه ←</a>
     </div>
     <div class="product-grid">
       {% for product in latest_projects %}{% include "partials/product_card.html" %}{% endfor %}
@@ -54,4 +71,13 @@
 {% if not latest_courses and not latest_projects %}
   <section class="container section"><p class="empty">به‌زودی دوره‌ها و پروژه‌ها اینجا قرار می‌گیرند.</p></section>
 {% endif %}
+
+<section class="container section">
+  <div class="features">
+    <div class="feature"><i>🎯</i><div><strong>یادگیری پروژه‌محور</strong><span>آموزش همراه با پروژه‌های واقعی</span></div></div>
+    <div class="feature"><i>♾️</i><div><strong>دسترسی همیشگی</strong><span>بعد از خرید، محتوا همیشه در دسترس است</span></div></div>
+    <div class="feature"><i>📦</i><div><strong>سورس‌کد و فایل‌ها</strong><span>کدها و جزوه‌ها همراه آموزش</span></div></div>
+    <div class="feature"><i>🧑‍🏫</i><div><strong>متخصصان هر حوزه</strong><span>محتوای هر حوزه زیر نظر مدیر همان حوزه</span></div></div>
+  </div>
+</section>
 {% endblock %}

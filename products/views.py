@@ -29,10 +29,14 @@ class HomeView(TemplateView):
         context["domains"] = Domain.objects.filter(is_active=True).annotate(
             product_count=Count("products", filter=Q(products__is_published=True, products__is_archived=False))
         )
-        context["latest_courses"] = visible.filter(product_type=Product.Type.COURSE)[:6]
-        context["latest_projects"] = visible.filter(product_type=Product.Type.PROJECT)[:6]
+        context["latest_courses"] = visible.filter(product_type=Product.Type.COURSE)[:8]
+        context["latest_projects"] = visible.filter(product_type=Product.Type.PROJECT)[:8]
+        context["stats"] = {
+            "courses": visible.filter(product_type=Product.Type.COURSE).count(),
+            "projects": visible.filter(product_type=Product.Type.PROJECT).count(),
+            "domains": len(context["domains"]),
+        }
         return context
-
 
 class ProductListView(ListView):
     """Store list with filters: ?type=course&domain=fpga&q=...&price=free&sort=new"""

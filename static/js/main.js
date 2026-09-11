@@ -90,3 +90,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (event.key === "ArrowLeft") show(index + 1);
   });
 });
+
+
+// 5) Light / dark theme button (the choice is remembered in this browser)
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".theme-toggle").forEach((button) => {
+    button.addEventListener("click", () => {
+      const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      localStorage.setItem("theme", next);
+    });
+  });
+});
