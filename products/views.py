@@ -101,7 +101,7 @@ class ProductDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        product = self.object
+        product = context["product"]
         sections = (
             Section.objects.filter(product=product, is_published=True, is_archived=False)
             .prefetch_related(Prefetch("lessons", queryset=published_lessons(), to_attr="visible_lessons"))

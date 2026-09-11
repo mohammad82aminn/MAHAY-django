@@ -1,7 +1,8 @@
+import os
+
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.utils.deconstruct import deconstructible
-from django.utils.functional import cached_property
 
 
 @deconstructible
@@ -12,18 +13,17 @@ class ProtectedStorage(FileSystemStorage):
     Moving to a cloud storage later = replacing this class, the models stay the same.
     """
 
-    @cached_property
+    # Read from settings every time (not cached), so tests can point it to a temporary folder
+    @property
     def base_location(self):
         return settings.PROTECTED_MEDIA_ROOT
 
+    @property
+    def location(self):
+        return os.path.abspath(self.base_location)
+
     def url(self, name):
         return "#"  # never expose a direct link
-
-    def _clear_cached_properties(self, setting, **kwargs):
-        super()._clear_cached_properties(setting, **kwargs)
-        if setting == "PROTECTED_MEDIA_ROOT":  # lets tests use a temporary folder
-            self.__dict__.pop("base_location", None)
-            self.__dict__.pop("location", None)
 
 
 protected_storage = ProtectedStorage()
