@@ -8,13 +8,19 @@
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
   <script src="{% static 'js/main.js' %}" defer></script>
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
   <header class="site-header">
     <div class="container header-inner">
       <a class="brand" href="{% url 'home' %}">
         <span class="brand-mark">M</span>
         <span>MAHAY</span>
       </a>
+
+      <nav class="main-links" aria-label="بخش‌های سایت">
+        <a href="{% url 'products:list' %}?type=course">دوره‌ها</a>
+        <a href="{% url 'products:list' %}?type=project">پروژه‌ها</a>
+        <a href="{% url 'products:list' %}?type=source">سورس‌کدها</a>
+      </nav>
 
       <nav class="nav">
         {% if user.is_authenticated %}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load store %}
+
+{% block title %}{{ product.title }}{% endblock %}
+{% block body_class %}has-mobile-buy{% endblock %}
+
+{% block content %}
+{% if is_preview %}
+  <div class="preview-bar">پیش‌نمایش: این محصول هنوز در فروشگاه نمایش داده نمی‌شود و فقط مدیران آن را می‌بینند.</div>
+{% endif %}
+
+<section class="container section product-detail">
+  <div class="product-main">
+    <nav class="breadcrumb">
+      <a href="{% url 'products:list' %}">محصولات</a> ›
+      <a href="{% url 'products:list' %}?domain={{ product.primary_domain.slug }}">{{ product.primary_domain }}</a>
+    </nav>
+    <h1>{{ product.title }}</h1>
+    {% if product.summary %}<p class="lead muted">{{ product.summary }}</p>{% endif %}
+
+    {# Intro video (public, from Aparat); otherwise the cover image #}
+    {% with embed=product.intro_video_url|aparat_embed %}
+      {% if embed %}
+        <div class="video-frame">
+          <iframe src="{{ embed }}" title="ویدیوی معرفی {{ product.title }}" allowfullscreen loading="lazy"></iframe>
+        </div>
+      {% elif product.cover %}
+        <img class="detail-cover" src="{{ product.cover.url }}" alt="{{ product.title }}">
+      {% endif %}
+    {% endwith %}
+
+    {% if product.description %}
+      <div class="card block">
+        <h2>درباره‌ی این {{ product.get_product_type_display }}</h2>
+        <div class="prose">{{ product.description|linebreaks }}</div>
+      </div>
+    {% endif %}
+
+    {% if gallery %}
+      <div class="card block">
+        <h2>تصاویر</h2>
+        <div class="gallery">
+          {% for image in gallery %}
+            <a href="{{ image.image.url }}" data-lightbox="gallery" data-caption="{{ image.caption }}">
+              <img src="{{ image.image.url }}" alt="{{ image.caption|default:product.title }}" loading="lazy">
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if sections %}
+      <div class="card block">
+        <h2>سرفصل‌ها</h2>
+        <div class="outline">
+          {% for section in sections %}
+            <details {% if forloop.first %}open{% endif %}>
+              <summary>
+                <span>{{ section.title }}</span>
+                <span class="muted">{{ section.visible_lessons|length|fa_num }} درس</span>
+              </summary>
+              <ul>
+                {% for lesson in section.visible_lessons %}
+                  <li>
+                    <span>{% if not product.is_free %}🔒 {% endif %}{{ lesson.title }}</span>
+                    {% if lesson.duration_minutes %}<span class="muted">{{ lesson.duration_minutes|fa_num }} دقیقه</span>{% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            </details>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <aside class="product-side">
+    <div class="card buy-box">
+      {% if product.intro_video_url and product.cover %}
+        <img src="{{ product.cover.url }}" alt="" class="buy-box-cover">
+      {% endif %}
+      <div class="price price-lg">
+        {% if product.sale_price is not None %}
+          <del>{{ product.price|toman }}</del>
+          <span class="badge badge-discount">{{ product.discount_percent|fa_num }}٪ تخفیف</span>
+        {% endif %}
+        <strong class="{% if product.is_free %}price-free{% endif %}">{{ product.final_price|toman }}</strong>
+      </div>
+      {# The cart is built in the next stage #}
+      <button type="button" class="btn btn-primary btn-block" disabled>
+        {% if product.is_free %}دریافت رایگان{% else %}افزودن به سبد خرید{% endif %} (به‌زودی)
+      </button>
+      <ul class="facts">
+        <li><span>نوع</span><strong>{{ product.get_product_type_display }}</strong></li>
+        <li><span>حوزه</span><strong>{{ product.primary_domain }}</strong></li>
+        {% if lesson_count %}<li><span>تعداد درس</span><strong>{{ lesson_count|fa_num }}</strong></li>{% endif %}
+        {% if total_minutes %}<li><span>مدت</span><strong>{{ total_minutes|fa_num }} دقیقه</strong></li>{% endif %}
+      </ul>
+      {% if included %}
+        <div class="included">
+          <strong>با خرید این محصول، این‌ها را هم دارید:</strong>
+          <ul>{% for item in included %}<li><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></li>{% endfor %}</ul>
+        </div>
+      {% endif %}
+      {% if included_in %}
+        <div class="included muted">
+          این محصول در {% for item in included_in %}<a href="{{ item.get_absolute_url }}">{{ item.title }}</a>{% if not forloop.last %}، {% endif %}{% endfor %} هم وجود دارد.
+        </div>
+      {% endif %}
+    </div>
+  </aside>
+</section>
+
+{# Phones only: fixed bar with price and button #}
+<div class="mobile-buy">
+  <div class="price">
+    {% if product.sale_price is not None %}<del>{{ product.price|toman }}</del>{% endif %}
+    <strong class="{% if product.is_free %}price-free{% endif %}">{{ product.final_price|toman }}</strong>
+  </div>
+  <button type="button" class="btn btn-primary btn-sm" disabled>{% if product.is_free %}دریافت رایگان{% else %}خرید{% endif %} (به‌زودی)</button>
+</div>
+
+{% if related %}
+  <section class="container section">
+    <div class="section-head"><h2>محصولات مرتبط</h2></div>
+    <div class="product-grid">
+      {% for item in related %}{% include "partials/product_card.html" with product=item %}{% endfor %}
+    </div>
+  </section>
+{% endif %}
+{% endblock %}

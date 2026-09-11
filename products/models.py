@@ -1,4 +1,6 @@
 from typing import ClassVar
+from django.db import models
+from django.urls import reverse
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
@@ -12,9 +14,8 @@ from content.validators import validate_aparat_url
 
 class ProductQuerySet(models.QuerySet):
     def visible(self):
-        """Products shown in the store: approved and not removed."""
-        return self.filter(is_published=True, is_archived=False)
-
+        """Products shown in the store: approved, not removed, and their domain is active."""
+        return self.filter(is_published=True, is_archived=False, primary_domain__is_active=True)
 
 class ProductManager(models.Manager["Product"]):
     def get_queryset(self):
@@ -95,6 +96,9 @@ class Product(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_absolute_url(self):
+        return reverse("products:detail", args=[self.slug])
 
     def approval_children(self):
         from content.models import Section

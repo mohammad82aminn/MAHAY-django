@@ -1,0 +1,23 @@
+{% load store %}
+<a class="product-card" href="{{ product.get_absolute_url }}">
+  <div class="product-card-cover">
+    {% if product.cover %}
+      <img src="{{ product.cover.url }}" alt="{{ product.title }}" loading="lazy">
+    {% endif %}
+    <span class="badge badge-type">{{ product.get_product_type_display }}</span>
+    {% if product.discount_percent %}
+      <span class="badge badge-discount">{{ product.discount_percent|fa_num }}٪ تخفیف</span>
+    {% endif %}
+  </div>
+  <div class="product-card-body">
+    <span class="product-card-domain">{{ product.primary_domain }}</span>
+    <h3>{{ product.title }}</h3>
+    {% if product.summary %}<p class="muted">{{ product.summary }}</p>{% endif %}
+    <div class="price">
+      {% if product.sale_price is not None %}
+        <del>{{ product.price|toman }}</del>
+      {% endif %}
+      <strong class="{% if product.is_free %}price-free{% endif %}">{{ product.final_price|toman }}</strong>
+    </div>
+  </div>
+</a>

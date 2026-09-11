@@ -49,3 +49,44 @@ window.addEventListener("pageshow", () => {
     button.classList.remove("is-loading");
   });
 });
+
+
+// 4) Image gallery lightbox: <a href="big.jpg" data-lightbox="group" data-caption="...">
+document.addEventListener("DOMContentLoaded", () => {
+  const links = [...document.querySelectorAll("a[data-lightbox]")];
+  if (!links.length) return;
+
+  let index = 0;
+  const box = document.createElement("div");
+  box.className = "lightbox";
+  box.hidden = true;
+  box.innerHTML = `
+    <button type="button" class="lightbox-close" aria-label="بستن">&times;</button>
+    <button type="button" class="lightbox-prev" aria-label="قبلی">&rsaquo;</button>
+    <img alt="">
+    <p></p>
+    <button type="button" class="lightbox-next" aria-label="بعدی">&lsaquo;</button>`;
+  document.body.appendChild(box);
+  const image = box.querySelector("img");
+  const caption = box.querySelector("p");
+
+  const show = (i) => {
+    index = (i + links.length) % links.length;
+    image.src = links[index].href;
+    caption.textContent = links[index].dataset.caption || "";
+    box.hidden = false;
+  };
+  const close = () => { box.hidden = true; };
+
+  links.forEach((link, i) => link.addEventListener("click", (event) => { event.preventDefault(); show(i); }));
+  box.querySelector(".lightbox-close").addEventListener("click", close);
+  box.querySelector(".lightbox-prev").addEventListener("click", () => show(index - 1));
+  box.querySelector(".lightbox-next").addEventListener("click", () => show(index + 1));
+  box.addEventListener("click", (event) => { if (event.target === box) close(); });
+  document.addEventListener("keydown", (event) => {
+    if (box.hidden) return;
+    if (event.key === "Escape") close();
+    if (event.key === "ArrowRight") show(index - 1);  // RTL: right = previous
+    if (event.key === "ArrowLeft") show(index + 1);
+  });
+});

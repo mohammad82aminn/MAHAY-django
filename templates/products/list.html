@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load store %}
+
+{% block title %}{% if current.domain %}{{ current.domain.name }}{% else %}محصولات{% endif %}{% endblock %}
+
+{% block content %}
+<section class="container section">
+  <div class="page-head">
+    <h1>{% if current.domain %}حوزه‌ی {{ current.domain.name }}{% else %}دوره‌ها و پروژه‌ها{% endif %}</h1>
+    {% if current.domain.description %}<p class="muted">{{ current.domain.description }}</p>{% endif %}
+  </div>
+
+  {# Filters: a normal GET form, so every filtered page has its own shareable address #}
+  <form class="filters" method="get">
+    <input type="search" name="q" value="{{ current.q }}" placeholder="جستجو..." aria-label="جستجو">
+    <select name="type" aria-label="نوع">
+      <option value="">همه‌ی انواع</option>
+      {% for value, label in types %}
+        <option value="{{ value }}" {% if current.type == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select name="domain" aria-label="حوزه">
+      <option value="">همه‌ی حوزه‌ها</option>
+      {% for domain in domains %}
+        <option value="{{ domain.slug }}" {% if current.domain == domain %}selected{% endif %}>{{ domain.name }}</option>
+      {% endfor %}
+    </select>
+    <select name="price" aria-label="قیمت">
+      <option value="">رایگان و پولی</option>
+      <option value="free" {% if current.price == "free" %}selected{% endif %}>فقط رایگان</option>
+      <option value="paid" {% if current.price == "paid" %}selected{% endif %}>فقط پولی</option>
+    </select>
+    <select name="sort" aria-label="مرتب‌سازی">
+      {% for value, label in sorts %}
+        <option value="{{ value }}" {% if current.sort == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary">اعمال</button>
+  </form>
+
+  {% if products %}
+    <div class="product-grid">
+      {% for product in products %}{% include "partials/product_card.html" %}{% endfor %}
+    </div>
+    {% include "partials/pagination.html" %}
+  {% else %}
+    <p class="empty">محصولی با این مشخصات پیدا نشد.</p>
+  {% endif %}
+</section>
+{% endblock %}

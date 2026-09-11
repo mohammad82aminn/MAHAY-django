@@ -18,10 +18,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from django.views.generic import TemplateView
+
+from products.views import HomeView
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="home.html"), name="home"),
+    path("", HomeView.as_view(), name="home"),
+    path("products/", include("products.urls")),
     path("accounts/", include("accounts.urls")),
     path("content/", include("content.urls")),
     path("approvals/", include("approvals.urls")),

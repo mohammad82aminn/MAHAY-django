@@ -258,3 +258,153 @@ h1 { margin: 0; font-size: 1.5rem; font-weight: 800; line-height: 1.5; }
 .toast-close { font-size: 1.3rem; line-height: 1; color: var(--muted); background: none; border: 0; cursor: pointer; }
 
 @keyframes toast-in { from { opacity: 0; transform: translateY(-8px); } }
+
+
+/* ==========================================================================
+   Store: header links, cards, filters, product page
+   ========================================================================== */
+
+.main-links { display: flex; gap: 1.25rem; margin-inline-start: 2rem; margin-inline-end: auto; }
+.main-links a { color: var(--muted); font-weight: 600; }
+.main-links a:hover { color: var(--primary); }
+
+@media (max-width: 720px) {
+  .header-inner { flex-wrap: wrap; height: auto; padding-block: .6rem; row-gap: .4rem; }
+  .main-links { order: 3; width: 100%; margin: 0; justify-content: center; }
+}
+
+.section { padding-block: 2rem; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1rem; }
+.section-head h2, .page-head h1 { margin: 0; font-size: 1.3rem; font-weight: 800; }
+.page-head { margin-bottom: 1.25rem; }
+.empty { padding: 3rem 1rem; text-align: center; color: var(--muted); }
+
+.hero-search { display: flex; gap: .5rem; max-width: 520px; margin: 1.75rem auto 0; }
+.hero-search input { flex: 1; }
+
+/* Inputs outside .field (search boxes, filters) */
+.hero-search input, .filters input, .filters select {
+  padding: .6rem .9rem;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.filters { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.5rem; }
+.filters input { flex: 1 1 220px; }
+
+/* ---------- Domains ---------- */
+
+.domain-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .75rem; }
+.domain-card {
+  display: flex; flex-direction: column; gap: .25rem; padding: 1.1rem 1.25rem;
+  color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  transition: border-color .15s, transform .15s;
+}
+.domain-card:hover { color: var(--text); border-color: var(--primary); transform: translateY(-2px); }
+
+/* ---------- Product cards ---------- */
+
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.25rem; }
+
+.product-card {
+  display: flex; flex-direction: column; overflow: hidden;
+  color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); transition: transform .15s, border-color .15s;
+}
+.product-card:hover { color: var(--text); transform: translateY(-3px); border-color: var(--primary); }
+
+.product-card-cover { position: relative; aspect-ratio: 16 / 9; background: var(--primary-soft); }
+.product-card-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.badge { display: inline-block; padding: .1rem .6rem; font-size: .78rem; font-weight: 700; border-radius: 999px; }
+.product-card-cover .badge { position: absolute; top: .6rem; }
+.badge-type { inset-inline-start: .6rem; color: var(--text); background: var(--surface); }
+.badge-discount { color: #fff; background: var(--error); }
+.product-card-cover .badge-discount { inset-inline-end: .6rem; }
+
+.product-card-body { display: flex; flex-direction: column; flex: 1; gap: .3rem; padding: 1rem 1.1rem 1.1rem; }
+.product-card-body h3 { margin: 0; font-size: 1rem; line-height: 1.7; }
+.product-card-body p { margin: 0; font-size: .88rem; }
+.product-card-domain { font-size: .8rem; color: var(--primary); font-weight: 600; }
+
+.price { display: flex; align-items: baseline; gap: .5rem; margin-top: auto; padding-top: .5rem; }
+.price del { font-size: .85rem; color: var(--muted); }
+.price strong { font-size: 1.05rem; }
+.price-free { color: var(--success); }
+.price-lg { flex-wrap: wrap; margin: 0 0 1rem; padding: 0; }
+.price-lg strong { font-size: 1.4rem; }
+
+.pagination { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 2rem; }
+
+/* ---------- Product page ---------- */
+
+.preview-bar { padding: .6rem 1rem; text-align: center; font-size: .9rem; color: #7c2d12; background: #fed7aa; }
+
+.product-detail { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 1.5rem; align-items: start; }
+@media (max-width: 900px) { .product-detail { grid-template-columns: 1fr; } }
+
+.breadcrumb { font-size: .85rem; color: var(--muted); }
+.product-main h1 { margin: .3rem 0; font-size: 1.7rem; }
+.lead { margin: 0 0 1.25rem; font-size: 1.05rem; }
+
+.video-frame { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--radius); background: #000; }
+.video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.detail-cover { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--radius); }
+
+.block { margin-top: 1.25rem; padding: 1.25rem 1.5rem; }
+.block h2 { margin: 0 0 .75rem; font-size: 1.1rem; }
+.prose p { margin: 0 0 .8rem; }
+
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: .6rem; }
+.gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; cursor: zoom-in; }
+
+.outline details { border: 1px solid var(--border); border-radius: 10px; margin-bottom: .5rem; }
+.outline summary {
+  display: flex; justify-content: space-between; gap: 1rem; padding: .75rem 1rem;
+  font-weight: 700; cursor: pointer; list-style: none;
+}
+.outline summary::-webkit-details-marker { display: none; }
+.outline ul { margin: 0; padding: 0 1rem .6rem; list-style: none; }
+.outline li { display: flex; justify-content: space-between; gap: 1rem; padding: .45rem 0; border-top: 1px dashed var(--border); font-size: .92rem; }
+
+.product-side { position: sticky; top: 84px; }
+
+/* Phones: price + button stay visible at the bottom of the screen */
+.mobile-buy { display: none; }
+@media (max-width: 900px) {
+  .product-side { position: static; }
+  .mobile-buy {
+    position: fixed; inset-inline: 0; bottom: 0; z-index: 15; display: flex; align-items: center;
+    justify-content: space-between; gap: 1rem; padding: .75rem 1rem;
+    background: var(--surface); border-top: 1px solid var(--border); box-shadow: 0 -4px 16px rgb(0 0 0 / .08);
+  }
+  .mobile-buy .price { margin: 0; padding: 0; }
+  .has-mobile-buy .site-footer { padding-bottom: 5rem; }
+}
+.buy-box { padding: 1.25rem; }
+.buy-box-cover { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px; margin-bottom: 1rem; }
+.facts { margin: 1rem 0 0; padding: 0; list-style: none; font-size: .9rem; }
+.facts li { display: flex; justify-content: space-between; padding: .45rem 0; border-top: 1px solid var(--border); }
+.facts span { color: var(--muted); }
+.included { margin-top: 1rem; font-size: .88rem; }
+.included ul { margin: .4rem 0 0; padding-inline-start: 1.1rem; }
+
+/* ---------- Lightbox (added by main.js) ---------- */
+
+.lightbox {
+  position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: .75rem; padding: 2rem; background: rgb(0 0 0 / .88);
+}
+.lightbox[hidden] { display: none; }
+.lightbox img { max-width: 100%; max-height: 80vh; border-radius: 10px; }
+.lightbox p { margin: 0; color: #e5e7eb; }
+.lightbox button {
+  position: absolute; top: 50%; padding: .5rem .9rem; font-size: 1.5rem; color: #fff;
+  background: rgb(255 255 255 / .12); border: 0; border-radius: 10px; cursor: pointer;
+}
+.lightbox .lightbox-prev { right: 1rem; }
+.lightbox .lightbox-next { left: 1rem; }
+.lightbox .lightbox-close { top: 1rem; left: 1rem; }

@@ -1,20 +1,57 @@
 {% extends "base.html" %}
+{% load store %}
 
 {% block title %}خانه{% endblock %}
 
 {% block content %}
 <section class="hero container">
-  <span class="hero-badge">به‌زودی</span>
   <h1>یاد بگیر، بساز، رشد کن</h1>
-  <p class="muted">دوره‌ها و پروژه‌های آموزشی MAHAY به‌زودی اینجا قرار می‌گیرند.</p>
-
-  <div class="hero-actions">
-    {% if user.is_authenticated %}
-      <a class="btn btn-primary" href="{% url 'accounts:profile' %}">حساب کاربری من</a>
-    {% else %}
-      <a class="btn btn-primary" href="{% url 'accounts:signup' %}">شروع کنید</a>
-      <a class="btn btn-ghost" href="{% url 'accounts:login' %}">حساب دارم</a>
-    {% endif %}
-  </div>
+  <p class="muted">دوره‌های آموزشی و پروژه‌های واقعی در حوزه‌های تخصصی</p>
+  <form class="hero-search" action="{% url 'products:list' %}" method="get" role="search">
+    <input type="search" name="q" placeholder="جستجوی دوره یا پروژه..." aria-label="جستجو">
+    <button type="submit" class="btn btn-primary">جستجو</button>
+  </form>
 </section>
+
+{% if domains %}
+  <section class="container section">
+    <div class="section-head"><h2>حوزه‌ها</h2></div>
+    <div class="domain-grid">
+      {% for domain in domains %}
+        <a class="domain-card" href="{% url 'products:list' %}?domain={{ domain.slug }}">
+          <strong>{{ domain.name }}</strong>
+          <span class="muted">{{ domain.product_count|fa_num }} محصول</span>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% if latest_courses %}
+  <section class="container section">
+    <div class="section-head">
+      <h2>جدیدترین دوره‌ها</h2>
+      <a href="{% url 'products:list' %}?type=course">همه‌ی دوره‌ها</a>
+    </div>
+    <div class="product-grid">
+      {% for product in latest_courses %}{% include "partials/product_card.html" %}{% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% if latest_projects %}
+  <section class="container section">
+    <div class="section-head">
+      <h2>جدیدترین پروژه‌ها</h2>
+      <a href="{% url 'products:list' %}?type=project">همه‌ی پروژه‌ها</a>
+    </div>
+    <div class="product-grid">
+      {% for product in latest_projects %}{% include "partials/product_card.html" %}{% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% if not latest_courses and not latest_projects %}
+  <section class="container section"><p class="empty">به‌زودی دوره‌ها و پروژه‌ها اینجا قرار می‌گیرند.</p></section>
+{% endif %}
 {% endblock %}
