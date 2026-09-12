@@ -8,5 +8,7 @@
 {% block submit %}ذخیره تغییرات{% endblock %}
 
 {% block foot %}
+  <a href="{% url 'commerce:library' %}">خریدهای من</a> &nbsp;·&nbsp;
+  <a href="{% url 'commerce:order_list' %}">سفارش‌ها</a> &nbsp;·&nbsp;
   <a href="{% url 'accounts:password_change' %}">تغییر رمز عبور</a>
 {% endblock %}

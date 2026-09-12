@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load store %}
+
+{% block title %}سبد خرید{% endblock %}
+
+{% block content %}
+<section class="container section">
+  <div class="page-head"><h1>سبد خرید</h1></div>
+
+  {% if products %}
+    <div class="cart-layout">
+      <div class="cart-items">
+        {% for product in products %}
+          <div class="cart-row card">
+            <a href="{{ product.get_absolute_url }}" class="cart-cover">
+              {% if product.cover %}<img src="{{ product.cover.url }}" alt="{{ product.title }}">{% endif %}
+            </a>
+            <div class="cart-info">
+              <span class="product-card-domain">{{ product.primary_domain }}</span>
+              <a href="{{ product.get_absolute_url }}"><strong>{{ product.title }}</strong></a>
+              <span class="muted">{{ product.get_product_type_display }}</span>
+            </div>
+            <div class="cart-price">
+              {% if product.sale_price is not None %}<del>{{ product.price|toman }}</del>{% endif %}
+              <strong class="{% if product.is_free %}price-free{% endif %}">{{ product.final_price|toman }}</strong>
+            </div>
+            <form method="post" action="{% url 'commerce:remove_from_cart' product.slug %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-ghost btn-sm">حذف</button>
+            </form>
+          </div>
+        {% endfor %}
+      </div>
+
+      <aside class="card cart-summary">
+        <h2>جمع سفارش</h2>
+        <ul class="facts">
+          <li><span>تعداد</span><strong>{{ products|length|fa_num }}</strong></li>
+          <li><span>مبلغ قابل پرداخت</span><strong>{{ total|toman }}</strong></li>
+        </ul>
+        {# Login is checked by the view: an anonymous visitor is sent to the login page and comes back here #}
+        <form method="post" action="{% url 'commerce:checkout' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary btn-block">
+            {% if total %}پرداخت و ثبت سفارش{% else %}ثبت سفارش رایگان{% endif %}
+          </button>
+        </form>
+        {% if not user.is_authenticated %}
+          <p class="muted cart-note">برای ثبت سفارش باید وارد حساب خود شوید.</p>
+        {% endif %}
+      </aside>
+    </div>
+  {% else %}
+    <p class="empty">سبد خرید شما خالی است. <a href="{% url 'products:list' %}">مشاهده محصولات</a></p>
+  {% endif %}
+</section>
+{% endblock %}

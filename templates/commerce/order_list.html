@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load store %}
+
+{% block title %}سفارش‌های من{% endblock %}
+
+{% block content %}
+<section class="container section">
+  <div class="page-head"><h1>سفارش‌های من</h1></div>
+  {% if orders %}
+    <div class="card block table-wrap">
+      <table class="data-table">
+        <thead><tr><th>شماره</th><th>تاریخ</th><th>مبلغ</th><th>وضعیت</th><th></th></tr></thead>
+        <tbody>
+          {% for order in orders %}
+            <tr>
+              <td><bdi>{{ order.number|fa_num }}</bdi></td>
+              <td>{{ order.created_at|date:"Y/m/d"|fa_num }}</td>
+              <td>{{ order.total|toman }}</td>
+              <td><span class="status status-{{ order.status }}">{{ order.get_status_display }}</span></td>
+              <td><a href="{% url 'commerce:order_detail' order.number %}">جزئیات</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="empty">هنوز سفارشی ثبت نکرده‌اید.</p>
+  {% endif %}
+</section>
+{% endblock %}

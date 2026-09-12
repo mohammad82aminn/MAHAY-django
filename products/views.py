@@ -2,7 +2,8 @@ from django.db.models import Count, Prefetch, Q, Sum
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.views.generic import DetailView, ListView, TemplateView
-
+from commerce import services as commerce
+from commerce.models import CartItem
 from content.access import can_manage, can_open
 from content.models import Lesson, Section
 from domains.models import Domain
@@ -99,6 +100,10 @@ class ProductDetailView(DetailView):
             raise Http404  # drafts are only visible to their managers (as a preview)
         return product
 
+    def in_cart(self, product):
+        cart = commerce.get_cart(self.request)
+        return cart is not None and CartItem.objects.filter(cart=cart, product=product).exists()
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         product = context["product"]
@@ -117,5 +122,7 @@ class ProductDetailView(DetailView):
             "gallery": ProductImage.objects.filter(product=product, is_published=True, is_archived=False),
             "related": Product.objects.visible().filter(related_products=product),
             "can_open_files": can_open(self.request.user, product),
+            "owned": product.pk in commerce.owned_product_ids(self.request.user),
+            "in_cart": self.in_cart(product),
         })
         return context

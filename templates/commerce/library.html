@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}خریدهای من{% endblock %}
+
+{% block content %}
+<section class="container section">
+  <div class="section-head">
+    <h2>خریدهای من</h2>
+    <a href="{% url 'commerce:order_list' %}">سفارش‌ها ←</a>
+  </div>
+  {% if purchases %}
+    <div class="product-grid">
+      {% for purchase in purchases %}
+        {% include "partials/product_card.html" with product=purchase.product owned=True %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="empty">هنوز محصولی نخریده‌اید. <a href="{% url 'products:list' %}">مشاهده محصولات</a></p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -37,6 +37,7 @@ LOCAL_APPS = [
     "products",
     "content",
     "approvals",
+    "commerce",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -64,6 +65,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "products.context_processors.store_nav",
+                "commerce.context_processors.cart",
             ],
         },
     },
@@ -125,6 +127,12 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Paid content (lesson videos, attachments): NOT reachable by URL; served only through a view that checks access.
 # Later this can be moved to a cloud video/object storage by changing the storage, not the models.
 PROTECTED_MEDIA_ROOT = BASE_DIR / "protected_media"
+
+# --- Payment (ZarinPal) ----------------------------------------------------
+# sandbox: no real money moves. live: needs a real merchant id from ZarinPal.
+
+ZARINPAL_MODE = config("ZARINPAL_MODE", default="sandbox")
+ZARINPAL_MERCHANT_ID = config("ZARINPAL_MERCHANT_ID", default="00000000-0000-0000-0000-000000000000")
 
 # --- Email ----------------------------------------------------------------
 # Development: emails are printed in the terminal instead of being sent.

@@ -86,10 +86,19 @@
         {% endif %}
         <strong class="{% if product.is_free %}price-free{% endif %}">{{ product.final_price|toman }}</strong>
       </div>
-      {# The cart is built in the next stage #}
-      <button type="button" class="btn btn-primary btn-block" disabled>
-        {% if product.is_free %}دریافت رایگان{% else %}افزودن به سبد خرید{% endif %} (به‌زودی)
-      </button>
+            {% if owned %}
+        <a class="btn btn-primary btn-block" href="{% url 'commerce:library' %}">مشاهده در خریدهای من</a>
+      {% elif in_cart %}
+        <a class="btn btn-primary btn-block" href="{% url 'commerce:cart' %}">مشاهده سبد خرید</a>
+      {% else %}
+        <form method="post" action="{% url 'commerce:add_to_cart' product.slug %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}">
+          <button type="submit" class="btn btn-primary btn-block">
+            {% if product.is_free %}دریافت رایگان{% else %}افزودن به سبد خرید{% endif %}
+          </button>
+        </form>
+      {% endif %}
       <ul class="facts">
         <li><span>نوع</span><strong>{{ product.get_product_type_display }}</strong></li>
         <li><span>حوزه</span><strong>{{ product.primary_domain }}</strong></li>
@@ -112,7 +121,17 @@
     {% if product.sale_price is not None %}<del>{{ product.price|toman }}</del>{% endif %}
     <strong class="{% if product.is_free %}price-free{% endif %}">{{ product.final_price|toman }}</strong>
   </div>
-  <button type="button" class="btn btn-primary btn-sm" disabled>{% if product.is_free %}دریافت رایگان{% else %}خرید{% endif %} (به‌زودی)</button>
+    {% if owned %}
+    <a class="btn btn-primary btn-sm" href="{% url 'commerce:library' %}">مشاهده</a>
+  {% elif in_cart %}
+    <a class="btn btn-primary btn-sm" href="{% url 'commerce:cart' %}">سبد خرید</a>
+  {% else %}
+    <form method="post" action="{% url 'commerce:add_to_cart' product.slug %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <button type="submit" class="btn btn-primary btn-sm">{% if product.is_free %}دریافت رایگان{% else %}افزودن به سبد{% endif %}</button>
+    </form>
+  {% endif %} (به‌زودی)</button>
 </div>
 
 {% if related %}
