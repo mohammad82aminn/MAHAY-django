@@ -2,7 +2,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
+from django.conf import settings
 from .storage import protected_storage
 from .validators import validate_aparat_url
 
@@ -102,3 +102,49 @@ class Attachment(PublishState):
     @property
     def product(self):
         return self.lesson.section.product
+
+    
+
+class LessonProgress(models.Model):
+    """
+    How much of a lesson a user has watched. Saved automatically by the player
+    (see static/js/player.js), so the user can continue where they stopped.
+    """
+
+    COMPLETE_RATIO = 0.9  # watching 90% counts as finished (the end is usually just credits)
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="lesson_progress", verbose_name=_("کاربر"),
+    )
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="progress", verbose_name=_("درس"))
+    position_seconds = models.PositiveIntegerField(_("محل توقف (ثانیه)"), default=0)
+    duration_seconds = models.PositiveIntegerField(_("مدت ویدیو (ثانیه)"), default=0)
+    is_completed = models.BooleanField(_("تمام‌شده"), default=False)
+    updated_at = models.DateTimeField(_("آخرین تماشا"), auto_now=True)
+
+    class Meta:
+        verbose_name = _("پیشرفت درس")
+        verbose_name_plural = _("پیشرفت درس‌ها")
+        ordering = ("-updated_at",)
+        constraints = [
+            models.UniqueConstraint(fields=("user", "lesson"), name="content_one_progress_per_lesson"),
+        ]
+
+    def __str__(self):
+        return f"{self.user} — {self.lesson.title} ({self.percent}%)"
+
+    @property
+    def percent(self):
+        if self.is_completed:
+            return 100
+        if not self.duration_seconds:
+            return 0
+        return min(99, round(self.position_seconds * 100 / self.duration_seconds))
+
+    def watched(self, position, duration):
+        """Called while the video plays. Completion is never taken back."""
+        self.position_seconds = max(0, int(position))
+        self.duration_seconds = max(self.duration_seconds, int(duration))
+        if self.duration_seconds and self.position_seconds >= self.duration_seconds * self.COMPLETE_RATIO:
+            self.is_completed = True
+        self.save()

@@ -6,9 +6,9 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from products.models import Product
-
+from content import progress
 from . import gateway, services
-from .models import CartItem, Order
+from .models import CartItem, Order, Purchase
 
 ADD_MESSAGES = {
     "added": (messages.SUCCESS, "به سبد خرید اضافه شد."),
@@ -132,8 +132,10 @@ def order_list(request):
 
 @login_required
 def library(request):
-    """"My purchases": everything the user owns."""
-    purchases = (
-        request.user.purchases.select_related("product__primary_domain").order_by("-created_at")
-    )
-    return render(request, "commerce/library.html", {"purchases": purchases})
+    """"My purchases": everything the user owns, with how far they got in each one."""
+    purchases = Purchase.objects.filter(user=request.user).select_related("product__primary_domain")
+    items = [
+        {"product": purchase.product, **progress.summary(request.user, purchase.product)}
+        for purchase in purchases
+    ]
+    return render(request, "commerce/library.html", {"purchases": items})

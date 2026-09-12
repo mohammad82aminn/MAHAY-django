@@ -4,11 +4,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
   <title>{% block title %}MAHAY{% endblock %} | MAHAY</title>
   {# Apply the saved theme before the page is drawn (no flash of the wrong colors) #}
   <script>document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";</script>
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
   <script src="{% static 'js/main.js' %}" defer></script>
+  {% block extra_js %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <header class="site-header">

@@ -87,7 +87,7 @@
         <strong class="{% if product.is_free %}price-free{% endif %}">{{ product.final_price|toman }}</strong>
       </div>
             {% if owned %}
-        <a class="btn btn-primary btn-block" href="{% url 'commerce:library' %}">مشاهده در خریدهای من</a>
+                <a class="btn btn-primary btn-block" href="{% url 'content:learn' product.slug %}">ورود به {{ product.get_product_type_display }}</a>
       {% elif in_cart %}
         <a class="btn btn-primary btn-block" href="{% url 'commerce:cart' %}">مشاهده سبد خرید</a>
       {% else %}
@@ -122,7 +122,7 @@
     <strong class="{% if product.is_free %}price-free{% endif %}">{{ product.final_price|toman }}</strong>
   </div>
     {% if owned %}
-    <a class="btn btn-primary btn-sm" href="{% url 'commerce:library' %}">مشاهده</a>
+    <a class="btn btn-primary btn-sm" href="{% url 'content:learn' product.slug %}">ورود</a>
   {% elif in_cart %}
     <a class="btn btn-primary btn-sm" href="{% url 'commerce:cart' %}">سبد خرید</a>
   {% else %}

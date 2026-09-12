@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load store %}
 
 {% block title %}خریدهای من{% endblock %}
 
@@ -10,8 +11,27 @@
   </div>
   {% if purchases %}
     <div class="product-grid">
-      {% for purchase in purchases %}
-        {% include "partials/product_card.html" with product=purchase.product owned=True %}
+      {% for item in purchases %}
+        <div class="owned-card card">
+          <a class="owned-cover" href="{% url 'content:learn' item.product.slug %}">
+            {% if item.product.cover %}<img src="{{ item.product.cover.url }}" alt="{{ item.product.title }}" loading="lazy">{% endif %}
+            <span class="badge badge-type">{{ item.product.get_product_type_display }}</span>
+          </a>
+          <div class="owned-body">
+            <span class="product-card-domain">{{ item.product.primary_domain }}</span>
+            <h3><a href="{% url 'content:learn' item.product.slug %}">{{ item.product.title }}</a></h3>
+            <div class="owned-progress">
+              <div class="bar"><span style="width: {{ item.percent }}%"></span></div>
+              <div class="owned-progress-text muted">
+                <span>{{ item.completed|fa_num }} از {{ item.total|fa_num }} درس</span>
+                <span>{{ item.percent|fa_num }}٪</span>
+              </div>
+            </div>
+            <a class="btn btn-primary btn-block" href="{% if item.next_lesson %}{% url 'content:lesson' item.product.slug item.next_lesson.pk %}{% else %}{% url 'content:learn' item.product.slug %}{% endif %}">
+              {% if item.percent == 100 %}مرور دوباره{% elif item.completed %}ادامه‌ی یادگیری{% else %}شروع یادگیری{% endif %}
+            </a>
+          </div>
+        </div>
       {% endfor %}
     </div>
   {% else %}

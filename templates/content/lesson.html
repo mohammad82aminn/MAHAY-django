@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load static store %}
+
+{% block title %}{{ lesson.title }}{% endblock %}
+
+{% block extra_js %}<script src="{% static 'js/player.js' %}" defer></script>{% endblock %}
+
+{% block content %}
+<section class="container section">
+  <nav class="breadcrumb">
+    <a href="{% url 'content:learn' product.slug %}">{{ product.title }}</a> › {{ lesson.section.title }}
+  </nav>
+  <h1 class="lesson-heading">{{ lesson.title }}</h1>
+
+  {% if lesson.video_file %}
+    {# The address is checked by the server on every request; the player saves the position #}
+    <video
+      class="player"
+      controls
+      preload="metadata"
+      src="{% url 'content:protected_file' 'video' lesson.pk %}"
+      data-progress-url="{% url 'content:save_progress' lesson.pk %}"
+      data-position="{{ position }}"
+    ></video>
+  {% elif lesson.video_url %}
+    {% with embed=lesson.video_url|aparat_embed %}
+      {% if embed %}
+        <div class="video-frame">
+          <iframe src="{{ embed }}" title="{{ lesson.title }}" allowfullscreen></iframe>
+        </div>
+      {% endif %}
+    {% endwith %}
+  {% endif %}
+
+  {% if lesson.body %}
+    <div class="card block"><div class="prose">{{ lesson.body|linebreaks }}</div></div>
+  {% endif %}
+
+  {% if attachments %}
+    <div class="card block">
+      <h2>فایل‌های این درس</h2>
+      <ul class="file-list">
+        {% for attachment in attachments %}
+          <li><a href="{% url 'content:protected_file' 'attachment' attachment.pk %}">⬇ {{ attachment.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <nav class="lesson-nav">
+    {% if previous_lesson %}
+      <a class="btn btn-ghost" href="{% url 'content:lesson' product.slug previous_lesson.pk %}">درس قبلی ›</a>
+    {% else %}<span></span>{% endif %}
+    <a href="{% url 'content:learn' product.slug %}">فهرست درس‌ها</a>
+    {% if next_lesson %}
+      <a class="btn btn-primary" href="{% url 'content:lesson' product.slug next_lesson.pk %}">‹ درس بعدی</a>
+    {% else %}<span></span>{% endif %}
+  </nav>
+</section>
+{% endblock %}

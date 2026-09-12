@@ -4,8 +4,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from approvals.admin_base import ApprovalModelAdmin
-
-from .models import Attachment, Lesson, Section
+from .models import Attachment, Lesson, LessonProgress, Section
 
 
 @admin.register(Section)
@@ -85,3 +84,24 @@ class AttachmentAdmin(ApprovalModelAdmin):
         if not obj.pk or not obj.file:
             return "—"
         return format_html('<a href="{}">دانلود فایل</a>', reverse("content:protected_file", args=["attachment", obj.pk]))
+
+    
+
+@admin.register(LessonProgress)
+class LessonProgressAdmin(admin.ModelAdmin):
+    """Read-only: written by the player, useful for support questions."""
+
+    list_display = ("user", "lesson", "percent_display", "is_completed", "updated_at")
+    list_filter = ("is_completed", "lesson__section__product")
+    search_fields = ("user__mobile_number", "lesson__title")
+    readonly_fields = ("user", "lesson", "position_seconds", "duration_seconds", "is_completed", "updated_at")
+
+    def has_add_permission(self, request):
+        return False
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("user", "lesson__section__product")
+
+    @admin.display(description=_("درصد"))
+    def percent_display(self, obj):
+        return f"{obj.percent}٪"
