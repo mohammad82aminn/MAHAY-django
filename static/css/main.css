@@ -138,14 +138,15 @@ h2, h3, h4 { line-height: 1.6; }
 /* ---------- Footer ---------- */
 
 .site-footer { margin-top: 3rem; background: var(--surface); border-top: 1px solid var(--border); }
-.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 2rem; padding-block: 2.5rem; }
+.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem; padding-block: 2.5rem; }
 .footer-grid h4 { margin: 0 0 .75rem; font-size: 1rem; }
 .footer-grid p { margin: .75rem 0 0; max-width: 360px; font-size: .9rem; }
 .footer-links { display: flex; flex-direction: column; gap: .35rem; font-size: .92rem; }
 .footer-links a { color: var(--muted); }
 .footer-links a:hover { color: var(--primary); }
 .footer-bottom { padding-block: 1rem; font-size: .85rem; color: var(--muted); text-align: center; border-top: 1px solid var(--border); }
-@media (max-width: 640px) { .footer-grid { grid-template-columns: 1fr 1fr; } .footer-grid > :first-child { grid-column: 1 / -1; } }
+@media (max-width: 860px) { .footer-grid { grid-template-columns: 1fr 1fr 1fr; } .footer-grid > :first-child { grid-column: 1 / -1; } }
+@media (max-width: 560px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
 
 /* ---------- Buttons ---------- */
 
@@ -402,7 +403,9 @@ h2, h3, h4 { line-height: 1.6; }
 .alert p { margin: 0; }
 .alert-error { color: var(--error); background: var(--error-soft); }
 
-.toasts { position: fixed; top: 136px; left: 50%; z-index: 30; display: grid; gap: .5rem; width: min(92vw, 440px); transform: translateX(-50%); }
+/* Top corner, so messages never cover the page content */
+.toasts { position: fixed; top: 90px; inset-inline-end: 1rem; z-index: 30; display: grid; gap: .5rem; width: min(92vw, 380px); }
+@media (max-width: 760px) { .toasts { inset-inline: 1rem; width: auto; } }
 .toast {
   display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .85rem 1rem; font-size: .92rem;
   background: var(--surface); border: 1px solid var(--border); border-inline-start: 4px solid var(--primary);
@@ -555,3 +558,31 @@ h2, h3, h4 { line-height: 1.6; }
 .owned-progress { display: flex; flex-direction: column; gap: .35rem; font-size: .82rem; }
 .owned-progress-text { display: flex; justify-content: space-between; }
 .owned-card .btn { margin-top: .35rem; }
+
+
+/* Verification code box */
+.code-input {
+  font-size: 1.6rem; font-weight: 800; letter-spacing: .5rem; text-align: center !important;
+}
+.auth-foot form { margin-bottom: .5rem; }
+.auth-foot p { margin: 0; }
+
+
+/* ==========================================================================
+   Text pages and contact form
+   ========================================================================== */
+
+.text-page { max-width: 800px; margin-inline: auto; }
+.text-page h1 { margin: 0 0 1rem; font-size: 1.5rem; }
+.text-page .prose { font-size: .97rem; }
+
+.contact-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 1.25rem; align-items: start; }
+.contact-layout h1 { margin: 0 0 .3rem; font-size: 1.4rem; }
+.contact-layout form { margin-top: 1.25rem; }
+.contact-layout textarea {
+  width: 100%; padding: .75rem .95rem; font: inherit; color: var(--text);
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; outline: none;
+}
+.contact-layout textarea:focus { background: var(--surface); border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
+.contact-info h2 { margin: 0 0 .5rem; font-size: 1.05rem; }
+@media (max-width: 860px) { .contact-layout { grid-template-columns: 1fr; } }

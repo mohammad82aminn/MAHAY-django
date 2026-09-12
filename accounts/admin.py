@@ -11,15 +11,15 @@ from .forms import AdminUserCreationForm, UserChangeForm
 from .models import User
 from .roles import DOMAIN_MANAGER_APPS, DOMAIN_MANAGER_FORBIDDEN, SITE_ADMINS_GROUP, is_system_group
 from .validators import DIGIT_MAP
-
+from .models import LoginAttempt, User, VerificationCode
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
     add_form = AdminUserCreationForm
 
-    list_display = ("mobile_number", "first_name", "last_name", "roles", "is_active")
-    list_filter = ("is_staff", "is_superuser", "is_active", "groups")
+    list_display = ("mobile_number", "first_name", "last_name", "roles", "mobile_verified", "is_active")
+    list_filter = ("mobile_verified", "is_active", "is_staff", "is_superuser", "groups")
     search_fields = ("mobile_number", "first_name", "last_name", "email")
     ordering = ("-date_joined",)
     readonly_fields = ("is_staff", "last_login", "date_joined")
@@ -29,7 +29,7 @@ class UserAdmin(BaseUserAdmin):
         (None, {"fields": ("mobile_number", "password")}),
         (_("اطلاعات شخصی"), {"fields": ("first_name", "last_name", "email")}),
         # Access is only given through groups (no per-user permissions); is_staff is set automatically
-        (_("نقش‌ها و دسترسی"), {"fields": ("groups", "is_active", "is_staff", "is_superuser")}),
+        (_("نقش‌ها و دسترسی"), {"fields": ("groups", "mobile_verified", "is_active", "is_staff", "is_superuser")}),
         (_("تاریخ‌ها"), {"fields": ("last_login", "date_joined")}),
     )
     add_fieldsets = (
@@ -65,6 +65,35 @@ class UserAdmin(BaseUserAdmin):
             queryset |= self.model.objects.filter(mobile_number__startswith=f"+98{term[1:]}")
         return queryset, may_have_duplicates
 
+
+@admin.register(VerificationCode)
+class VerificationCodeAdmin(admin.ModelAdmin):
+    """Read-only: helpful when a user says "the code doesn't arrive"."""
+
+    list_display = ("mobile_number", "purpose", "created_at", "expires_at", "attempts", "used_at")
+    list_filter = ("purpose", "created_at")
+    search_fields = ("mobile_number",)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(LoginAttempt)
+class LoginAttemptAdmin(admin.ModelAdmin):
+    """Read-only: shows whether someone is trying to guess passwords."""
+
+    list_display = ("mobile_number", "ip_address", "created_at")
+    search_fields = ("mobile_number", "ip_address")
+    date_hierarchy = "created_at"
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
 
 # --- Groups -----------------------------------------------------------------------
 

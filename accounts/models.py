@@ -10,6 +10,49 @@ from .managers import UserManager
 from .validators import MOBILE_NUMBER_REGEX
 
 
+class VerificationCode(models.Model):
+    """A one-time code sent by SMS. Only its hash is stored."""
+
+    class Purpose(models.TextChoices):
+        SIGNUP = "signup", _("تأیید شماره در ثبت‌نام")
+        PASSWORD_RESET = "reset", _("بازیابی رمز عبور")
+
+    mobile_number = models.CharField(_("شماره موبایل"), max_length=13, db_index=True)
+    purpose = models.CharField(_("کاربرد"), max_length=10, choices=Purpose.choices)
+    code_hash = models.CharField(_("کد (هش‌شده)"), max_length=128)
+    attempts = models.PositiveSmallIntegerField(_("تلاش‌های ناموفق"), default=0)
+    created_at = models.DateTimeField(_("زمان ارسال"), auto_now_add=True)
+    expires_at = models.DateTimeField(_("زمان انقضا"))
+    used_at = models.DateTimeField(_("زمان استفاده"), null=True, blank=True)
+
+    class Meta:
+        verbose_name = _("کد تأیید")
+        verbose_name_plural = _("کدهای تأیید")
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.Purpose(self.purpose).label} — {self.mobile_number}"
+
+
+class LoginAttempt(models.Model):
+    """
+    A failed login. Kept so that guessing passwords becomes impossible:
+    too many failures for one number (or from one IP) block new tries for a while.
+    Successful logins delete the rows, so a normal user is never affected.
+    """
+
+    mobile_number = models.CharField(_("شماره موبایل"), max_length=20, db_index=True)
+    ip_address = models.GenericIPAddressField(_("آی‌پی"), null=True, blank=True, db_index=True)
+    created_at = models.DateTimeField(_("زمان"), auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = _("تلاش ناموفق ورود")
+        verbose_name_plural = _("تلاش‌های ناموفق ورود")
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.mobile_number} — {self.created_at:%Y/%m/%d %H:%M}"
+
 class User(AbstractBaseUser, PermissionsMixin):
     mobile_number = MobileNumberField(
         _("شماره موبایل"),
@@ -25,7 +68,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         null=True,  # Users without email store NULL, so they don't collide on unique
         error_messages={"unique": _("کاربری با این ایمیل وجود دارد.")},
     )
-    is_active = models.BooleanField(_("فعال"), default=True)
+    is_active = models.BooleanField(
+        _("فعال"), default=True,
+        help_text=_("کاربر غیرفعال نمی‌تواند وارد شود. ثبت‌نام‌های تأییدنشده غیرفعال می‌مانند."),
+    )
+    mobile_verified = models.BooleanField(
+        _("شماره تأیید شده"), default=False, help_text=_("با کد پیامکی تأیید شده است."),
+    )
+    
     is_staff = models.BooleanField(_("دسترسی پنل مدیریت"), default=False)
     date_joined = models.DateTimeField(_("تاریخ عضویت"), default=timezone.now)
 

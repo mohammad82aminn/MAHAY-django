@@ -29,6 +29,7 @@ urlpatterns = [
     path("content/", include("content.urls")),
     path("approvals/", include("approvals.urls")),
     path("admin/", admin.site.urls),
+    path("p/", include("pages.urls")),  # last: /p/<slug>/ must not shadow the other sections
 ]
 
 if settings.DEBUG:

@@ -1,8 +1,16 @@
+from django.contrib.auth.signals import user_logged_in
 from django.db.models.signals import m2m_changed, post_migrate
 from django.dispatch import receiver
 
+from . import throttle
 from .models import User
 from .roles import ensure_site_admins_group, sync_staff_status
+
+
+@receiver(user_logged_in)
+def clear_login_attempts(sender, request, user, **kwargs):
+    """A real login proves the person owns the account: forget their failed tries."""
+    throttle.clear(user.mobile_number)
 
 
 @receiver(post_migrate)

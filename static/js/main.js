@@ -102,3 +102,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+
+// 6) "Send the code again": stays disabled until the waiting time is over
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("button[data-resend-in]").forEach((button) => {
+    let left = Number(button.dataset.resendIn || 0);
+    const label = button.textContent;
+    if (left <= 0) return;
+
+    const tick = () => {
+      if (left <= 0) {
+        button.disabled = false;
+        button.textContent = label;
+        return;
+      }
+      button.disabled = true;
+      button.textContent = `${label} (${left.toLocaleString("fa-IR")} ثانیه)`;
+      left -= 1;
+      setTimeout(tick, 1000);
+    };
+    tick();
+  });
+});

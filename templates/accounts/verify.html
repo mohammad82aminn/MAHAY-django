@@ -1,0 +1,18 @@
+{% extends "accounts/auth_layout.html" %}
+{% load store %}
+
+{% block title %}تأیید شماره موبایل{% endblock %}
+{% block heading %}تأیید شماره موبایل{% endblock %}
+{% block subheading %}
+  کد ۶ رقمی ارسال‌شده به <bdi dir="ltr">{{ mobile_display }}</bdi> را وارد کنید
+{% endblock %}
+{% block submit %}تأیید و ورود{% endblock %}
+
+{% block foot %}
+  {# The button becomes active when the wait is over (see main.js) #}
+  <form method="post" action="{% url 'accounts:resend_code' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-ghost btn-sm" data-resend-in="{{ resend_in }}">ارسال دوباره‌ی کد</button>
+  </form>
+  <p class="muted">شماره اشتباه است؟ <a href="{% url 'accounts:signup' %}">اصلاح شماره</a></p>
+{% endblock %}

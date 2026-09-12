@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from django.core import mail
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from .models import User
@@ -81,7 +81,7 @@ class LoginTests(TestCase):
 
 
 # --- Authentication pages -------------------------------------------------------
-
+@override_settings(SMS_BACKEND="disabled")  # sign-up verification has its own test file
 class SignUpViewTests(TestCase):
     url = reverse("accounts:signup")
 

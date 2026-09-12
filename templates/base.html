@@ -99,6 +99,15 @@
         </div>
       </div>
       <div>
+        <h4>راهنما</h4>
+        <div class="footer-links">
+          {% for page in footer_pages %}
+            <a href="{{ page.get_absolute_url }}">{{ page.title }}</a>
+          {% endfor %}
+          <a href="{% url 'pages:contact' %}">تماس با ما</a>
+        </div>
+      </div>
+      <div>
         <h4>حساب کاربری</h4>
         <div class="footer-links">
           {% if user.is_authenticated %}
@@ -112,7 +121,10 @@
         </div>
       </div>
     </div>
-    <div class="container footer-bottom">© MAHAY — تمامی حقوق محفوظ است.</div>
+    <div class="container footer-bottom">
+      © MAHAY — تمامی حقوق محفوظ است.
+      {# The e-trust badge (اینماد) code goes here once it is issued #}
+    </div>
   </footer>
 </body>
 </html>

@@ -1,13 +1,18 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, FormView, UpdateView
 
-from .forms import LoginForm, ProfileForm, SignUpForm
+from . import otp, sms
+from .forms import LoginForm, ProfileForm, SignUpForm, VerifyCodeForm
+from .models import User, VerificationCode
+
+PENDING_SESSION_KEY = "signup_mobile"  # the number waiting for its code
 
 
 class SignUpView(CreateView):
@@ -21,10 +26,82 @@ class SignUpView(CreateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        user = form.save()
-        login(self.request, user)  # sign the new user in right away
-        messages.success(self.request, f"{user.first_name} عزیز، به MAHAY خوش آمدید!")
+        user = form.save(commit=False)
+        if not sms.is_enabled():
+            # No SMS provider: keep sign-up in one step
+            user.is_active = True
+            user.save()
+            login(self.request, user)
+            messages.success(self.request, f"{user.first_name} عزیز، به MAHAY خوش آمدید!")
+            return redirect("home")
+
+        user.is_active = False  # activated by the code
+        user.mobile_verified = False
+        user.save()
+        self.request.session[PENDING_SESSION_KEY] = user.mobile_number
+        send_code(self.request, user.mobile_number)
+        return redirect("accounts:verify")
+
+def send_code(request, mobile_number):
+    """Send a sign-up code and tell the user what happened."""
+    try:
+        code = otp.create_and_send(mobile_number, VerificationCode.Purpose.SIGNUP)
+    except otp.TooManyRequests as error:
+        messages.warning(request, str(error))
+        return
+    except sms.SMSError as error:
+        messages.error(request, str(error))
+        return
+
+    messages.success(request, "کد تأیید پیامک شد.")
+    if settings.DEBUG:  # development only: the terminal is not in front of the tester
+        messages.info(request, f"حالت آزمایشی — کد شما: {code}")
+
+
+class VerifyView(FormView):
+    """Step 2 of sign-up: the code that was sent by SMS."""
+
+    form_class = VerifyCodeForm
+    template_name = "accounts/verify.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.mobile_number = request.session.get(PENDING_SESSION_KEY)
+        if not self.mobile_number:
+            return redirect("accounts:signup")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = User.objects.filter(mobile_number=self.mobile_number).first()
+        context["mobile_display"] = user.mobile_display if user else self.mobile_number
+        context["resend_in"] = otp.seconds_until_resend(self.mobile_number, VerificationCode.Purpose.SIGNUP)
+        return context
+
+    def form_valid(self, form):
+        if not otp.verify(self.mobile_number, VerificationCode.Purpose.SIGNUP, form.cleaned_data["code"]):
+            form.add_error("code", "کد تأیید نادرست یا منقضی شده است.")
+            return self.form_invalid(form)
+
+        user = User.objects.filter(mobile_number=self.mobile_number).first()
+        if user is None:
+            return redirect("accounts:signup")
+
+        user.is_active = True
+        user.mobile_verified = True
+        user.save(update_fields=["is_active", "mobile_verified"])
+        self.request.session.pop(PENDING_SESSION_KEY, None)
+        login(self.request, user)
+        messages.success(self.request, f"{user.first_name} عزیز، شماره‌ی شما تأیید شد. به MAHAY خوش آمدید!")
         return redirect("home")
+
+
+def resend_code(request):
+    """"Send the code again" button on the verification page."""
+    mobile_number = request.session.get(PENDING_SESSION_KEY)
+    if not mobile_number:
+        return redirect("accounts:signup")
+    send_code(request, mobile_number)
+    return redirect("accounts:verify")
 
 
 class LoginView(auth_views.LoginView):
