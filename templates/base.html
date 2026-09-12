@@ -55,7 +55,6 @@
       <nav class="container main-links" aria-label="بخش‌های سایت">
         <a href="{% url 'products:list' %}?type=course">دوره‌های آموزشی</a>
         <a href="{% url 'products:list' %}?type=project">پروژه‌ها</a>
-        <a href="{% url 'products:list' %}?type=source">سورس‌کدها</a>
         {% if nav_domains %}<span class="divider"></span>{% endif %}
         {% for domain in nav_domains %}
           <a class="domain-link" href="{% url 'products:list' %}?domain={{ domain.slug }}">{{ domain.name }}</a>
@@ -83,14 +82,13 @@
     <div class="container footer-grid">
       <div>
         <a class="brand" href="{% url 'home' %}"><span class="brand-mark">M</span><span>MAHAY</span></a>
-        <p class="muted">آموزش تخصصی و پروژه‌محور؛ دوره‌ها، پروژه‌های واقعی و سورس‌کدها در حوزه‌های مختلف.</p>
+        <p class="muted">آموزش تخصصی و پروژه‌محور؛ دوره‌های آموزشی و پروژه‌های واقعی در حوزه‌های مختلف.</p>
       </div>
       <div>
         <h4>بخش‌ها</h4>
         <div class="footer-links">
           <a href="{% url 'products:list' %}?type=course">دوره‌های آموزشی</a>
           <a href="{% url 'products:list' %}?type=project">پروژه‌ها</a>
-          <a href="{% url 'products:list' %}?type=source">سورس‌کدها</a>
         </div>
       </div>
       <div>

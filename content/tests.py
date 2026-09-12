@@ -178,38 +178,15 @@ class PublishTogetherTests(ContentTestCase):
         self.assertFalse(ChangeRequest.objects.filter(object_id=draft.pk, content_type__model="product").exists())
 
 
-class BundleTests(ContentTestCase):
+class RelatedProductTests(ContentTestCase):
     def product_post(self, product, **changes):
         data = {
             "product_type": product.product_type, "title": product.title, "slug": product.slug, "summary": "",
             "description": "", "intro_video_url": "", "primary_domain": product.primary_domain_id,
-            "price": product.price, "sale_price": "", "related_products": [], "included_products": [],
+            "price": product.price, "sale_price": "", "related_products": [],
         }
         data.update(changes)
         return self.client.post(reverse("admin:products_product_change", args=[product.pk]), data)
-
-    def test_project_can_include_source_code_product(self):
-        source = Product.objects.create(product_type="source", title="سورس", slug="src", primary_domain=self.fpga,
-                                        price=500_000, is_published=True)
-        self.client.force_login(self.admin)
-        self.product_post(self.product, included_products=[source.pk])
-        self.assertEqual(list(self.product.included_products.all()), [source])
-        self.assertEqual(list(Product.objects.filter(included_products=source)), [self.product])
-
-    def test_manager_cannot_bundle_other_domain_product(self):
-        ai_product = Product.objects.create(product_type="source", title="AI src", slug="ai-src", primary_domain=self.ai)
-        self.client.force_login(self.manager)
-        response = self.product_post(self.product, included_products=[ai_product.pk])
-        self.assertEqual(response.status_code, 200)  # form error
-
-    def test_no_nested_bundles(self):
-        source = Product.objects.create(product_type="source", title="s", slug="s", primary_domain=self.fpga)
-        middle = Product.objects.create(product_type="project", title="m", slug="m", primary_domain=self.fpga)
-        middle.included_products.add(source)
-        self.client.force_login(self.admin)
-        response = self.product_post(self.product, included_products=[middle.pk])
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(self.product.included_products.exists())
 
     def test_related_products_are_two_way(self):
         project = Product.objects.create(product_type="project", title="p", slug="p", primary_domain=self.fpga)
@@ -221,14 +198,12 @@ class BundleTests(ContentTestCase):
         self.client.force_login(self.admin)
         response = self.client.get(reverse("admin:products_product_change", args=[self.product.pk]))
         form = response.context["adminform"].form
-        self.assertNotIn(self.product, form.fields["included_products"].queryset)
         self.assertNotIn(self.product, form.fields["related_products"].queryset)
 
     def test_outline_shows_sections(self):
         self.client.force_login(self.admin)
         response = self.client.get(reverse("admin:products_product_change", args=[self.product.pk]))
         self.assertContains(response, "فصل ۱")
-
 
 def tearDownModule():
     shutil.rmtree(TEMP_PROTECTED, ignore_errors=True)

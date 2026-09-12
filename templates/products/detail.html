@@ -94,17 +94,12 @@
         <li><span>نوع</span><strong>{{ product.get_product_type_display }}</strong></li>
         <li><span>حوزه</span><strong>{{ product.primary_domain }}</strong></li>
         {% if lesson_count %}<li><span>تعداد درس</span><strong>{{ lesson_count|fa_num }}</strong></li>{% endif %}
-        {% if total_minutes %}<li><span>مدت</span><strong>{{ total_minutes|fa_num }} دقیقه</strong></li>{% endif %}
+                {% if total_minutes %}<li><span>مدت</span><strong>{{ total_minutes|fa_num }} دقیقه</strong></li>{% endif %}
+        {% if product.thesis %}<li><span>پایان‌نامه</span><strong>دارد</strong></li>{% endif %}
       </ul>
-      {% if included %}
+      {% if product.thesis and can_open_files %}
         <div class="included">
-          <strong>با خرید این محصول، این‌ها را هم دارید:</strong>
-          <ul>{% for item in included %}<li><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></li>{% endfor %}</ul>
-        </div>
-      {% endif %}
-      {% if included_in %}
-        <div class="included muted">
-          این محصول در {% for item in included_in %}<a href="{{ item.get_absolute_url }}">{{ item.title }}</a>{% if not forloop.last %}، {% endif %}{% endfor %} هم وجود دارد.
+          📄 <a href="{% url 'content:protected_file' 'thesis' product.pk %}">دانلود پایان‌نامه</a>
         </div>
       {% endif %}
     </div>

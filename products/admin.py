@@ -29,15 +29,6 @@ class ProductAdminForm(forms.ModelForm):
 
         if instance.pk and instance in (data.get("related_products") or []):
             self.add_error("related_products", _("محصول نمی‌تواند با خودش مرتبط باشد."))
-
-        # "Includes" is one level only: a bundle can't include another bundle or itself
-        included = data.get("included_products") or []
-        if instance.pk and instance in included:
-            self.add_error("included_products", _("محصول نمی‌تواند شامل خودش باشد."))
-        elif any(product.included_products.exists() for product in included):
-            self.add_error("included_products", _("محصولی که خودش شامل محصولات دیگر است را نمی‌توان اضافه کرد."))
-        elif included and instance.pk and instance.included_in.exists():
-            self.add_error("included_products", _("این محصول داخل محصول دیگری است و نمی‌تواند شامل محصول باشد."))
         return data
 
 
@@ -47,14 +38,15 @@ class ProductAdmin(ApprovalModelAdmin):
     list_display = ("title", "product_type", "primary_domain", "price_display", "state")
     list_filter = ("product_type", "primary_domain", "is_published", "is_archived")
     search_fields = ("title", "slug")
-    filter_horizontal = ("related_domains", "related_products", "included_products")
-    readonly_fields = ("cover_preview", "gallery", "content_outline", "created_by", "created_at", "updated_at")
+    filter_horizontal = ("related_domains", "related_products")
+    readonly_fields = ("cover_preview", "gallery", "thesis_link", "content_outline", "created_by", "created_at", "updated_at")
     fieldsets = (
         (None, {"fields": ("product_type", "title", "slug", "summary", "description")}),
         (_("تصاویر و ویدیوی معرفی"), {"fields": ("cover", "cover_preview", "gallery", "intro_video_url")}),
         (_("حوزه"), {"fields": ("primary_domain", "related_domains")}),
+        (_("پایان‌نامه (فقط پروژه‌ها)"), {"fields": ("thesis", "thesis_link")}),
         (_("قیمت"), {"fields": ("price", "sale_price")}),
-        (_("محصولات مرتبط و بسته‌ها"), {"fields": ("related_products", "included_products")}),
+        (_("محصولات مرتبط"), {"fields": ("related_products",)}),
         (_("محتوا"), {"fields": ("content_outline",)}),
         (_("وضعیت"), {"fields": ("is_published", "is_archived", "created_by", "created_at", "updated_at")}),
     )
@@ -64,19 +56,10 @@ class ProductAdmin(ApprovalModelAdmin):
 
     def get_form(self, request, obj=None, change=False, **kwargs):
         form = super().get_form(request, obj, change=change, **kwargs)
-        if obj is not None:
-            # A product can't be related to / include itself, so don't even offer it
-            for name in ("related_products", "included_products"):
-                field = form.base_fields.get(name)
-                if isinstance(field, forms.ModelMultipleChoiceField) and field.queryset is not None:
-                    field.queryset = field.queryset.exclude(pk=obj.pk)
+        field = form.base_fields.get("related_products")
+        if obj is not None and isinstance(field, forms.ModelMultipleChoiceField) and field.queryset is not None:
+            field.queryset = field.queryset.exclude(pk=obj.pk)  # a product can't be related to itself
         return form
-
-    def formfield_for_manytomany(self, db_field, request, **kwargs):
-        # A manager may only bundle products of their own domains (never give away another domain's product)
-        if db_field.name == "included_products" and not self.is_reviewer(request):
-            kwargs["queryset"] = Product.objects.filter(primary_domain__group__user=request.user)
-        return super().formfield_for_manytomany(db_field, request, **kwargs)
 
     @admin.display(description=_("قیمت"))
     def price_display(self, obj):
@@ -104,6 +87,12 @@ class ProductAdmin(ApprovalModelAdmin):
         list_url = f"{reverse('admin:products_productimage_changelist')}?product__id__exact={obj.pk}"
         return format_html('<div>{}</div><p><a href="{}">+ افزودن تصویر</a> &nbsp;|&nbsp; <a href="{}">مدیریت تصاویر</a></p>',
                            images or "", add_url, list_url)
+
+    @admin.display(description=_("دانلود پایان‌نامه"))
+    def thesis_link(self, obj):
+        if not obj.pk or not obj.thesis:
+            return "—"
+        return format_html('<a href="{}">دانلود فایل</a>', reverse("content:protected_file", args=["thesis", obj.pk]))
 
     @admin.display(description=_("بخش‌ها و درس‌ها"))
     def content_outline(self, obj):

@@ -3,7 +3,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.views.generic import DetailView, ListView, TemplateView
 
-from content.access import can_manage
+from content.access import can_manage, can_open
 from content.models import Lesson, Section
 from domains.models import Domain
 
@@ -116,7 +116,6 @@ class ProductDetailView(DetailView):
             "total_minutes": totals["minutes"] or 0,
             "gallery": ProductImage.objects.filter(product=product, is_published=True, is_archived=False),
             "related": Product.objects.visible().filter(related_products=product),
-            "included": Product.objects.visible().filter(included_in=product),
-            "included_in": Product.objects.visible().filter(included_products=product),
+            "can_open_files": can_open(self.request.user, product),
         })
         return context

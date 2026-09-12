@@ -18,6 +18,7 @@ from .models import Product, ProductImage
 
 PASSWORD = "S3cure-pass!"
 TEMP_MEDIA = tempfile.mkdtemp()
+TEMP_PROTECTED = tempfile.mkdtemp()
 COVER = "products/covers/test.png"  # published products need a cover
 
 
@@ -142,6 +143,50 @@ class ManagerCreatesProductTests(ApprovalFlowTestCase):
         self.client.post(self.add_url, product_data(primary_domain=self.fpga.pk, is_published="on"))
         self.assertFalse(Product.objects.get().is_published)
 
+class ThesisTests(ApprovalFlowTestCase):
+    """The thesis file belongs to projects only and is readable by buyers (now: managers / admins)."""
+
+    def pdf(self, name="thesis.pdf"):
+        return SimpleUploadedFile(name, b"%PDF-1.4 fake", content_type="application/pdf")
+
+    def test_thesis_only_for_projects(self):
+        course = self.published()
+        course.thesis = "thesis/2026/01/a.pdf"
+        with self.assertRaises(ValidationError):
+            course.full_clean()
+
+        project = self.published(product_type="project", title="ربات", slug="robot")
+        project.thesis = "thesis/2026/01/a.pdf"
+        project.full_clean()  # allowed
+
+    @override_settings(PROTECTED_MEDIA_ROOT=TEMP_PROTECTED)
+    def test_new_thesis_waits_for_approval_and_stays_protected(self):
+        project = self.published(product_type="project", title="ربات", slug="robot")
+        self.client.force_login(self.manager)
+        self.client.post(self.change_url(project), product_data(
+            product_type="project", title="ربات", slug="robot", primary_domain=self.fpga.pk, thesis=self.pdf(),
+        ))
+        project.refresh_from_db()
+        self.assertFalse(project.thesis)  # not visible until approved
+
+        request = ChangeRequest.objects.get(action="update")
+        self.assertTrue(request.data["thesis"].startswith("pending/"))
+        self.approve_as_admin(request)
+        project.refresh_from_db()
+        self.assertEqual(project.thesis.name, request.data["thesis"])
+        self.assertEqual(project.thesis.url, "#")  # no public link
+
+    @override_settings(PROTECTED_MEDIA_ROOT=TEMP_PROTECTED)
+    def test_who_can_download_the_thesis(self):
+        project = self.published(product_type="project", title="ربات", slug="robot", thesis=self.pdf())
+        url = reverse("content:protected_file", args=["thesis", project.pk])
+        self.assertEqual(self.client.get(url).status_code, 302)  # anonymous -> login
+
+        buyer = User.objects.create_user("09125555555", PASSWORD)
+        for user, status in ((buyer, 404), (self.manager, 200), (self.admin, 200)):
+            with self.subTest(user=user.mobile_number):
+                self.client.force_login(user)
+                self.assertEqual(self.client.get(url).status_code, status)
 
 class GalleryTests(ApprovalFlowTestCase):
     def test_manager_adds_gallery_image_with_approval(self):
@@ -306,6 +351,7 @@ class DraftAndAdminTests(ApprovalFlowTestCase):
         product.refresh_from_db()
         self.assertEqual(product.slug, "fpga-basics")
 
-
+        
 def tearDownModule():
     shutil.rmtree(TEMP_MEDIA, ignore_errors=True)
+    shutil.rmtree(TEMP_PROTECTED, ignore_errors=True)

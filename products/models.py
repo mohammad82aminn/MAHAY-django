@@ -1,14 +1,14 @@
 from typing import ClassVar
-from django.db import models
-from django.urls import reverse
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from content.models import PublishState
+from content.storage import protected_storage
 from content.validators import validate_aparat_url
 
 
@@ -16,6 +16,7 @@ class ProductQuerySet(models.QuerySet):
     def visible(self):
         """Products shown in the store: approved, not removed, and their domain is active."""
         return self.filter(is_published=True, is_archived=False, primary_domain__is_active=True)
+
 
 class ProductManager(models.Manager["Product"]):
     def get_queryset(self):
@@ -26,12 +27,11 @@ class ProductManager(models.Manager["Product"]):
 
 
 class Product(models.Model):
-    """Base of everything that is sold: courses and projects."""
+    """Base of everything that is sold: courses and projects. Buying it gives access to all its content."""
 
     class Type(models.TextChoices):
         COURSE = "course", _("دوره آموزشی")
         PROJECT = "project", _("پروژه")
-        SOURCE = "source", _("سورس‌کد و فایل")
 
     product_type = models.CharField(_("نوع محصول"), max_length=10, choices=Type.choices)
     title = models.CharField(_("عنوان"), max_length=200)
@@ -63,9 +63,10 @@ class Product(models.Model):
         "self", blank=True, verbose_name=_("محصولات مرتبط"),
         help_text=_("در صفحه‌ی محصول لینکشان نمایش داده می‌شود؛ مثلاً دوره‌ی آموزشی همین پروژه. (دوطرفه)"),
     )
-    included_products = models.ManyToManyField(
-        "self", symmetrical=False, blank=True, related_name="included_in", verbose_name=_("شامل محصولات"),
-        help_text=_("خریدار این محصول، این‌ها را هم دارد؛ مثلاً پروژه شامل «سورس‌کد پروژه» می‌شود."),
+
+    thesis = models.FileField(
+        _("پایان‌نامه"), upload_to="thesis/%Y/%m/", storage=protected_storage, blank=True,
+        help_text=_("فقط برای پروژه‌ها. فقط خریداران می‌توانند دانلود کنند."),
     )
 
     price = models.PositiveIntegerField(_("قیمت (تومان)"), default=0, help_text=_("صفر یعنی رایگان"))
@@ -106,6 +107,8 @@ class Product(models.Model):
         return [*Section.objects.filter(product=self), *ProductImage.objects.filter(product=self)]
 
     def clean(self):
+        if self.thesis and self.product_type != self.Type.PROJECT:
+            raise ValidationError({"thesis": _("پایان‌نامه فقط برای پروژه‌ها است.")})
         if self.is_published and not self.cover:
             raise ValidationError({"cover": _("برای انتشار محصول، تصویر کاور لازم است.")})
         if self.sale_price is not None:

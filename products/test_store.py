@@ -90,12 +90,10 @@ class DetailTests(StoreTestCase):
         self.client.force_login(admin)
         self.assertEqual(self.client.get(self.draft.get_absolute_url()).status_code, 200)
 
-    def test_related_and_included_products(self):
-        source = self.make("source", "سورس ربات", "robot-src", price=300_000)
-        self.project.included_products.add(source)
+    def test_related_products(self):
         self.project.related_products.add(self.course)
         response = self.client.get(self.project.get_absolute_url())
-        self.assertContains(response, "سورس ربات")
+        self.assertContains(response, "محصولات مرتبط")
         self.assertContains(response, "دوره FPGA")
 
     def test_intro_video_is_embedded(self):
