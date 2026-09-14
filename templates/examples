@@ -1,0 +1,32 @@
+<div class="hero-art">
+      <div class="blob" aria-hidden="true"></div>
+      <div class="float" aria-hidden="true"><i>▶</i>ویدیوهای آموزشی</div>
+      {# These two are real links, with the same shape and weight #}
+      <a class="float float-link" href="{% url 'services:project' %}"><i>📋</i>سفارش پروژه</a>
+      <a class="float float-link" href="{% url 'services:consulting' %}"><i>💬</i>مشاوره تخصصی</a>
+    </div>
+
+
+    /* The two clickable cards in the hero (same shape and weight, neither louder) */
+/* .hero-art .float-link { color: var(--text); cursor: pointer; transition: transform .15s, box-shadow .15s; }
+.hero-art .float-link:hover { color: var(--primary); transform: translateY(-4px) scale(1.02); }
+.hero-art .float-link:nth-child(3) i { background: var(--accent); }
+.hero-art .float-link:nth-child(4) i { background: #7c3aed; } */
+
+
+/* Decorative cards on the left of the hero (pure CSS, no images) */
+/* .hero-art { position: relative; height: 320px; }
+.hero-art .blob { position: absolute; inset: 10% 8%; border-radius: 40% 60% 55% 45%; background: linear-gradient(135deg, var(--primary), #7c3aed); opacity: .9; } */
+/* .hero-art .float {
+  position: absolute; display: flex; align-items: center; gap: .6rem; padding: .75rem 1rem;
+  font-weight: 700; background: var(--surface); border-radius: 14px; box-shadow: var(--shadow-hover);
+  animation: float 5s ease-in-out infinite;
+} */
+/* .hero-art .float i { display: grid; place-items: center; width: 34px; height: 34px; font-style: normal; color: #fff; border-radius: 10px; }
+.hero-art .float:nth-child(2) { top: 6%; right: 0; }
+.hero-art .float:nth-child(3) { top: 44%; left: 0; animation-delay: -1.7s; }
+.hero-art .float:nth-child(4) { bottom: 4%; right: 14%; animation-delay: -3.3s; }
+.hero-art .float:nth-child(2) i { background: var(--accent); }
+.hero-art .float:nth-child(3) i { background: var(--success); }
+.hero-art .float:nth-child(4) i { background: #7c3aed; } */
+/* @keyframes float { 50% { transform: translateY(-10px); } } */

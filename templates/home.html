@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load store %}
-
+{% load static %}
 {% block title %}خانه{% endblock %}
 
 {% block content %}
@@ -20,12 +20,10 @@
         <div><strong>{{ stats.domains|fa_num }}</strong><span>حوزه‌ی تخصصی</span></div>
       </div>
     </div>
-    <div class="hero-art">
-      <div class="blob" aria-hidden="true"></div>
-      <div class="float" aria-hidden="true"><i>▶</i>ویدیوهای آموزشی</div>
-      {# These two are real links, with the same shape and weight #}
-      <a class="float float-link" href="{% url 'services:project' %}"><i>📋</i>سفارش پروژه</a>
-      <a class="float float-link" href="{% url 'services:consulting' %}"><i>💬</i>مشاوره تخصصی</a>
+
+
+  <div class="hero-art">
+      <img src="{% static 'images/hero.png' %}" alt="آموزش و پروژه">
     </div>
   </div>
 </section>
