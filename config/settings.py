@@ -38,6 +38,7 @@ LOCAL_APPS = [
     "content",
     "approvals",
     "commerce",
+    "services",
     "pages",
 ]
 
@@ -68,6 +69,7 @@ TEMPLATES = [
                 "products.context_processors.store_nav",
                 "commerce.context_processors.cart",
                 "pages.context_processors.footer_pages",
+                "services.context_processors.contact_channels",
             ],
         },
     },

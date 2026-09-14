@@ -134,6 +134,19 @@
   {% endif %} (به‌زودی)</button>
 </div>
 
+<section class="container section">
+  <div class="service-strip card">
+    <div>
+      <strong>پروژه‌ای مشابه دارید؟</strong>
+      <span class="muted">می‌توانید انجام آن را به ما بسپارید یا قبل از شروع مشورت بگیرید.</span>
+    </div>
+    <div class="service-strip-actions">
+      <a class="btn btn-ghost" href="{% url 'services:project' %}">سفارش پروژه</a>
+      <a class="btn btn-ghost" href="{% url 'services:consulting' %}">مشاوره تخصصی</a>
+    </div>
+  </div>
+</section>
+
 {% if related %}
   <section class="container section">
     <div class="section-head"><h2>محصولات مرتبط</h2></div>

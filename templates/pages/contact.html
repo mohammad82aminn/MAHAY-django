@@ -20,13 +20,17 @@
     </form>
   </div>
 
-  <aside class="card block contact-info">
-    <h2>راه‌های ارتباطی</h2>
-    <ul class="facts">
-      <li><span>پاسخ‌گویی</span><strong>شنبه تا پنجشنبه</strong></li>
-      <li><span>ساعت</span><strong>۹ تا ۱۷</strong></li>
-    </ul>
-    <p class="muted">برای سؤال درباره‌ی یک دوره یا پروژه، نام آن را در پیام بنویسید.</p>
+  <aside class="contact-info">
+    {% include "services/partials/channels.html" with channels=contact_channels %}
+    <div class="card block">
+      <h2>ساعت پاسخ‌گویی</h2>
+      <ul class="facts">
+        <li><span>روزها</span><strong>شنبه تا پنجشنبه</strong></li>
+        <li><span>ساعت</span><strong>۹ تا ۱۷</strong></li>
+      </ul>
+      <p class="muted">برای سفارش پروژه یا مشاوره، از
+        <a href="{% url 'services:project' %}">این صفحه</a> درخواست ثبت کنید.</p>
+    </div>
   </aside>
 </section>
 {% endblock %}

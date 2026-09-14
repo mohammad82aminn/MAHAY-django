@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .forms import AdminUserCreationForm, UserChangeForm
 from .models import User
-from .roles import DOMAIN_MANAGER_APPS, DOMAIN_MANAGER_FORBIDDEN, SITE_ADMINS_GROUP, is_system_group
+from .roles import DOMAIN_MANAGER_APPS, DOMAIN_MANAGER_FORBIDDEN, FULL_ACCESS_GROUPS, is_system_group
 from .validators import DIGIT_MAP
 from .models import LoginAttempt, User, VerificationCode
 
@@ -54,7 +54,7 @@ class UserAdmin(BaseUserAdmin):
     def roles(self, obj):
         names = [group.name for group in obj.groups.all()]
         if obj.is_superuser:
-            names.insert(0, "مدیر فنی")
+           names.insert(0, "مالک سیستم")
         return "، ".join(names) or "کاربر عادی"
 
     def get_search_results(self, request, queryset, search_term):
@@ -117,7 +117,7 @@ admin.site.unregister(Group)
 
 @admin.register(Group)
 class GroupAdmin(BaseGroupAdmin):
-    """
+    """f obj.name == SITE_ADMINS_GROUP
     - Site admins group: always has every permission (read-only here).
     - Domain groups: site admins choose their permissions, limited to content apps (DOMAIN_MANAGER_APPS).
     - System groups can't be renamed or deleted here (they're managed through domains).
@@ -131,7 +131,7 @@ class GroupAdmin(BaseGroupAdmin):
         return super().get_queryset(request).select_related("domain").annotate(_member_count=Count("user"))
 
     def get_fields(self, request, obj=None):
-        if obj is not None and obj.name == SITE_ADMINS_GROUP:
+        if obj is not None and obj.name in FULL_ACCESS_GROUPS:
             return ("name", "site_admins_note")
         return ("name", "permissions")
 
@@ -165,8 +165,8 @@ class GroupAdmin(BaseGroupAdmin):
 
     @admin.display(description=_("نوع"))
     def group_type(self, obj):
-        if obj.name == SITE_ADMINS_GROUP:
-            return "مدیران کل"
+        if obj.name in FULL_ACCESS_GROUPS:
+            return "دسترسی کامل"
         if hasattr(obj, "domain"):
             return f"مدیران حوزه ({obj.domain})"
         return "سایر"

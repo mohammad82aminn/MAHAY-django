@@ -138,15 +138,15 @@ h2, h3, h4 { line-height: 1.6; }
 /* ---------- Footer ---------- */
 
 .site-footer { margin-top: 3rem; background: var(--surface); border-top: 1px solid var(--border); }
-.footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem; padding-block: 2.5rem; }
+.footer-grid { display: grid; grid-template-columns: 1.6fr repeat(4, 1fr); gap: 2rem; padding-block: 2.5rem; }
 .footer-grid h4 { margin: 0 0 .75rem; font-size: 1rem; }
 .footer-grid p { margin: .75rem 0 0; max-width: 360px; font-size: .9rem; }
 .footer-links { display: flex; flex-direction: column; gap: .35rem; font-size: .92rem; }
 .footer-links a { color: var(--muted); }
 .footer-links a:hover { color: var(--primary); }
 .footer-bottom { padding-block: 1rem; font-size: .85rem; color: var(--muted); text-align: center; border-top: 1px solid var(--border); }
-@media (max-width: 860px) { .footer-grid { grid-template-columns: 1fr 1fr 1fr; } .footer-grid > :first-child { grid-column: 1 / -1; } }
-@media (max-width: 560px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 1000px) { .footer-grid { grid-template-columns: repeat(4, 1fr); } .footer-grid > :first-child { grid-column: 1 / -1; } }
+@media (max-width: 700px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
 
 /* ---------- Buttons ---------- */
 
@@ -586,3 +586,83 @@ h2, h3, h4 { line-height: 1.6; }
 .contact-layout textarea:focus { background: var(--surface); border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
 .contact-info h2 { margin: 0 0 .5rem; font-size: 1.05rem; }
 @media (max-width: 860px) { .contact-layout { grid-template-columns: 1fr; } }
+
+
+/* ==========================================================================
+   Services: project order and consulting
+   ========================================================================== */
+
+/* The two clickable cards in the hero (same shape and weight, neither louder) */
+.hero-art .float-link { color: var(--text); cursor: pointer; transition: transform .15s, box-shadow .15s; }
+.hero-art .float-link:hover { color: var(--primary); transform: translateY(-4px) scale(1.02); }
+.hero-art .float-link:nth-child(3) i { background: var(--accent); }
+.hero-art .float-link:nth-child(4) i { background: #7c3aed; }
+
+.service-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+@media (max-width: 700px) { .service-cards { grid-template-columns: 1fr; } }
+
+.service-card {
+  display: flex; flex-direction: column; gap: .5rem; padding: 1.5rem;
+  color: var(--text); background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); transition: transform .2s, box-shadow .2s;
+}
+.service-card:hover { color: var(--text); transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+.service-card strong { font-size: 1.15rem; }
+.service-card .service-icon { font-size: 1.8rem; }
+.service-card .service-more { margin-top: .35rem; font-weight: 700; color: var(--primary); }
+
+/* Strip at the bottom of a product page */
+.service-strip { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.5rem; }
+.service-strip strong { display: block; }
+.service-strip-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+/* Service page: intro + form + contact ids */
+.service-head { max-width: 720px; }
+.service-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 1.25rem; align-items: start; }
+@media (max-width: 900px) { .service-layout { grid-template-columns: 1fr; } }
+.service-side { display: grid; gap: 1.25rem; }
+.service-side .block:first-child { margin-top: 0; }
+.prose-line { margin: 0 0 .7rem; }
+.prose-line:last-child { margin-bottom: 0; }
+
+.steps { margin: 0; padding-inline-start: 1.2rem; }
+.steps li { margin-bottom: .5rem; }
+
+.service-layout textarea, .service-layout input[type="date"] {
+  width: 100%; padding: .75rem .95rem; font: inherit; color: var(--text);
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; outline: none;
+}
+.service-layout textarea:focus, .service-layout input[type="date"]:focus {
+  background: var(--surface); border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft);
+}
+/* Domain checkboxes */
+.field ul { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin: 0; padding: 0; list-style: none; }
+.field ul li label { display: flex; align-items: center; gap: .35rem; margin: 0; font-weight: 500; }
+.field ul input[type="checkbox"] { width: auto; }
+
+/* Contact ids list */
+.channel-list { margin: .5rem 0 0; padding: 0; list-style: none; }
+.channel-list li { border-top: 1px solid var(--border); }
+.channel-list li:first-child { border-top: 0; }
+.channel-list a { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .6rem 0; color: var(--text); }
+.channel-list a:hover { color: var(--primary); }
+.channel-kind { font-weight: 700; font-size: .9rem; }
+
+/* "Request registered" page */
+.submitted-card { max-width: 620px; margin-inline: auto; text-align: center; }
+.submitted-card h1 { font-size: 1.4rem; }
+.submitted-card .channel-list a { text-align: start; }
+.submitted-card .block { text-align: start; }
+.tracking-code { margin: .25rem 0 1.25rem; font-size: 1.7rem; font-weight: 900; letter-spacing: .1rem; color: var(--primary); }
+.submitted-actions { display: flex; justify-content: center; gap: .5rem; flex-wrap: wrap; margin-top: 1rem; }
+.alert-info { color: #1e40af; background: var(--primary-soft); text-align: start; }
+
+/* "My requests" list */
+.request-list { display: grid; gap: .75rem; }
+.request-row { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-top: 0; }
+.request-main h3 { margin: .4rem 0 .2rem; font-size: 1.05rem; }
+.request-main p { margin: 0; font-size: .88rem; }
+.request-side { display: flex; flex-direction: column; align-items: flex-end; gap: .35rem; font-size: .85rem; }
+.status-new, .status-reviewing, .status-referred, .status-in_progress { color: #b45309; background: #fff7ed; }
+.status-done { color: var(--success); background: var(--success-soft); }
+.status-canceled, .status-rejected { color: var(--error); background: var(--error-soft); }

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load store %}
+
+{% block title %}درخواست‌های من{% endblock %}
+
+{% block content %}
+<section class="container section">
+  <div class="page-head"><h1>درخواست‌های من</h1></div>
+
+  {% if requests %}
+    <div class="request-list">
+      {% for item in requests %}
+        <div class="card block request-row">
+          <div class="request-main">
+            <span class="badge badge-type">{{ item.get_kind_display }}</span>
+            <h3>{{ item.title }}</h3>
+            <p class="muted">
+              کد پیگیری: <bdi dir="ltr">{{ item.tracking_code }}</bdi>
+              · {{ item.created_at|date:"Y/m/d"|fa_num }}
+            </p>
+            {% if item.referrals.all %}
+              <p class="muted">
+                در حال بررسی توسط:
+                {% for referral in item.referrals.all %}{{ referral.domain }}{% if not forloop.last %}، {% endif %}{% endfor %}
+              </p>
+            {% endif %}
+          </div>
+          <div class="request-side">
+            <span class="status status-{{ item.status }}">{{ item.get_status_display }}</span>
+            {% if item.agreed_amount %}
+              <span class="muted">مبلغ: {{ item.agreed_amount|toman }}</span>
+              <span class="muted">{{ item.payment_state }}</span>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="empty">
+      درخواستی ثبت نکرده‌اید.
+      <a href="{% url 'services:project' %}">سفارش پروژه</a> یا
+      <a href="{% url 'services:consulting' %}">مشاوره تخصصی</a>
+    </p>
+  {% endif %}
+</section>
+{% endblock %}

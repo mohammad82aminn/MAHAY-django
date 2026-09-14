@@ -1,0 +1,18 @@
+<div class="card block">
+  <h2>راه‌های ارتباطی</h2>
+  {% if channels %}
+    <p class="muted">برای ادامه‌ی کار، از یکی از این راه‌ها به ما پیام دهید.</p>
+    <ul class="channel-list">
+      {% for channel in channels %}
+        <li>
+          <a href="{{ channel.link }}" target="_blank" rel="noopener">
+            <span class="channel-kind">{{ channel.get_kind_display }}</span>
+            <bdi dir="ltr">{{ channel.value }}</bdi>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">راه‌های ارتباطی به‌زودی اینجا قرار می‌گیرد.</p>
+  {% endif %}
+</div>

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}درخواست ثبت شد{% endblock %}
+
+{% block content %}
+<section class="container section">
+  <div class="card block submitted-card">
+    <div class="order-state order-state-paid">✓</div>
+    <h1>درخواست شما ثبت شد</h1>
+    <p class="muted">کد پیگیری شما:</p>
+    <p class="tracking-code"><bdi dir="ltr">{{ request_object.tracking_code }}</bdi></p>
+
+    <div class="alert alert-info">
+      <p><strong>قدم بعدی:</strong> از یکی از راه‌های ارتباطی زیر به ما پیام دهید و همین کد پیگیری را بفرستید.
+      پروژه‌ی شما بررسی و زمان و هزینه‌ی آن اعلام می‌شود.</p>
+    </div>
+
+    {% include "services/partials/channels.html" %}
+
+    <div class="submitted-actions">
+      {% if user.is_authenticated %}
+        <a class="btn btn-ghost" href="{% url 'services:my_requests' %}">درخواست‌های من</a>
+      {% endif %}
+      <a class="btn btn-ghost" href="{% url 'home' %}">بازگشت به صفحه اصلی</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

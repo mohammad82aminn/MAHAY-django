@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }}{% endblock %}
+
+{% block content %}
+<section class="container section">
+  <div class="page-head service-head">
+    <h1>{{ page.title }}</h1>
+    <p class="lead muted">{{ page.lead }}</p>
+  </div>
+
+  <div class="service-layout">
+    <div>
+      <div class="card block">
+        {% for line in page.intro %}<p class="prose-line">{{ line }}</p>{% endfor %}
+      </div>
+
+      <div class="card block">
+        <h2>روند کار</h2>
+        <ol class="steps">
+          {% for step in page.steps %}<li>{{ step }}</li>{% endfor %}
+        </ol>
+      </div>
+
+      <div class="card block" id="form">
+        <h2>ثبت درخواست</h2>
+        <p class="muted">پس از ثبت، یک کد پیگیری می‌گیرید و سپس با ما تماس می‌گیرید.</p>
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-error">
+              {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+            </div>
+          {% endif %}
+          {% for field in form %}{% include "partials/field.html" %}{% endfor %}
+          <button type="submit" class="btn btn-primary">ثبت درخواست</button>
+        </form>
+      </div>
+    </div>
+
+    <aside class="service-side">
+      {% include "services/partials/channels.html" %}
+      {% if not user.is_authenticated %}
+        <div class="card block">
+          <h2>حساب کاربری</h2>
+          <p class="muted">ثبت درخواست نیاز به حساب ندارد. اگر وارد شوید، وضعیت درخواست‌هایتان را در سایت می‌بینید.</p>
+          <a class="btn btn-ghost btn-block" href="{% url 'accounts:login' %}?next={{ request.path }}">ورود / ثبت‌نام</a>
+        </div>
+      {% endif %}
+    </aside>
+  </div>
+</section>
+{% endblock %}
