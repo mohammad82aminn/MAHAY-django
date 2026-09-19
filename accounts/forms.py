@@ -121,9 +121,11 @@ class AdminUserCreationForm(auth_forms.AdminUserCreationForm):
     class Meta:
         model = User
         fields = ("mobile_number", "email", "first_name", "last_name")
+        widgets = {"mobile_number": forms.TextInput(attrs=MOBILE_ATTRS)}
 
 
 class UserChangeForm(auth_forms.UserChangeForm):
     class Meta:
         model = User
         fields = "__all__"
+        widgets = {"mobile_number": forms.TextInput(attrs=MOBILE_ATTRS)}

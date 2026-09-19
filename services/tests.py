@@ -10,6 +10,7 @@ from accounts.models import User
 from accounts.roles import SITE_ADMINS_GROUP, TECH_ADMINS_GROUP, is_site_admin
 from domains.models import Domain
 
+from . import services, validators
 from .models import ContactChannel, Referral, RequestEvent, RequestMessage, RequestPayment, ServiceRequest
 
 PASSWORD = "S3cure-pass!"
@@ -105,6 +106,30 @@ class PublicFormTests(ServiceTestCase):
         response = self.submit()
         self.assertContains(response, "یک ساعت دیگر")
         self.assertEqual(ServiceRequest.objects.count(), 3)
+
+    def test_a_new_number_every_time_does_not_escape_the_limit(self):
+        # The form needs no account, so the number proves nothing: the address has to count too.
+        for index in range(services.MAX_PER_IP_PER_HOUR):
+            self.submit(mobile_number=f"0935000{index:04d}")
+        response = self.submit(mobile_number="09361234567")
+        self.assertContains(response, "یک ساعت دیگر")
+        self.assertEqual(ServiceRequest.objects.count(), services.MAX_PER_IP_PER_HOUR)
+
+    def test_an_oversized_attachment_is_refused(self):
+        big = SimpleUploadedFile("spec.pdf", b"x" * (validators.MAX_ATTACHMENT_MB * 1024 * 1024 + 1))
+        response = self.client.post(reverse("services:project"), self.form_data(attachment=big))
+        self.assertContains(response, "مگابایت")
+        self.assertFalse(ServiceRequest.objects.exists())
+
+    def test_an_unexpected_file_type_is_refused(self):
+        script = SimpleUploadedFile("run.exe", b"MZ")
+        response = self.client.post(reverse("services:project"), self.form_data(attachment=script))
+        self.assertContains(response, "پذیرفته نمی‌شود")
+        self.assertFalse(ServiceRequest.objects.exists())
+
+    def test_an_allowed_attachment_still_goes_through(self):
+        self.submit(attachment=SimpleUploadedFile("spec.pdf", b"%PDF-1.4"))
+        self.assertTrue(ServiceRequest.objects.get().attachment)
 
     def test_submitted_page_is_not_public(self):
         self.submit()

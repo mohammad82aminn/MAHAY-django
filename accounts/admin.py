@@ -8,17 +8,27 @@ from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
 
 from .forms import AdminUserCreationForm, UserChangeForm
+from .formatting import ltr
 from .models import User
 from .roles import DOMAIN_MANAGER_APPS, DOMAIN_MANAGER_FORBIDDEN, FULL_ACCESS_GROUPS, is_system_group
 from .validators import DIGIT_MAP
 from .models import LoginAttempt, User, VerificationCode
 
+
+class MobileColumn:
+    """Shared "شماره موبایل" column, so the number is not drawn as 98912...+ in the list."""
+
+    @admin.display(description=_("شماره موبایل"), ordering="mobile_number")
+    def mobile(self, obj):
+        return ltr(obj.mobile_number)
+
+
 @admin.register(User)
-class UserAdmin(BaseUserAdmin):
+class UserAdmin(MobileColumn, BaseUserAdmin):
     form = UserChangeForm
     add_form = AdminUserCreationForm
 
-    list_display = ("mobile_number", "first_name", "last_name", "roles", "mobile_verified", "is_active")
+    list_display = ("mobile", "first_name", "last_name", "roles", "mobile_verified", "is_active")
     list_filter = ("mobile_verified", "is_active", "is_staff", "is_superuser", "groups")
     search_fields = ("mobile_number", "first_name", "last_name", "email")
     ordering = ("-date_joined",)
@@ -67,10 +77,10 @@ class UserAdmin(BaseUserAdmin):
 
 
 @admin.register(VerificationCode)
-class VerificationCodeAdmin(admin.ModelAdmin):
+class VerificationCodeAdmin(MobileColumn, admin.ModelAdmin):
     """Read-only: helpful when a user says "the code doesn't arrive"."""
 
-    list_display = ("mobile_number", "purpose", "created_at", "expires_at", "attempts", "used_at")
+    list_display = ("mobile", "purpose", "created_at", "expires_at", "attempts", "used_at")
     list_filter = ("purpose", "created_at")
     search_fields = ("mobile_number",)
 
@@ -82,10 +92,10 @@ class VerificationCodeAdmin(admin.ModelAdmin):
 
 
 @admin.register(LoginAttempt)
-class LoginAttemptAdmin(admin.ModelAdmin):
+class LoginAttemptAdmin(MobileColumn, admin.ModelAdmin):
     """Read-only: shows whether someone is trying to guess passwords."""
 
-    list_display = ("mobile_number", "ip_address", "created_at")
+    list_display = ("mobile", "ip_address", "created_at")
     search_fields = ("mobile_number", "ip_address")
     date_hierarchy = "created_at"
 

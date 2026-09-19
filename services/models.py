@@ -14,6 +14,8 @@ from django.utils.translation import gettext_lazy as _
 
 from content.storage import protected_storage
 
+from .validators import validate_attachment_extension, validate_attachment_size
+
 
 class ServiceRequest(models.Model):
     class Kind(models.TextChoices):
@@ -95,6 +97,7 @@ class ServiceRequest(models.Model):
     deadline = models.DateField(_("زمان تحویل موردنظر"), null=True, blank=True)
     attachment = models.FileField(
         _("فایل ضمیمه"), upload_to="requests/%Y/%m/", storage=protected_storage, blank=True,
+        validators=[validate_attachment_extension, validate_attachment_size],
         help_text=_("شرح پروژه، عکس یا هر سندی که کمک می‌کند. فقط مدیران و کارشناس مربوطه آن را می‌بینند."),
     )
 
@@ -104,6 +107,10 @@ class ServiceRequest(models.Model):
     )
     admin_note = models.TextField(_("یادداشت مدیر"), blank=True)
 
+    # Kept only so the hourly limit can see repeat senders; nothing else reads it.
+    ip_address = models.GenericIPAddressField(
+        _("آی‌پی"), null=True, blank=True, editable=False, db_index=True,
+    )
     created_at = models.DateTimeField(_("زمان ثبت"), auto_now_add=True)
     updated_at = models.DateTimeField(_("آخرین تغییر"), auto_now=True)
 

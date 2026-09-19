@@ -62,12 +62,14 @@ def request_form(request, kind):
         form = ServiceRequestForm(request.POST, request.FILES, kind=kind)
         if form.is_valid():
             number = form.cleaned_data["mobile_number"]
-            if services.too_many_requests(number, client_ip(request)):
+            address = client_ip(request)
+            if services.too_many_requests(number, address):
                 messages.error(request, "درخواست‌های شما زیاد است. یک ساعت دیگر تلاش کنید.")
             else:
                 service_request = form.save(commit=False)
                 if request.user.is_authenticated:
                     service_request.user = request.user
+                service_request.ip_address = address
                 service_request.save()
                 form.save_m2m()
                 services.log(service_request, request.user if request.user.is_authenticated else None,

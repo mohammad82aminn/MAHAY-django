@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import gettext_lazy as _
 
+from accounts.formatting import ltr
 from accounts.models import User
 from accounts.roles import is_site_admin
 
@@ -91,6 +92,12 @@ class ServiceRequestAdmin(admin.ModelAdmin):
         if db_field.name == "expert":
             kwargs["queryset"] = User.objects.filter(groups__domain__isnull=False).distinct()
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        field = super().formfield_for_dbfield(db_field, request, **kwargs)
+        if field is not None and db_field.name in ("mobile_number", "contact_id", "email"):
+            field.widget.attrs["dir"] = "ltr"
+        return field
 
     # --- Display --------------------------------------------------------------------
 
@@ -197,7 +204,8 @@ class ReferralAdmin(admin.ModelAdmin):
             ("عنوان", item.title),
             ("سطح", item.get_level_display()),
             ("درخواست‌کننده", item.name),
-            ("تماس", f"{item.mobile_number} — {item.get_contact_channel_display()} {item.contact_id}"),
+            ("تماس", format_html("{} — {} {}", ltr(item.mobile_number),
+                                 item.get_contact_channel_display(), ltr(item.contact_id))),
             ("توضیحات", item.description),
         ]
         return format_html_join("", "<div style='margin-bottom:.3rem'><b>{}:</b> {}</div>", rows)
