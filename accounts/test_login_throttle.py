@@ -58,7 +58,16 @@ class LoginThrottleTests(TestCase):
         response = self.attempt(password=PASSWORD)
         self.assertContains(response, "دقیقه دیگر دوباره تلاش کنید")
 
-    def test_proxy_header_is_used_for_the_ip(self):
+    def test_forged_proxy_header_is_ignored(self):
+        # Nothing in front of us, so the header is the visitor's own words: it must not count.
         self.client.post(self.url, {"username": "09121234567", "password": "x"},
-                         HTTP_X_FORWARDED_FOR="5.6.7.8, 10.0.0.1")
-        self.assertEqual(LoginAttempt.objects.get().ip_address, "5.6.7.8")
+                         HTTP_X_FORWARDED_FOR="5.6.7.8")
+        self.assertEqual(LoginAttempt.objects.get().ip_address, "127.0.0.1")
+
+    def test_proxy_header_is_used_behind_our_own_proxy(self):
+        # nginx appends the address it saw, so the last entry is the real visitor
+        # and the "5.6.7.8" in front of it is what that visitor tried to pretend.
+        with self.settings(TRUSTED_PROXIES=["127.0.0.1"]):
+            self.client.post(self.url, {"username": "09121234567", "password": "x"},
+                             HTTP_X_FORWARDED_FOR="5.6.7.8, 10.0.0.1")
+        self.assertEqual(LoginAttempt.objects.get().ip_address, "10.0.0.1")

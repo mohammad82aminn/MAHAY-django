@@ -7,6 +7,7 @@ A successful login clears the number's failures, so normal users never notice th
 """
 from datetime import timedelta
 
+from django.conf import settings
 from django.utils import timezone
 
 from .models import LoginAttempt
@@ -17,12 +18,21 @@ MAX_PER_IP = 20
 
 
 def client_ip(request):
+    """
+    The visitor's address, which must not be forgeable or the IP limit below means nothing.
+
+    Anyone can send an X-Forwarded-For header, so it counts only when the request reached us
+    through one of our own proxies (settings.TRUSTED_PROXIES), and then only its last entry:
+    nginx appends the address it actually saw, while everything before it came from the
+    visitor and may be invented.
+    """
     if request is None:
         return None
+    remote_addr = request.META.get("REMOTE_ADDR")
+    if remote_addr not in settings.TRUSTED_PROXIES:
+        return remote_addr
     forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
-    if forwarded:  # behind nginx: the first address is the real visitor
-        return forwarded.split(",")[0].strip()
-    return request.META.get("REMOTE_ADDR")
+    return forwarded.split(",")[-1].strip() or remote_addr
 
 
 def _recent(**filters):

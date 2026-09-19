@@ -16,6 +16,11 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="", cast=Csv())
 
+# Addresses of our own reverse proxies (nginx). A visitor can put anything in
+# X-Forwarded-For, so that header is believed only when the request truly arrived
+# through one of these. Empty (development): the header is ignored entirely.
+TRUSTED_PROXIES = config("TRUSTED_PROXIES", default="", cast=Csv())
+
 
 # --- Applications ---------------------------------------------------------
 
@@ -158,3 +163,28 @@ LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
 PASSWORD_RESET_TIMEOUT = 60 * 60 * 2  # reset links expire after 2 hours
+
+
+# --- HTTPS and cookies ----------------------------------------------------
+# Everything here stays off while DEBUG is on, so development over plain http keeps working.
+
+SESSION_COOKIE_SECURE = not DEBUG  # the session cookie never travels over plain http
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_SSL_REDIRECT = not DEBUG
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Behind nginx the connection reaches Django as http, so without this the redirect above
+# would loop forever. Read only from our own proxy: otherwise a visitor could claim their
+# plain request was already secure and skip the redirect.
+if TRUSTED_PROXIES:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Browsers refuse plain http for this domain for a year. They remember it for the whole
+# period and it cannot be taken back quickly, so set SECURE_HSTS_SECONDS=0 in .env for the
+# first deploys and raise it once HTTPS is known to work.
+SECURE_HSTS_SECONDS = 0 if DEBUG else config("SECURE_HSTS_SECONDS", default=31536000, cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = bool(SECURE_HSTS_SECONDS)
+SECURE_HSTS_PRELOAD = bool(SECURE_HSTS_SECONDS)
+
+# The https addresses the site is served from, e.g. https://mahay.ir — needed for CSRF.
+CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", default="", cast=Csv())

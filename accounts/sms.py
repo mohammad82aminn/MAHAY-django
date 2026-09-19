@@ -6,6 +6,7 @@ SMS_BACKEND=disabled  -> nothing is sent; features that need SMS are switched of
 SMS_BACKEND=kavenegar -> a real provider (needs SMS_API_KEY); to be filled in when bought
 """
 import logging
+import sys
 
 from django.conf import settings
 
@@ -25,13 +26,20 @@ def is_enabled():
     return backend() != "disabled"
 
 
+def _echo(line):
+    # A Windows console is cp1252 by default and raises on Persian text; the digits of the
+    # code still come through as "?" placeholders, which is all this backend is needed for.
+    encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+    print(line.encode(encoding, "replace").decode(encoding))  # noqa: T201 (development only)
+
+
 def send(mobile_number, text):
     """Send one message. Raises SMSError if the provider fails."""
     name = backend()
     if name == "disabled":
         return
     if name == "console":
-        print(f"[SMS] to {mobile_number}: {text}")  # noqa: T201 (development only)
+        _echo(f"[SMS] to {mobile_number}: {text}")
         logger.info("SMS to %s: %s", mobile_number, text)
         return
     raise SMSError(f"سرویس پیامک «{name}» هنوز تنظیم نشده است.")
