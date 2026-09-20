@@ -48,6 +48,17 @@ class ServiceTestCase(TestCase):
     def submit(self, url_name="services:project", **changes):
         return self.client.post(reverse(url_name), self.form_data(**changes), follow=True)
 
+    def consulting_data(self, **changes):
+        """What the consulting form asks for: a duration, and none of the project questions."""
+        data = self.form_data(**{"domains": [self.ai.pk], "minutes": 30, **changes})
+        for field in ("level", "need", "deadline"):
+            data.pop(field, None)
+        return data
+
+    def consult(self, **changes):
+        return self.client.post(reverse("services:consulting"), self.consulting_data(**changes),
+                                follow=True)
+
 
 class PublicFormTests(ServiceTestCase):
     def test_pages_open_without_login(self):
@@ -70,7 +81,7 @@ class PublicFormTests(ServiceTestCase):
         self.assertEqual(RequestEvent.objects.filter(request=item).count(), 1)
 
     def test_consulting_code_has_its_own_prefix(self):
-        self.submit("services:consulting")
+        self.consult()
         self.assertTrue(ServiceRequest.objects.get().tracking_code.startswith("CS-"))
 
     def test_logged_in_request_is_linked_to_the_account(self):
@@ -550,12 +561,6 @@ class ConsultingTests(ServiceTestCase):
         super().setUp()
         self.ai.consulting_rate = 200_000
         self.ai.save(update_fields=["consulting_rate"])
-
-    def consult(self, **changes):
-        data = self.form_data(**{"domains": [self.ai.pk], "minutes": 30, **changes})
-        for field in ("level", "need", "deadline"):
-            data.pop(field, None)
-        return self.client.post(reverse("services:consulting"), data, follow=True)
 
     def test_the_form_does_not_ask_a_project_question(self):
         response = self.client.get(reverse("services:consulting"))
