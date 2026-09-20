@@ -44,13 +44,18 @@ def _post(path, payload):
     raise PaymentError(message or "درگاه پرداخت درخواست را نپذیرفت.")
 
 
-def request_payment(order, callback_url):
-    """Ask the gateway for an authority code; returns (authority, payment page url)."""
+def start(amount, description, mobile, reference, callback_url):
+    """
+    Ask the gateway for an authority code; returns (authority, payment page url).
+
+    Takes plain values rather than an object so that both a store order and a service request
+    can be paid for through the same gateway.
+    """
     data = _post("request.json", {
-        "amount": order.total * RIAL_PER_TOMAN,
+        "amount": amount * RIAL_PER_TOMAN,
         "callback_url": callback_url,
-        "description": f"سفارش {order.number} — MAHAY",
-        "metadata": {"mobile": str(order.user.mobile_number), "order_id": order.number},
+        "description": description,
+        "metadata": {"mobile": str(mobile), "order_id": reference},
     })
     authority = data.get("authority")
     if not authority:
@@ -58,9 +63,15 @@ def request_payment(order, callback_url):
     return authority, payment_page(authority)
 
 
+def confirm(amount, authority):
+    """Confirm a payment with the gateway. Returns the gateway data, or raises PaymentError."""
+    return _post("verify.json", {"amount": amount * RIAL_PER_TOMAN, "authority": authority})
+
+
+def request_payment(order, callback_url):
+    return start(order.total, f"سفارش {order.number} — MAHAY", order.user.mobile_number,
+                 order.number, callback_url)
+
+
 def verify_payment(order):
-    """Confirm the payment with the gateway. Returns the gateway data, or raises PaymentError."""
-    return _post("verify.json", {
-        "amount": order.total * RIAL_PER_TOMAN,
-        "authority": order.authority,
-    })
+    return confirm(order.total, order.authority)

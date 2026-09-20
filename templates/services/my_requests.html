@@ -9,7 +9,7 @@
 
   {% if requests %}
     <div class="request-list">
-      {% for item in requests %}
+      {% for item, stage, due in requests %}
         <div class="card block request-row">
           <div class="request-main">
             <span class="badge badge-type">{{ item.get_kind_display }}</span>
@@ -26,10 +26,21 @@
             {% endif %}
           </div>
           <div class="request-side">
-            <span class="status status-{{ item.status }}">{{ item.get_status_display }}</span>
+            <span class="status status-{{ item.status }}">{{ stage }}</span>
             {% if item.agreed_amount %}
-              <span class="muted">مبلغ: {{ item.agreed_amount|toman }}</span>
+              <span class="muted">مبلغ کل: {{ item.agreed_amount|toman }}</span>
               <span class="muted">{{ item.payment_state }}</span>
+            {% endif %}
+            {% if due %}
+              <form method="post" action="{% url 'services:pay' item.tracking_code %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btn-sm">
+                  پرداخت {{ due|toman }}
+                </button>
+              </form>
+              {% if item.paid_total == 0 and item.prepay_percent < 100 %}
+                <span class="muted">پیش‌پرداخت {{ item.prepay_percent|fa_num }}٪ برای شروع کار</span>
+              {% endif %}
             {% endif %}
           </div>
         </div>

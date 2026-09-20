@@ -73,19 +73,36 @@ def stage_of(request_object):
         return STAGE_CLOSED
 
     referrals = list(request_object.referrals.all())
-    if not referrals:
-        return STAGE_REVIEW
-    if any(referral.quoted_price is None for referral in referrals):
-        return STAGE_QUOTES
+
+    # A settled total is the pivot: before it the question is who prices the work, after it the
+    # question is money. Asking a customer who already owes us to wait for a referral would be
+    # telling them the wrong thing.
     if request_object.agreed_amount is None:
+        if not referrals:
+            return STAGE_REVIEW
+        if any(referral.quoted_price is None for referral in referrals):
+            return STAGE_QUOTES
         return STAGE_AMOUNT
+
     if request_object.paid_total == 0:
         return STAGE_PREPAY
-
+    if request_object.remaining == 0:
+        return STAGE_DONE
     everything_done = all(referral.status == referral.Status.DONE for referral in referrals)
-    if not everything_done:
-        return STAGE_WORKING
-    return STAGE_DONE if request_object.remaining == 0 else STAGE_SETTLE
+    return STAGE_SETTLE if everything_done else STAGE_WORKING
+
+
+def claim_guest_requests(user):
+    """
+    Hand a new account the requests that were sent from its own number.
+
+    The form takes guests, but paying needs an account, so without this a visitor who filled the
+    form and signed up afterwards could never reach their own request. Matching on the number is
+    safe because signing up proves it by SMS code.
+    """
+    return ServiceRequest.objects.filter(
+        user__isnull=True, mobile_number=user.mobile_number,
+    ).update(user=user)
 
 
 def domain_managers(domain=None):

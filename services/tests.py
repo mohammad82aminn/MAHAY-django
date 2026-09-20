@@ -1,6 +1,8 @@
 import shutil
 import tempfile
+from unittest.mock import patch
 
+from commerce import gateway
 from django.contrib.auth.models import Group
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
@@ -408,3 +410,131 @@ class AdminWorkflowTests(ServiceTestCase):
 
 def tearDownModule():
     shutil.rmtree(TEMP_PROTECTED, ignore_errors=True)
+
+class PaymentTests(ServiceTestCase):
+    """
+    Money is the part that has to be right. Every test here asks the same question from a
+    different angle: can anything other than a confirmed gateway response move the paid total?
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.buyer = User.objects.create_user("09361234567", PASSWORD, first_name="خریدار")
+        self.item = ServiceRequest.objects.create(
+            kind=ServiceRequest.Kind.PROJECT, user=self.buyer, name="خریدار",
+            mobile_number="+989361234567", contact_channel="telegram", contact_id="@b",
+            title="ربات", description=DESCRIPTION, level="university", need="full",
+            agreed_amount=10_000_000,
+        )
+        self.pay_url = reverse("services:pay", args=[self.item.tracking_code])
+        self.callback_url = reverse("services:payment_callback")
+
+    def start_payment(self):
+        self.client.force_login(self.buyer)
+        with patch("commerce.gateway.start", return_value=("AUTH123", "https://gateway/pay")) as started:
+            response = self.client.post(self.pay_url)
+        return response, started
+
+    def confirm(self, authority="AUTH123", status="OK", data=None):
+        with patch("commerce.gateway.confirm", return_value=data or {"ref_id": "55", "card_pan": "6037"}):
+            return self.client.get(self.callback_url, {"Authority": authority, "Status": status})
+
+    # --- what is owed -------------------------------------------------------------
+
+    def test_the_prepayment_is_half_and_the_browser_never_says_so(self):
+        self.assertEqual(self.item.due_now, 5_000_000)
+        _response, started = self.start_payment()
+        self.assertEqual(started.call_args.kwargs["amount"], 5_000_000)
+
+    def test_a_consultation_is_asked_for_in_full(self):
+        self.item.kind = ServiceRequest.Kind.CONSULTING
+        self.item.save(update_fields=["kind"])
+        self.assertEqual(self.item.prepay_percent, 100)
+        self.assertEqual(self.item.due_now, 10_000_000)
+
+    def test_the_rest_is_owed_after_the_prepayment(self):
+        self.start_payment()
+        self.confirm()
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.paid_total, 5_000_000)
+        self.assertEqual(self.item.due_now, 5_000_000)
+
+    # --- who may pay --------------------------------------------------------------
+
+    def test_a_stranger_cannot_pay_for_somebody_elses_request(self):
+        self.client.force_login(self.expert)
+        self.assertEqual(self.client.post(self.pay_url).status_code, 404)
+
+    def test_a_request_with_no_account_behind_it_cannot_be_paid(self):
+        self.item.user = None
+        self.item.save(update_fields=["user"])
+        self.client.force_login(self.buyer)
+        self.assertEqual(self.client.post(self.pay_url).status_code, 404)
+
+    # --- only the gateway moves money ---------------------------------------------
+
+    def test_arriving_at_the_callback_is_not_payment(self):
+        self.start_payment()
+        response = self.client.get(self.callback_url, {"Authority": "AUTH123", "Status": "NOK"})
+
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.paid_total, 0)
+        self.assertEqual(RequestPayment.objects.get().status, RequestPayment.Status.FAILED)
+        self.assertEqual(response.status_code, 302)
+
+    def test_a_refused_verification_counts_nothing(self):
+        self.start_payment()
+        with patch("commerce.gateway.confirm", side_effect=gateway.PaymentError("رد شد")):
+            self.client.get(self.callback_url, {"Authority": "AUTH123", "Status": "OK"})
+
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.paid_total, 0)
+        self.assertEqual(RequestPayment.objects.get().status, RequestPayment.Status.FAILED)
+
+    def test_an_unknown_authority_is_ignored(self):
+        self.start_payment()
+        self.confirm(authority="SOMETHING-ELSE")
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.paid_total, 0)
+
+    def test_refreshing_the_callback_does_not_pay_twice(self):
+        self.start_payment()
+        self.confirm()
+        self.confirm()
+
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.paid_total, 5_000_000)
+        self.assertEqual(RequestPayment.objects.filter(status=RequestPayment.Status.PAID).count(), 1)
+
+    def test_walking_away_and_starting_again_leaves_one_open_attempt(self):
+        self.start_payment()
+        self.start_payment()
+        self.assertEqual(RequestPayment.objects.filter(status=RequestPayment.Status.PENDING).count(), 1)
+        self.assertEqual(RequestPayment.objects.filter(status=RequestPayment.Status.FAILED).count(), 1)
+
+    def test_a_pending_payment_is_not_counted_as_money(self):
+        self.start_payment()
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.paid_total, 0)
+        self.assertEqual(services.stage_of(self.item)[0], "prepay")
+
+
+class GuestClaimTests(ServiceTestCase):
+    def test_signing_up_picks_up_the_requests_sent_from_that_number(self):
+        # The form takes guests, but paying needs an account, so the two have to meet somewhere
+        self.submit()
+        item = ServiceRequest.objects.get()
+        self.assertIsNone(item.user)
+
+        owner = User.objects.create_user("09351234567", PASSWORD, first_name="رضا")
+        services.claim_guest_requests(owner)
+
+        item.refresh_from_db()
+        self.assertEqual(item.user, owner)
+
+    def test_somebody_elses_request_is_not_picked_up(self):
+        self.submit()
+        stranger = User.objects.create_user("09129998877", PASSWORD, first_name="غریبه")
+        services.claim_guest_requests(stranger)
+
+        self.assertIsNone(ServiceRequest.objects.get().user)

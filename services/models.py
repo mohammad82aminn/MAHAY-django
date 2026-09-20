@@ -7,6 +7,7 @@ the domain's expert fills in the price and the state of the work, and everything
 (status changes, payments, messages) is kept in the request's file.
 """
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.crypto import get_random_string
@@ -105,6 +106,11 @@ class ServiceRequest(models.Model):
     agreed_amount = models.PositiveIntegerField(
         _("مبلغ توافق‌شده (تومان)"), null=True, blank=True, help_text=_("خالی یعنی هنوز توافقی نشده است."),
     )
+    prepay_override = models.PositiveSmallIntegerField(
+        _("درصد پیش‌پرداخت"), null=True, blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(100)],
+        help_text=_("خالی یعنی همان درصد پیش‌فرض سایت. مشاوره همیشه کامل پرداخت می‌شود."),
+    )
     admin_note = models.TextField(_("یادداشت مدیر"), blank=True)
 
     # Kept only so the hourly limit can see repeat senders; nothing else reads it.
@@ -138,7 +144,33 @@ class ServiceRequest(models.Model):
 
     @property
     def paid_total(self):
-        return RequestPayment.objects.filter(request=self).aggregate(total=models.Sum("amount"))["total"] or 0
+        """Only money the gateway confirmed, or that an admin recorded as received."""
+        return RequestPayment.objects.filter(
+            request=self, status=RequestPayment.Status.PAID,
+        ).aggregate(total=models.Sum("amount"))["total"] or 0
+
+    @property
+    def prepay_percent(self):
+        """
+        How much is asked for before the work starts.
+
+        A consultation is paid in full: the session is the whole delivery, there is no halfway
+        point, and chasing the rest of a small sum afterwards costs more than it collects.
+        """
+        if self.kind == self.Kind.CONSULTING:
+            return 100
+        if self.prepay_override is not None:
+            return self.prepay_override
+        return getattr(settings, "SERVICE_PREPAY_PERCENT", 50)
+
+    @property
+    def due_now(self):
+        """What the customer is asked to pay at this moment, or 0 when nothing is owed yet."""
+        if self.agreed_amount is None:
+            return 0
+        if self.paid_total == 0:
+            return min(round(self.agreed_amount * self.prepay_percent / 100), self.agreed_amount)
+        return self.remaining or 0
 
     @property
     def remaining(self):
@@ -218,7 +250,13 @@ class Referral(models.Model):
 
 
 class RequestPayment(models.Model):
-    """One payment of a request: prepayment, milestone, settlement."""
+    """
+    One payment of a request: prepayment, milestone, settlement.
+
+    A payment entered by hand is a note of money already in hand, so it counts straight away.
+    One started at the gateway does not: it waits as «در انتظار» until the gateway confirms it,
+    because a visitor reaching the callback url proves nothing on its own.
+    """
 
     class Method(models.TextChoices):
         ONLINE = "online", _("درگاه پرداخت")
@@ -226,14 +264,29 @@ class RequestPayment(models.Model):
         CASH = "cash", _("نقدی")
         OTHER = "other", _("سایر")
 
+    class Status(models.TextChoices):
+        PENDING = "pending", _("در انتظار پرداخت")
+        PAID = "paid", _("پرداخت شده")
+        FAILED = "failed", _("ناموفق")
+
     request = models.ForeignKey(
         ServiceRequest, on_delete=models.CASCADE, related_name="payments", verbose_name=_("درخواست"),
     )
     amount = models.PositiveIntegerField(_("مبلغ (تومان)"))
     method = models.CharField(_("روش پرداخت"), max_length=10, choices=Method.choices, default=Method.CARD)
+    status = models.CharField(
+        _("وضعیت"), max_length=10, choices=Status.choices, default=Status.PAID,
+        help_text=_("پرداخت‌هایی که خودتان ثبت می‌کنید یعنی پول رسیده است."),
+    )
     paid_at = models.DateTimeField(_("زمان پرداخت"), default=timezone.now)
     reference = models.CharField(_("شماره پیگیری"), max_length=100, blank=True)
     note = models.CharField(_("توضیح"), max_length=200, blank=True, help_text=_("مثلاً پیش‌پرداخت"))
+
+    # Gateway bookkeeping, empty for a payment entered by hand
+    authority = models.CharField(_("کد پیگیری درگاه"), max_length=100, blank=True, db_index=True)
+    card_pan = models.CharField(_("شماره کارت"), max_length=30, blank=True)
+    gateway_message = models.CharField(_("پیام درگاه"), max_length=255, blank=True)
+
     recorded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, editable=False,
         related_name="recorded_payments", verbose_name=_("ثبت‌کننده"),

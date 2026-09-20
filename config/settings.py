@@ -151,6 +151,10 @@ SMS_SENDER = config("SMS_SENDER", default="")
 # --- Payment (ZarinPal) ----------------------------------------------------
 # sandbox: no real money moves. live: needs a real merchant id from ZarinPal.
 
+# How much of a project is asked for before the work starts; a consultation is always paid in
+# full. A single request can be given its own percentage in the admin.
+SERVICE_PREPAY_PERCENT = config("SERVICE_PREPAY_PERCENT", default=50, cast=int)
+
 ZARINPAL_MODE = config("ZARINPAL_MODE", default="sandbox")
 ZARINPAL_MERCHANT_ID = config("ZARINPAL_MERCHANT_ID", default="00000000-0000-0000-0000-000000000000")
 

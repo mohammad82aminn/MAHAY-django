@@ -9,5 +9,7 @@ urlpatterns = [
     path("consulting/", views.consulting_request, name="consulting"),
     path("submitted/<str:code>/", views.submitted, name="submitted"),
     path("my/", views.my_requests, name="my_requests"),
+    path("my/<str:code>/pay/", views.pay, name="pay"),
+    path("payment/callback/", views.payment_callback, name="payment_callback"),
     path("files/<str:kind>/<int:pk>/", views.attachment, name="attachment"),
 ]

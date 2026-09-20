@@ -15,6 +15,14 @@ from .models import User, VerificationCode
 PENDING_SESSION_KEY = "signup_mobile"  # the number waiting for its code
 
 
+def claim_guest_requests(user):
+    """Attach requests this person sent before they had an account (imported late: services
+    reaches into accounts, so importing it at module level would close a circle)."""
+    from services.services import claim_guest_requests as claim
+
+    claim(user)
+
+
 class SignUpView(CreateView):
     form_class = SignUpForm
     template_name = "accounts/signup.html"
@@ -31,6 +39,7 @@ class SignUpView(CreateView):
             # No SMS provider: keep sign-up in one step
             user.is_active = True
             user.save()
+            claim_guest_requests(user)
             login(self.request, user)
             messages.success(self.request, f"{user.first_name} عزیز، به MAHAY خوش آمدید!")
             return redirect("home")
@@ -89,6 +98,7 @@ class VerifyView(FormView):
         user.is_active = True
         user.mobile_verified = True
         user.save(update_fields=["is_active", "mobile_verified"])
+        claim_guest_requests(user)
         self.request.session.pop(PENDING_SESSION_KEY, None)
         login(self.request, user)
         messages.success(self.request, f"{user.first_name} عزیز، شماره‌ی شما تأیید شد. به MAHAY خوش آمدید!")
