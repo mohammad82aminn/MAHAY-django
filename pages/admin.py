@@ -24,6 +24,10 @@ class ContactMessageAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
 
+    def pending_count(self, request):
+        """Ticking «بررسی شد» is what clears the mark."""
+        return self.get_queryset(request).filter(is_handled=False).count()
+
     @admin.display(description=_("راه تماس"))
     def contact(self, obj):
         return obj.mobile_number or obj.email or "—"

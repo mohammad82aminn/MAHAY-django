@@ -1,5 +1,5 @@
 {% extends "admin/base.html" %}
-{% load i18n %}
+{% load i18n user_roles %}
 
 {% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
 
@@ -11,6 +11,12 @@
 {% endblock %}
 
 {% block nav-global %}{% endblock %}
+
+{% block welcome-msg %}
+  خوش آمدید،
+  <strong>{% firstof user.get_full_name user.get_short_name user.get_username %}</strong>
+  <span class="user-role-chip">{% user_role user %}</span>
+{% endblock %}
 
 {% block userlinks %}
   {% if user.is_staff %}
@@ -27,6 +33,17 @@
     display: inline-block; min-width: 1.15rem; padding: 0 .3rem;
     background: #d9534f; color: #fff; border-radius: 999px;
     font-size: .72rem; font-weight: 700; line-height: 1.15rem; text-align: center;
+  }
+  .pending-badge {
+    display: inline-block; min-width: 1.15rem; padding: 0 .35rem; margin-inline-start: .4rem;
+    background: #d9534f; color: #fff !important; border-radius: 999px;
+    font-size: .72rem; font-weight: 700; line-height: 1.15rem; text-align: center;
+    text-decoration: none;
+  }
+  .user-role-chip {
+    display: inline-block; padding: .1rem .55rem; margin-inline-start: .4rem;
+    border: 1px solid var(--hairline-color); border-radius: 999px;
+    font-size: .75rem; opacity: .9;
   }
 </style>
 {% endblock %}

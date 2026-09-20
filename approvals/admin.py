@@ -50,6 +50,15 @@ class ChangeRequestAdmin(admin.ModelAdmin):
             return queryset
         return queryset.filter(domain__group__user=request.user)  # managers: their domains' requests
 
+    def pending_count(self, request):
+        """
+        Deciding is the site admins' job, so only they get the mark: a manager who can see the
+        request but cannot answer it would be stared at by a red number they cannot clear.
+        """
+        if not is_site_admin(request.user):
+            return 0
+        return self.get_queryset(request).filter(status=ChangeRequest.Status.PENDING).count()
+
     def has_add_permission(self, request):
         return False  # requests are created by the system
 

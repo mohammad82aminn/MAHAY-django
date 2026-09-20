@@ -4,7 +4,10 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from domains.models import Domain
+
 from .models import User
+from .roles import role_label
 from .validators import normalize_mobile_number
 
 CANONICAL = "+989121234567"
@@ -166,3 +169,32 @@ class PasswordResetTests(TestCase):
         response = self.client.post(reverse("accounts:password_reset"), {"email": "no@example.com"})
         self.assertRedirects(response, reverse("accounts:password_reset_done"))
         self.assertEqual(len(mail.outbox), 0)
+
+# --- Role label ---------------------------------------------------------------
+
+class RoleLabelTests(TestCase):
+    """One wording for one idea: the user list, the کارپوشه picker and the admin header agree."""
+
+    def setUp(self):
+        self.domain = Domain.objects.create(name="هوش مصنوعی", slug="ai")
+
+    def test_a_domain_manager_is_named_after_their_group(self):
+        user = User.objects.create_user("09121111111", PASSWORD, first_name="علی")
+        user.groups.add(self.domain.group)
+        self.assertEqual(role_label(user), "مدیران حوزه هوش مصنوعی")
+
+    def test_a_superuser_is_the_system_owner_even_without_a_group(self):
+        owner = User.objects.create_superuser("09122222222", PASSWORD, first_name="مالک")
+        self.assertEqual(role_label(owner), "مالک سیستم")
+
+    def test_someone_without_a_role_is_a_plain_customer(self):
+        customer = User.objects.create_user("09123333333", PASSWORD, first_name="مشتری")
+        self.assertEqual(role_label(customer), "کاربر عادی")
+
+    def test_the_admin_header_shows_the_role(self):
+        user = User.objects.create_user("09124444444", PASSWORD, first_name="علی")
+        user.groups.add(self.domain.group)
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("admin:index"))
+        self.assertContains(response, "مدیران حوزه هوش مصنوعی")

@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 
+from accounts.roles import role_label
+
 from . import services
 from .validators import validate_file_extension, validate_file_size
 
@@ -33,10 +35,7 @@ class PeopleField(forms.ModelMultipleChoiceField):
     """
 
     def label_from_instance(self, user):
-        names = [group.name for group in user.groups.all()]
-        if user.is_superuser:
-            names.insert(0, "مالک سیستم")  # same wording the user admin already shows
-        return f"{user.get_full_name() or _('بدون نام')} — {'، '.join(names) or _('بدون نقش')}"
+        return f"{user.get_full_name() or _('بدون نام')} — {role_label(user)}"
 
 
 class ComposeForm(forms.Form):

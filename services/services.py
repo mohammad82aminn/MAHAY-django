@@ -35,6 +35,21 @@ def visible_requests(user):
     return ServiceRequest.objects.filter(referrals__domain__group__user=user).distinct()
 
 
+def domain_managers(domain=None):
+    """
+    Who a referral may be handed to: the managers of one domain, or of any domain.
+
+    Customers are never in here — the expert picker used to search every registered user, which
+    put the whole customer list in front of whoever was making a referral.
+    """
+    from accounts.models import User
+
+    people = User.objects.filter(is_active=True, groups__domain__isnull=False)
+    if domain is not None:
+        people = people.filter(groups=domain.group)
+    return people.distinct()
+
+
 def visible_referrals(user):
     if is_site_admin(user):
         return Referral.objects.all()

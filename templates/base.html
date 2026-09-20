@@ -43,7 +43,10 @@
                href="{% url 'admin:inbox_message_changelist' %}">
               کارپوشه{% if inbox_unread %}<span class="unread-badge">{{ inbox_unread }}</span>{% endif %}
             </a>
-            <a class="btn btn-ghost btn-sm btn-staff" href="{% url 'admin:index' %}">پنل مدیریت</a>
+            <a class="btn btn-ghost btn-sm btn-staff btn-inbox{% if pending_total %} has-unread{% endif %}"
+               href="{% url 'admin:index' %}">
+              پنل مدیریت{% if pending_total %}<span class="unread-badge">{{ pending_total }}</span>{% endif %}
+            </a>
           {% endif %}
           <a class="btn btn-ghost btn-sm btn-staff" href="{% url 'commerce:library' %}">خریدهای من</a>
           <a class="nav-user" href="{% url 'accounts:profile' %}">

@@ -3,10 +3,11 @@ from django.utils.html import format_html, format_html_join
 from django.utils.translation import gettext_lazy as _
 
 from accounts.formatting import ltr
-from accounts.models import User
 from accounts.roles import is_site_admin
 
 from . import services
+from .services import domain_managers
+from .widgets import ExpertSelect
 from .models import (
     ContactChannel, Referral, RequestEvent, RequestMessage, RequestPayment, ServiceRequest,
 )
@@ -18,8 +19,18 @@ class ReferralInline(admin.TabularInline):
     model = Referral
     extra = 0
     fields = ("domain", "expert", "status", "quoted_price", "duration_text")
-    autocomplete_fields = ("expert",)
     show_change_link = True
+
+    class Media:
+        js = ("js/referral_expert.js",)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "expert":
+            # Autocomplete searched every registered user, customers included. The list is the
+            # domain managers instead, and the row narrows it to the domain that was chosen.
+            kwargs["queryset"] = domain_managers()
+            kwargs["widget"] = ExpertSelect()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 class PaymentInline(admin.TabularInline):
@@ -78,6 +89,10 @@ class ServiceRequestAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         return services.visible_requests(request.user).prefetch_related("domains", "payments", "referrals")
 
+    def pending_count(self, request):
+        """Requests nobody has picked up yet. Moving one off «جدید» is what clears the mark."""
+        return self.get_queryset(request).filter(status=ServiceRequest.Status.NEW).count()
+
     def has_add_permission(self, request):
         # Site admins may register a request that arrived on Telegram or by phone
         return is_site_admin(request.user)
@@ -87,11 +102,6 @@ class ServiceRequestAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return is_site_admin(request.user)
-
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "expert":
-            kwargs["queryset"] = User.objects.filter(groups__domain__isnull=False).distinct()
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def formfield_for_dbfield(self, db_field, request, **kwargs):
         field = super().formfield_for_dbfield(db_field, request, **kwargs)
@@ -173,7 +183,6 @@ class ReferralAdmin(admin.ModelAdmin):
     list_display = ("request", "domain", "expert", "status", "quoted_price", "updated_at")
     list_filter = ("status", "domain")
     search_fields = ("request__tracking_code", "request__title")
-    autocomplete_fields = ("expert",)
     readonly_fields = ("request", "domain", "referred_by", "created_at", "updated_at",
                        "request_summary", "attachment_link")
     fieldsets = (
@@ -187,6 +196,20 @@ class ReferralAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return services.visible_referrals(request.user).select_related("request", "domain", "expert")
+
+    def pending_count(self, request):
+        """Work handed to a domain that its expert has not started on yet."""
+        return self.get_queryset(request).filter(status=Referral.Status.REFERRED).count()
+
+    def get_form(self, request, obj=None, **kwargs):
+        request._referral = obj  # the domain is fixed here, so the expert list can follow it
+        return super().get_form(request, obj, **kwargs)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "expert":
+            referral = getattr(request, "_referral", None)
+            kwargs["queryset"] = domain_managers(referral.domain if referral else None)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def has_add_permission(self, request):
         return is_site_admin(request.user)  # referring is the site admin's job

@@ -10,7 +10,9 @@ from django.utils.translation import gettext_lazy as _
 from .forms import AdminUserCreationForm, UserChangeForm
 from .formatting import ltr
 from .models import User
-from .roles import DOMAIN_MANAGER_APPS, DOMAIN_MANAGER_FORBIDDEN, FULL_ACCESS_GROUPS, is_system_group
+from .roles import (
+    DOMAIN_MANAGER_APPS, DOMAIN_MANAGER_FORBIDDEN, FULL_ACCESS_GROUPS, is_system_group, role_label,
+)
 from .validators import DIGIT_MAP
 from .models import LoginAttempt, User, VerificationCode
 
@@ -62,10 +64,7 @@ class UserAdmin(MobileColumn, BaseUserAdmin):
 
     @admin.display(description=_("نقش‌ها"))
     def roles(self, obj):
-        names = [group.name for group in obj.groups.all()]
-        if obj.is_superuser:
-           names.insert(0, "مالک سیستم")
-        return "، ".join(names) or "کاربر عادی"
+        return role_label(obj)
 
     def get_search_results(self, request, queryset, search_term):
         # Numbers are stored as +98912..., so "0912" or "۰۹۱۲" must be translated to match

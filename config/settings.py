@@ -77,6 +77,7 @@ TEMPLATES = [
                 "pages.context_processors.footer_pages",
                 "services.context_processors.contact_channels",
                 "inbox.context_processors.unread",
+                "accounts.context_processors.pending_work",
             ],
         },
     },

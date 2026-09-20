@@ -35,6 +35,18 @@ DOMAIN_MANAGER_FORBIDDEN = (
 )
 
 
+def role_label(user):
+    """
+    What a person's role is called wherever it is shown: the user list, the recipient picker
+    in the کارپوشه, the admin header. One wording for one idea, so the same person is never
+    described two different ways in two places.
+    """
+    names = [group.name for group in user.groups.all()]
+    if user.is_superuser:
+        names.insert(0, "مالک سیستم")
+    return "، ".join(names) or "کاربر عادی"
+
+
 def is_site_admin(user):
     """Superuser or member of a full-access group (works for any user object, even anonymous)."""
     if not user.is_authenticated:
