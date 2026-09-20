@@ -45,6 +45,7 @@ LOCAL_APPS = [
     "commerce",
     "services",
     "pages",
+    "inbox",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -75,6 +76,7 @@ TEMPLATES = [
                 "commerce.context_processors.cart",
                 "pages.context_processors.footer_pages",
                 "services.context_processors.contact_channels",
+                "inbox.context_processors.unread",
             ],
         },
     },

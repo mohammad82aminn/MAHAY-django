@@ -1,0 +1,32 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+<div id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a></div>
+{% if user.is_anonymous %}
+  {% include "admin/color_theme_toggle.html" %}
+{% endif %}
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block userlinks %}
+  {% if user.is_staff %}
+    <a href="{% url 'admin:inbox_message_changelist' %}">
+      کارپوشه{% if inbox_unread %} <span class="admin-unread-badge">{{ inbox_unread }}</span>{% endif %}
+    </a> /
+  {% endif %}
+  {{ block.super }}
+{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+  .admin-unread-badge {
+    display: inline-block; min-width: 1.15rem; padding: 0 .3rem;
+    background: #d9534f; color: #fff; border-radius: 999px;
+    font-size: .72rem; font-weight: 700; line-height: 1.15rem; text-align: center;
+  }
+</style>
+{% endblock %}

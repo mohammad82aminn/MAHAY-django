@@ -1,0 +1,51 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+  .inbox-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
+  .inbox-tabs a { padding: .35rem .9rem; border-radius: 999px; text-decoration: none; border: 1px solid var(--hairline-color); }
+  .inbox-tabs a.on { background: var(--selected-bg, #e0e0e0); font-weight: 700; }
+  .inbox-tabs .spacer { flex: 1; }
+
+  .inbox-list { width: 100%; border-collapse: collapse; }
+  .inbox-list th, .inbox-list td { padding: .6rem .5rem; border-bottom: 1px solid var(--hairline-color); text-align: right; }
+  .inbox-list tr.unread td { font-weight: 700; }
+  .inbox-list .dot { color: var(--link-fg); }
+  .inbox-empty { padding: 2rem; text-align: center; color: var(--body-quiet-color); }
+
+  .inbox-badge { background: #d9534f; color: #fff; border-radius: 999px; padding: 0 .45rem; font-size: .75rem; }
+  .inbox-meta { color: var(--body-quiet-color); font-size: .85rem; margin-bottom: 1rem; }
+  .inbox-body { white-space: pre-wrap; line-height: 2; margin: 1rem 0; }
+  .inbox-quote { border-right: 3px solid var(--hairline-color); padding: .5rem 1rem; margin: 1rem 0; color: var(--body-quiet-color); white-space: pre-wrap; }
+  .inbox-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  .inbox-files a { display: inline-block; margin-left: .75rem; }
+  .inbox-field { margin-bottom: 1rem; }
+  .inbox-field label { display: block; font-weight: 700; margin-bottom: .3rem; }
+  .inbox-field .helptext { display: block; color: var(--body-quiet-color); font-size: .85rem; margin-top: .2rem; }
+  .inbox-field ul { list-style: none; padding: 0; margin: 0; }
+  .inbox-error { color: #d9534f; font-size: .85rem; margin-top: .2rem; }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">خانه</a>
+  &rsaquo; <a href="{% url 'admin:inbox_message_changelist' %}">کارپوشه</a>
+  {% block inbox_crumb %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="inbox-tabs">
+  <a href="{% url 'admin:inbox_message_changelist' %}?view=unread" class="{% if not is_sent_box and chosen == 'unread' %}on{% endif %}">
+    نخوانده {% if unread_count %}<span class="inbox-badge">{{ unread_count }}</span>{% endif %}
+  </a>
+  <a href="{% url 'admin:inbox_message_changelist' %}?view=all" class="{% if not is_sent_box and chosen == 'all' %}on{% endif %}">دریافتی</a>
+  <a href="{% url 'admin:inbox_message_changelist' %}?view=archived" class="{% if not is_sent_box and chosen == 'archived' %}on{% endif %}">بایگانی</a>
+  <a href="{% url 'admin:inbox_message_sent' %}" class="{% if is_sent_box %}on{% endif %}">ارسالی</a>
+  <span class="spacer"></span>
+  <a href="{% url 'admin:inbox_message_compose' %}" class="on">نوشتن پیام</a>
+</div>
+
+{% block inbox_content %}{% endblock %}
+{% endblock %}

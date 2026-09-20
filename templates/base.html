@@ -39,6 +39,10 @@
         {% if user.is_authenticated %}
           {# Only site admins and domain managers (members of a group) see this #}
           {% if user.is_staff %}
+            <a class="btn btn-ghost btn-sm btn-staff btn-inbox{% if inbox_unread %} has-unread{% endif %}"
+               href="{% url 'admin:inbox_message_changelist' %}">
+              کارپوشه{% if inbox_unread %}<span class="unread-badge">{{ inbox_unread }}</span>{% endif %}
+            </a>
             <a class="btn btn-ghost btn-sm btn-staff" href="{% url 'admin:index' %}">پنل مدیریت</a>
           {% endif %}
           <a class="btn btn-ghost btn-sm btn-staff" href="{% url 'commerce:library' %}">خریدهای من</a>

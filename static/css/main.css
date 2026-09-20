@@ -129,10 +129,18 @@ h2, h3, h4 { line-height: 1.6; }
 .main-links .divider { flex-shrink: 0; width: 1px; height: 20px; margin: 0 .5rem; background: var(--border); }
 .main-links .domain-link { font-weight: 500; color: var(--muted); }
 
+.unread-badge {
+  display: inline-block; min-width: 1.25rem; padding: 0 .3rem; margin-inline-start: .25rem;
+  background: var(--error); color: #fff; border-radius: 999px;
+  font-size: .72rem; font-weight: 700; line-height: 1.25rem; text-align: center;
+}
+
 @media (max-width: 760px) {
   .header-top { flex-wrap: wrap; height: auto; padding-block: .75rem; row-gap: .75rem; gap: .75rem; }
   .header-search { order: 3; flex-basis: 100%; max-width: none; }
   .nav-user-name, .nav .btn-staff { display: none; }
+  /* Staff buttons are hidden on a phone, but an unread count must still get through */
+  .nav .btn-inbox.has-unread { display: inline-block; }
 }
 
 /* ---------- Footer ---------- */

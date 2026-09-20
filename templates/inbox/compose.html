@@ -1,0 +1,37 @@
+{% extends "inbox/base.html" %}
+
+{% block inbox_crumb %}&rsaquo; {{ title }}{% endblock %}
+
+{% block inbox_content %}
+<h1>{{ title }}</h1>
+
+{% if parent %}
+  <div class="inbox-quote">
+    در پاسخ به «{{ parent.subject }}»<br>
+    این پاسخ فقط برای <b>{{ reply_to.get_full_name|default:"فرستنده" }}</b> فرستاده می‌شود.
+    برای نوشتن به دیگران، <a href="{% url 'admin:inbox_message_compose' %}">پیام تازه</a> بنویسید.
+  </div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <p class="inbox-error">{{ form.non_field_errors }}</p>
+  {% endif %}
+
+  {% for field in form %}
+    <div class="inbox-field">
+      {{ field.label_tag }}
+      {{ field }}
+      {% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}
+      {% for error in field.errors %}<p class="inbox-error">{{ error }}</p>{% endfor %}
+    </div>
+  {% endfor %}
+
+  <div class="inbox-actions">
+    <button type="submit" class="button default">ارسال</button>
+    <a class="button" href="{% url 'admin:inbox_message_changelist' %}">انصراف</a>
+  </div>
+</form>
+{% endblock %}

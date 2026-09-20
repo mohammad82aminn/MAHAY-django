@@ -1,0 +1,50 @@
+{% extends "inbox/base.html" %}
+
+{% block inbox_crumb %}&rsaquo; {{ message.subject }}{% endblock %}
+
+{% block inbox_content %}
+<h1>{{ message.subject }}</h1>
+
+<p class="inbox-meta">
+  از <b>{{ message.sender.get_full_name|default:"کاربر حذف‌شده" }}</b>
+  &mdash; {{ message.created_at|date:"Y/m/d H:i" }}
+  <br>
+  به:
+  {% for item in recipients %}
+    {{ item.user.get_full_name|default:"بدون نام" }}{% if not forloop.last %}، {% endif %}
+  {% endfor %}
+</p>
+
+{% if message.parent %}
+  <div class="inbox-quote">
+    در پاسخ به: <a href="{% url 'admin:inbox_message_detail' message.parent.pk %}">{{ message.parent.subject }}</a>
+  </div>
+{% endif %}
+
+<div class="inbox-body">{{ message.body }}</div>
+
+{% if message.files.all %}
+  <p class="inbox-files">
+    <b>پیوست‌ها:</b>
+    {% for item in message.files.all %}
+      <a href="{% url 'admin:inbox_message_file' item.pk %}">{{ item.name }}</a>
+    {% endfor %}
+  </p>
+{% endif %}
+
+<div class="inbox-actions">
+  {% if not is_sender and message.sender %}
+    <a class="button" href="{% url 'admin:inbox_message_reply' message.pk %}">پاسخ</a>
+  {% endif %}
+  <form method="post" action="{% url 'admin:inbox_message_archive' message.pk %}">
+    {% csrf_token %}
+    <button type="submit" class="button">
+      {% if delivery and delivery.archived_at or is_sender and message.sender_archived_at %}
+        خارج کردن از بایگانی
+      {% else %}
+        بایگانی
+      {% endif %}
+    </button>
+  </form>
+</div>
+{% endblock %}
