@@ -177,3 +177,46 @@ class GroupAdminTests(TestCase):
     def test_site_admins_group_permissions_are_read_only(self):
         response = self.client.get(self.change_url(self.site_admins))
         self.assertNotIn("permissions", response.context["adminform"].form.fields)
+
+class DefaultPermissionTests(TestCase):
+    """
+    A domain manager has one job description, so every domain group should start from the same
+    permissions. They drift when someone edits two dozen checkboxes by hand, and a domain that
+    quietly lost «ویرایش ارجاع» cannot price its own referrals.
+    """
+
+    def setUp(self):
+        self.domain = Domain.objects.create(name="هوش مصنوعی", slug="ai")
+        self.owner = User.objects.create_superuser("09120000000", PASSWORD, first_name="مالک")
+        self.client.force_login(self.owner)
+
+    def test_a_new_domain_group_can_price_its_referrals(self):
+        held = {p.codename for p in self.domain.group.permissions.all()}
+        self.assertIn("change_referral", held)
+        self.assertIn("view_referral", held)
+        self.assertIn("view_servicerequest", held)
+
+    def test_the_action_puts_back_what_was_removed(self):
+        self.domain.group.permissions.remove(Permission.objects.get(codename="change_referral"))
+        self.assertNotIn("change_referral", {p.codename for p in self.domain.group.permissions.all()})
+
+        self.client.post(reverse("admin:auth_group_changelist"), {
+            "action": "restore_default_permissions", "_selected_action": [self.domain.group.pk],
+        })
+        self.assertIn("change_referral", {p.codename for p in self.domain.group.permissions.all()})
+
+    def test_the_action_never_takes_away_what_someone_granted(self):
+        extra = Permission.objects.get(codename="view_requestpayment")
+        self.domain.group.permissions.add(extra)
+
+        self.client.post(reverse("admin:auth_group_changelist"), {
+            "action": "restore_default_permissions", "_selected_action": [self.domain.group.pk],
+        })
+        self.assertIn(extra, self.domain.group.permissions.all())
+
+    def test_the_action_leaves_a_group_that_is_not_a_domain_alone(self):
+        plain = Group.objects.create(name="یک گروه معمولی")
+        self.client.post(reverse("admin:auth_group_changelist"), {
+            "action": "restore_default_permissions", "_selected_action": [plain.pk],
+        })
+        self.assertEqual(plain.permissions.count(), 0)

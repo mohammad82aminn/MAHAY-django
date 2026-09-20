@@ -64,15 +64,17 @@ class EventInline(admin.TabularInline):
 
 @admin.register(ServiceRequest)
 class ServiceRequestAdmin(admin.ModelAdmin):
-    list_display = ("tracking_code", "kind", "title", "domain_list", "status", "money", "created_at")
+    list_display = ("tracking_code", "kind", "title", "stage", "domain_list", "money", "created_at")
     list_filter = ("kind", "status", "level", "source", "domains", "created_at")
     search_fields = ("tracking_code", "title", "description", "name", "mobile_number")
     date_hierarchy = "created_at"
     filter_horizontal = ("domains",)
     inlines = (ReferralInline, PaymentInline, MessageInline, EventInline)
-    readonly_fields = ("tracking_code", "user", "created_at", "updated_at", "money_summary", "attachment_link")
+    readonly_fields = ("tracking_code", "user", "created_at", "updated_at", "money_summary",
+                       "attachment_link", "stage_note")
     fieldsets = (
-        (None, {"fields": ("tracking_code", "kind", "status", "source", "created_at", "updated_at")}),
+        (None, {"fields": ("stage_note", "tracking_code", "kind", "status", "source",
+                           "created_at", "updated_at")}),
         (_("درخواست‌کننده"), {
             "fields": ("user", "name", "mobile_number", "email", "contact_channel", "contact_id"),
         }),
@@ -85,6 +87,25 @@ class ServiceRequestAdmin(admin.ModelAdmin):
     )
 
     # --- Access ---------------------------------------------------------------------
+
+    def get_fieldsets(self, request, obj=None):
+        if is_site_admin(request.user):
+            return self.fieldsets
+        # An expert is here to read the brief, not to audit the file: the source it arrived by,
+        # the money and the admin's private note are none of their business.
+        return (
+            (None, {"fields": ("stage_note", "tracking_code", "kind", "status")}),
+            (_("درخواست‌کننده"), {"fields": ("name", "mobile_number", "contact_channel", "contact_id")}),
+            (_("پروژه"), {
+                "fields": ("title", "domains", "other_domain", "level", "need", "description",
+                           "deadline", "attachment_link"),
+            }),
+        )
+
+    def get_inlines(self, request, obj):
+        if is_site_admin(request.user):
+            return self.inlines
+        return (ReferralInline, MessageInline)  # no payments, no full history
 
     def get_queryset(self, request):
         return services.visible_requests(request.user).prefetch_related("domains", "payments", "referrals")
@@ -110,6 +131,20 @@ class ServiceRequestAdmin(admin.ModelAdmin):
         return field
 
     # --- Display --------------------------------------------------------------------
+
+    @admin.display(description=_("مرحله"))
+    def stage(self, obj):
+        _key, label, turn = services.stage_of(obj)
+        return f"{label} — نوبت {turn}" if turn != "—" else label
+
+    @admin.display(description=_("الان چه باید بشود"))
+    def stage_note(self, obj):
+        if not obj.pk:
+            return "—"
+        _key, label, turn = services.stage_of(obj)
+        if turn == "—":
+            return format_html("<b>{}</b>", label)
+        return format_html("<b>{}</b> — نوبت <b>{}</b> است.", label, turn)
 
     @admin.display(description=_("حوزه‌ها"))
     def domain_list(self, obj):
@@ -293,6 +328,11 @@ class RequestPaymentAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return is_site_admin(request.user)
+
+    def get_model_perms(self, request):
+        # Payments belong to a request and are entered inside it; a menu entry of their own only
+        # adds to the clutter. The urls stay, so links from the request page still work.
+        return {}
 
     def save_model(self, request, obj, form, change):
         if obj.recorded_by is None:

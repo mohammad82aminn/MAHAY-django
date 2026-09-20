@@ -51,6 +51,43 @@ def visible_requests(user):
     return ServiceRequest.objects.filter(referrals__domain__group__user=user).distinct()
 
 
+# Where a request has got to, worked out from what it already holds rather than stored: a saved
+# stage would be one more thing to keep in step, and it would quietly go wrong.
+STAGE_REVIEW = ("review", "منتظر بررسی و ارجاع", "شما")
+STAGE_QUOTES = ("quotes", "منتظر قیمت حوزه‌ها", "کارشناس")
+STAGE_AMOUNT = ("amount", "منتظر تعیین مبلغ کل", "شما")
+STAGE_PREPAY = ("prepay", "منتظر پیش‌پرداخت", "مشتری")
+STAGE_WORKING = ("working", "در حال انجام", "کارشناس")
+STAGE_SETTLE = ("settle", "منتظر تسویه", "مشتری")
+STAGE_DONE = ("done", "تمام شد", "—")
+STAGE_CLOSED = ("closed", "بسته شد", "—")
+
+
+def stage_of(request_object):
+    """
+    The step a request is on, as (key, label, whose turn it is).
+
+    Read top to bottom: the first condition that holds is where the work actually sits.
+    """
+    if request_object.status in (request_object.Status.CANCELED, request_object.Status.REJECTED):
+        return STAGE_CLOSED
+
+    referrals = list(request_object.referrals.all())
+    if not referrals:
+        return STAGE_REVIEW
+    if any(referral.quoted_price is None for referral in referrals):
+        return STAGE_QUOTES
+    if request_object.agreed_amount is None:
+        return STAGE_AMOUNT
+    if request_object.paid_total == 0:
+        return STAGE_PREPAY
+
+    everything_done = all(referral.status == referral.Status.DONE for referral in referrals)
+    if not everything_done:
+        return STAGE_WORKING
+    return STAGE_DONE if request_object.remaining == 0 else STAGE_SETTLE
+
+
 def domain_managers(domain=None):
     """
     Who a referral may be handed to: the managers of one domain, or of any domain.

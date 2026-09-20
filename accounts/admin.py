@@ -1,6 +1,6 @@
 from django import forms
 from django.apps import apps
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group, Permission
@@ -134,7 +134,34 @@ class GroupAdmin(BaseGroupAdmin):
 
     list_display = ("name", "group_type", "member_count")
     readonly_fields = ("site_admins_note",)
-    actions = None  # no bulk delete: system groups must not be deleted by mistake
+    # No bulk delete: system groups must not be deleted by mistake
+    actions = ("restore_default_permissions",)
+
+    @admin.action(description=_("اعمال دسترسی‌های پیش‌فرض مدیر حوزه"))
+    def restore_default_permissions(self, request, queryset):
+        """
+        Bring a domain group back to what the role needs.
+
+        Hand-picking two dozen checkboxes per domain is how these drift apart, which is how a
+        domain ends up unable to price its own referrals. Extra permissions are reported rather
+        than stripped: somebody granted them on purpose, and only a person can judge that.
+        """
+        from domains.services import apply_default_permissions
+
+        for group in queryset:
+            if not hasattr(group, "domain"):
+                self.message_user(
+                    request, f"«{group.name}» گروه حوزه نیست و تغییری نکرد.", messages.WARNING,
+                )
+                continue
+            added, extra = apply_default_permissions(group)
+            self.message_user(
+                request,
+                f"«{group.name}»: {len(added)} دسترسی اضافه شد."
+                + (f" این‌ها خارج از پیش‌فرض هستند و دست نخوردند: {'، '.join(sorted(p.codename for p in extra))}"
+                   if extra else ""),
+                messages.SUCCESS if added or not extra else messages.INFO,
+            )
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("domain").annotate(_member_count=Count("user"))

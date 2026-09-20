@@ -224,6 +224,54 @@ class AdminWorkflowTests(ServiceTestCase):
             RequestEvent.objects.filter(request=self.item, text__contains="ارجاع شده").exists()
         )
 
+    def test_the_stage_follows_the_work_without_being_stored(self):
+        stage = lambda: services.stage_of(ServiceRequest.objects.get(pk=self.item.pk))[0]
+        self.assertEqual(stage(), "review")  # no referral yet
+
+        referral = Referral.objects.create(request=self.item, domain=self.fpga, expert=self.expert)
+        self.assertEqual(stage(), "quotes")  # waiting for a price
+
+        referral.quoted_price = 5_000_000
+        referral.save(update_fields=["quoted_price"])
+        self.assertEqual(stage(), "amount")  # waiting for the admin to settle a total
+
+        self.item.agreed_amount = 5_000_000
+        self.item.save(update_fields=["agreed_amount"])
+        self.assertEqual(stage(), "prepay")  # waiting for the customer
+
+        RequestPayment.objects.create(request=self.item, amount=2_500_000, method="online")
+        self.assertEqual(stage(), "working")  # the expert's turn
+
+        referral.status = Referral.Status.DONE
+        referral.save(update_fields=["status"])
+        self.assertEqual(stage(), "settle")  # delivered, money outstanding
+
+        RequestPayment.objects.create(request=self.item, amount=2_500_000, method="online")
+        self.assertEqual(stage(), "done")
+
+    def test_a_cancelled_request_is_simply_closed(self):
+        self.item.status = ServiceRequest.Status.CANCELED
+        self.item.save(update_fields=["status"])
+        self.assertEqual(services.stage_of(self.item)[0], "closed")
+
+    def test_the_expert_page_leaves_out_what_is_none_of_their_business(self):
+        Referral.objects.create(request=self.item, domain=self.fpga, expert=self.expert)
+        self.client.force_login(self.expert)
+        response = self.client.get(self.change_url())
+
+        self.assertNotContains(response, "admin_note")
+        self.assertNotContains(response, "payments-TOTAL_FORMS")
+        self.assertNotContains(response, "events-TOTAL_FORMS")
+
+    def test_the_admin_still_sees_the_whole_file(self):
+        Referral.objects.create(request=self.item, domain=self.fpga, expert=self.expert)
+        self.client.force_login(self.admin)
+        response = self.client.get(self.change_url())
+
+        self.assertContains(response, "admin_note")
+        self.assertContains(response, "payments-TOTAL_FORMS")
+        self.assertContains(response, "events-TOTAL_FORMS")
+
     def test_both_full_access_groups_are_site_admins(self):
         self.assertTrue(is_site_admin(self.admin))
         self.assertTrue(is_site_admin(self.tech))
