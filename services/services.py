@@ -92,6 +92,22 @@ def stage_of(request_object):
     return STAGE_SETTLE if everything_done else STAGE_WORKING
 
 
+def price_consultation(request_object):
+    """
+    Put the rate on a consultation as soon as it arrives.
+
+    A consultation is sold at a published price, so there is nothing to negotiate and no reason
+    to make somebody wait for a quote they could already read. Called after the domains are
+    saved, since the rate comes from the domain. Leaves a project alone.
+    """
+    price = request_object.consulting_price
+    if price is None or request_object.agreed_amount is not None:
+        return False
+    request_object.agreed_amount = price
+    request_object.save(update_fields=["agreed_amount", "updated_at"])
+    return True
+
+
 def claim_guest_requests(user):
     """
     Hand a new account the requests that were sent from its own number.

@@ -155,6 +155,10 @@ SMS_SENDER = config("SMS_SENDER", default="")
 # full. A single request can be given its own percentage in the admin.
 SERVICE_PREPAY_PERCENT = config("SERVICE_PREPAY_PERCENT", default=50, cast=int)
 
+# Consulting is sold by the quarter of an hour. A domain may set its own rate; this is the
+# fallback. Zero means no price can be worked out, and the customer is quoted by hand instead.
+CONSULTING_RATE_PER_QUARTER = config("CONSULTING_RATE_PER_QUARTER", default=0, cast=int)
+
 ZARINPAL_MODE = config("ZARINPAL_MODE", default="sandbox")
 ZARINPAL_MERCHANT_ID = config("ZARINPAL_MERCHANT_ID", default="00000000-0000-0000-0000-000000000000")
 

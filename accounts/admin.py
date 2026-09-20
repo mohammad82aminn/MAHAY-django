@@ -39,7 +39,7 @@ class UserAdmin(MobileColumn, BaseUserAdmin):
 
     fieldsets = (
         (None, {"fields": ("mobile_number", "password")}),
-        (_("اطلاعات شخصی"), {"fields": ("first_name", "last_name", "email")}),
+        (_("اطلاعات شخصی"), {"fields": ("first_name", "last_name", "email", "contact_handle")}),
         # Access is only given through groups (no per-user permissions); is_staff is set automatically
         (_("نقش‌ها و دسترسی"), {"fields": ("groups", "mobile_verified", "is_active", "is_staff", "is_superuser")}),
         (_("تاریخ‌ها"), {"fields": ("last_login", "date_joined")}),

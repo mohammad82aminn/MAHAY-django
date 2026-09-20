@@ -6,6 +6,8 @@ Telegram / Instagram / phone. Site admins refer the request to one or more domai
 the domain's expert fills in the price and the state of the work, and everything
 (status changes, payments, messages) is kept in the request's file.
 """
+from math import ceil
+
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -16,6 +18,9 @@ from django.utils.translation import gettext_lazy as _
 from content.storage import protected_storage
 
 from .validators import validate_attachment_extension, validate_attachment_size
+
+CONSULTING_UNIT_MINUTES = 15  # consulting is sold by the quarter of an hour
+CONSULTING_CHOICES = [(minutes, f"{minutes} دقیقه") for minutes in (15, 30, 45, 60)]
 
 
 class ServiceRequest(models.Model):
@@ -96,6 +101,10 @@ class ServiceRequest(models.Model):
     level = models.CharField(_("سطح پروژه"), max_length=12, choices=Level.choices)
     need = models.CharField(_("چه چیزی از ما می‌خواهید"), max_length=10, choices=Need.choices)
     deadline = models.DateField(_("زمان تحویل موردنظر"), null=True, blank=True)
+    minutes = models.PositiveSmallIntegerField(
+        _("مدت مشاوره (دقیقه)"), null=True, blank=True,
+        help_text=_("فقط برای مشاوره. کارشناس می‌تواند بعد از فهمیدن موضوع اصلاحش کند."),
+    )
     attachment = models.FileField(
         _("فایل ضمیمه"), upload_to="requests/%Y/%m/", storage=protected_storage, blank=True,
         validators=[validate_attachment_extension, validate_attachment_size],
@@ -148,6 +157,24 @@ class ServiceRequest(models.Model):
         return RequestPayment.objects.filter(
             request=self, status=RequestPayment.Status.PAID,
         ).aggregate(total=models.Sum("amount"))["total"] or 0
+
+    @property
+    def consulting_price(self):
+        """
+        What a consultation costs: the domain's rate for each quarter of an hour.
+
+        Returns None when it cannot be worked out yet — no duration, or no domain to take a rate
+        from — so the caller shows nothing rather than a confident zero.
+        """
+        if self.kind != self.Kind.CONSULTING or not self.minutes:
+            return None
+        domain = self.domains.first()
+        rate = (domain.consulting_rate if domain else None) or getattr(
+            settings, "CONSULTING_RATE_PER_QUARTER", 0
+        )
+        if not rate:
+            return None
+        return rate * ceil(self.minutes / CONSULTING_UNIT_MINUTES)
 
     @property
     def prepay_percent(self):
@@ -230,6 +257,10 @@ class Referral(models.Model):
         _("فایل ضمیمه"), upload_to="referrals/%Y/%m/", storage=protected_storage, blank=True,
     )
 
+    introduced_at = models.DateTimeField(
+        _("زمان معرفی به مشتری"), null=True, blank=True,
+        help_text=_("وقتی آیدی کارشناس را به مشتری دادید، اینجا ثبت می‌شود."),
+    )
     referred_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, editable=False,
         related_name="made_referrals", verbose_name=_("ارجاع‌دهنده"),

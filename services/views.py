@@ -75,6 +75,7 @@ def request_form(request, kind):
                 service_request.ip_address = address
                 service_request.save()
                 form.save_m2m()
+                services.price_consultation(service_request)
                 services.log(service_request, request.user if request.user.is_authenticated else None,
                              "درخواست از طریق فرم سایت ثبت شد.")
                 request.session["last_tracking_code"] = service_request.tracking_code

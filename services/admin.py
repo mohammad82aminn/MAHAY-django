@@ -18,8 +18,16 @@ class ReferralInline(admin.TabularInline):
 
     model = Referral
     extra = 0
-    fields = ("domain", "expert", "status", "quoted_price", "duration_text")
+    fields = ("domain", "expert", "expert_handle", "status", "quoted_price", "duration_text")
+    readonly_fields = ("expert_handle",)
     show_change_link = True
+
+    @admin.display(description=_("آیدی کارشناس"))
+    def expert_handle(self, obj):
+        # Shown so the admin can pass it to the customer without hunting through user accounts
+        if obj.expert_id and obj.expert.contact_handle:
+            return ltr(obj.expert.contact_handle)
+        return "—"
 
     class Media:
         js = ("js/referral_expert.js",)
@@ -222,7 +230,7 @@ class ReferralAdmin(admin.ModelAdmin):
     readonly_fields = ("request", "domain", "referred_by", "created_at", "updated_at",
                        "request_summary", "attachment_link")
     fieldsets = (
-        (None, {"fields": ("request", "request_summary", "domain", "expert", "status")}),
+        (None, {"fields": ("request", "request_summary", "domain", "expert", "introduced_at", "status")}),
         (_("گزارش کارشناس"), {
             "fields": ("quoted_price", "duration_text", "feasibility", "done_work", "remaining_work",
                        "attachment", "attachment_link"),

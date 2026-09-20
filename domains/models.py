@@ -18,6 +18,10 @@ class Domain(models.Model):
     )
     description = models.TextField(_("توضیحات"), blank=True)
     is_active = models.BooleanField(_("فعال"), default=True, help_text=_("حوزه‌ی غیرفعال در سایت نمایش داده نمی‌شود."))
+    consulting_rate = models.PositiveIntegerField(
+        _("نرخ مشاوره‌ی هر ۱۵ دقیقه (تومان)"), null=True, blank=True,
+        help_text=_("خالی یعنی نرخ پیش‌فرض سایت."),
+    )
     order = models.PositiveSmallIntegerField(_("ترتیب نمایش"), default=0)
     group = models.OneToOneField(
         Group,

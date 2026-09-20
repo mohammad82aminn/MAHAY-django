@@ -5,7 +5,7 @@ from accounts.forms import MOBILE_ATTRS
 from accounts.validators import normalize_mobile_number
 from domains.models import Domain
 
-from .models import ServiceRequest
+from .models import CONSULTING_CHOICES, ServiceRequest
 
 MIN_DESCRIPTION = 30  # characters, so we don't get a request that only says "hello"
 
@@ -15,7 +15,8 @@ class ServiceRequestForm(forms.ModelForm):
         model = ServiceRequest
         fields = (
             "name", "mobile_number", "email", "contact_channel", "contact_id",
-            "title", "domains", "other_domain", "level", "need", "description", "deadline", "attachment",
+            "title", "domains", "other_domain", "level", "need", "description", "deadline",
+            "minutes", "attachment",
         )
         widgets = {
             "mobile_number": forms.TextInput(attrs=MOBILE_ATTRS),
@@ -24,6 +25,7 @@ class ServiceRequestForm(forms.ModelForm):
             "domains": forms.CheckboxSelectMultiple,
             "description": forms.Textarea(attrs={"rows": 7}),
             "deadline": forms.DateInput(attrs={"type": "date"}),
+            "minutes": forms.RadioSelect(choices=CONSULTING_CHOICES),
         }
         labels = {"title": _("عنوان پروژه یا موضوع مشاوره")}
 
@@ -43,6 +45,21 @@ class ServiceRequestForm(forms.ModelForm):
             "محدودیت‌ها و کارهایی که تا حالا انجام داده‌اید."
         )
 
+        if kind != ServiceRequest.Kind.CONSULTING:
+            del self.fields["minutes"]
+            return
+
+        # Somebody booking half an hour with an expert is not delivering anything, so the
+        # questions a project needs would only be noise in front of them.
+        for name in ("level", "need", "deadline"):
+            del self.fields[name]
+        self.fields["title"].label = _("موضوع مشاوره")
+        self.fields["minutes"].required = True
+        self.fields["domains"].help_text = _("یک حوزه — همان که سؤالتان به آن مربوط است.")
+        self.fields["description"].help_text = _(
+            "موضوع را روشن بنویسید: چه چیزی می‌خواهید بدانید و تا حالا چه کرده‌اید."
+        )
+
     def clean_mobile_number(self):
         return normalize_mobile_number(self.cleaned_data["mobile_number"])
 
@@ -58,6 +75,10 @@ class ServiceRequestForm(forms.ModelForm):
 
         if not data.get("domains") and not data.get("other_domain"):
             self.add_error("domains", _("حوزه را انتخاب کنید یا حوزه‌ی خود را در کادر بعدی بنویسید."))
+
+        # One conversation with one expert, and the rate has to come from somewhere definite
+        if self.kind == ServiceRequest.Kind.CONSULTING and len(data.get("domains") or ()) > 1:
+            self.add_error("domains", _("برای مشاوره فقط یک حوزه را انتخاب کنید."))
 
         channel = data.get("contact_channel")
         if channel and channel != ServiceRequest.Channel.PHONE and not data.get("contact_id"):

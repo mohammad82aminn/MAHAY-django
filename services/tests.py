@@ -538,3 +538,70 @@ class GuestClaimTests(ServiceTestCase):
         services.claim_guest_requests(stranger)
 
         self.assertIsNone(ServiceRequest.objects.get().user)
+
+
+class ConsultingTests(ServiceTestCase):
+    """
+    A consultation is a conversation, not a delivery: one expert, a published rate, paid before
+    it happens. The project questions would only be noise in front of somebody booking one.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.ai.consulting_rate = 200_000
+        self.ai.save(update_fields=["consulting_rate"])
+
+    def consult(self, **changes):
+        data = self.form_data(**{"domains": [self.ai.pk], "minutes": 30, **changes})
+        for field in ("level", "need", "deadline"):
+            data.pop(field, None)
+        return self.client.post(reverse("services:consulting"), data, follow=True)
+
+    def test_the_form_does_not_ask_a_project_question(self):
+        response = self.client.get(reverse("services:consulting"))
+        for field in ("level", "need", "deadline"):
+            with self.subTest(field=field):
+                self.assertNotContains(response, f'name="{field}"')
+        self.assertContains(response, 'name="minutes"')
+
+    def test_the_project_form_is_untouched(self):
+        response = self.client.get(reverse("services:project"))
+        for field in ("level", "need", "deadline"):
+            with self.subTest(field=field):
+                self.assertContains(response, f'name="{field}"')
+        self.assertNotContains(response, 'name="minutes"')
+
+    def test_the_price_is_on_the_request_the_moment_it_arrives(self):
+        self.consult()
+        item = ServiceRequest.objects.get()
+        self.assertEqual(item.minutes, 30)
+        self.assertEqual(item.agreed_amount, 400_000)  # two quarters at the domain's rate
+        self.assertEqual(services.stage_of(item)[0], "prepay")
+
+    def test_a_part_quarter_is_charged_as_a_whole_one(self):
+        self.consult(minutes=45)
+        self.assertEqual(ServiceRequest.objects.get().agreed_amount, 600_000)
+
+    def test_a_consultation_is_paid_in_full(self):
+        self.consult()
+        item = ServiceRequest.objects.get()
+        self.assertEqual(item.prepay_percent, 100)
+        self.assertEqual(item.due_now, item.agreed_amount)
+
+    def test_only_one_domain_may_be_chosen(self):
+        response = self.consult(domains=[self.ai.pk, self.fpga.pk])
+        self.assertContains(response, "فقط یک حوزه")
+        self.assertFalse(ServiceRequest.objects.exists())
+
+    def test_a_domain_without_a_rate_leaves_the_price_open(self):
+        self.consult(domains=[self.fpga.pk])  # fpga has no rate and there is no site default
+        item = ServiceRequest.objects.get()
+        self.assertIsNone(item.consulting_price)
+        self.assertIsNone(item.agreed_amount)
+        self.assertEqual(services.stage_of(item)[0], "review")
+
+    def test_a_project_never_gets_a_consulting_price(self):
+        self.submit()
+        item = ServiceRequest.objects.get()
+        self.assertIsNone(item.consulting_price)
+        self.assertIsNone(item.agreed_amount)

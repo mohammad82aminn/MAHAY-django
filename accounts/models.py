@@ -76,6 +76,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         _("شماره تأیید شده"), default=False, help_text=_("با کد پیامکی تأیید شده است."),
     )
     
+    contact_handle = models.CharField(
+        _("آیدی ارتباطی"), max_length=150, blank=True,
+        help_text=_("مثلاً @ali در تلگرام. برای معرفی کارشناس به مشتری استفاده می‌شود."),
+    )
+
     is_staff = models.BooleanField(_("دسترسی پنل مدیریت"), default=False)
     date_joined = models.DateTimeField(_("تاریخ عضویت"), default=timezone.now)
 
