@@ -169,6 +169,7 @@ class ServiceRequestAdmin(admin.ModelAdmin):
 
             if isinstance(instance, Referral):
                 services.log(form.instance, request.user, f"ارجاع به حوزه‌ی {instance.domain}.")
+                services.mark_referred(form.instance, request.user)
             elif isinstance(instance, RequestPayment):
                 services.log(form.instance, request.user, f"پرداخت {instance.amount:,} تومان ثبت شد.")
         for instance in formset.deleted_objects:
@@ -248,6 +249,8 @@ class ReferralAdmin(admin.ModelAdmin):
         services.log(obj.request, request.user,
                      f"گزارش حوزه‌ی {obj.domain} به‌روز شد ({changed})." if changed
                      else f"ارجاع به حوزه‌ی {obj.domain}.")
+        if not change:
+            services.mark_referred(obj.request, request.user)
 
 
 @admin.register(RequestMessage)

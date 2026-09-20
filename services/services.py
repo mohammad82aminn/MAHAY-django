@@ -15,6 +15,22 @@ def log(request_object, actor, text):
     RequestEvent.objects.create(request=request_object, actor=actor, text=text)
 
 
+def mark_referred(request_object, actor=None):
+    """
+    A request just handed to a domain is not «جدید» any more.
+
+    The panel marks untouched requests in red, and handing one to a domain is plainly touching
+    it; leaving the mark on would teach people to ignore it. Only that first state moves — a
+    request already in progress, finished or cancelled keeps whatever it says.
+    """
+    if request_object.status != ServiceRequest.Status.NEW:
+        return False
+    request_object.status = ServiceRequest.Status.REFERRED
+    request_object.save(update_fields=["status", "updated_at"])
+    log(request_object, actor, "با ارجاع به حوزه، وضعیت به «ارجاع شده» تغییر کرد.")
+    return True
+
+
 def too_many_requests(mobile_number, ip_address):
     """
     The form needs no account, so the mobile number in it proves nothing: anyone refused on

@@ -177,6 +177,53 @@ class AdminWorkflowTests(ServiceTestCase):
     def change_url(self, obj=None):
         return reverse("admin:services_servicerequest_change", args=[(obj or self.item).pk])
 
+    def referral_payload(self, **changes):
+        """The inline formset the admin posts when referring a request to a domain."""
+        data = {
+            "tracking_code": self.item.tracking_code, "kind": self.item.kind, "status": self.item.status,
+            "source": self.item.source, "name": self.item.name, "mobile_number": self.item.mobile_number,
+            "email": "", "contact_channel": self.item.contact_channel, "contact_id": self.item.contact_id,
+            "title": self.item.title, "domains": [self.fpga.pk], "other_domain": "",
+            "level": self.item.level, "need": self.item.need, "description": self.item.description,
+            "deadline": "", "agreed_amount": "", "admin_note": "",
+            "referrals-TOTAL_FORMS": "1", "referrals-INITIAL_FORMS": "0",
+            "referrals-0-request": self.item.pk, "referrals-0-domain": self.fpga.pk,
+            "referrals-0-status": Referral.Status.REFERRED, "referrals-0-quoted_price": "",
+            "referrals-0-duration_text": "",
+            "payments-TOTAL_FORMS": "0", "payments-INITIAL_FORMS": "0",
+            "messages-TOTAL_FORMS": "0", "messages-INITIAL_FORMS": "0",
+            "events-TOTAL_FORMS": "0", "events-INITIAL_FORMS": "0",
+        }
+        data.update(changes)
+        return data
+
+    def test_referring_moves_the_request_off_new(self):
+        # Otherwise the panel keeps a red mark on a request the admin has already acted on
+        self.assertEqual(self.item.status, ServiceRequest.Status.NEW)
+        self.client.force_login(self.admin)
+        self.client.post(self.change_url(), self.referral_payload())
+
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.status, ServiceRequest.Status.REFERRED)
+        self.assertEqual(Referral.objects.count(), 1)
+
+    def test_referring_does_not_overwrite_a_status_someone_chose(self):
+        self.item.status = ServiceRequest.Status.IN_PROGRESS
+        self.item.save(update_fields=["status"])
+
+        self.client.force_login(self.admin)
+        self.client.post(self.change_url(), self.referral_payload(status=ServiceRequest.Status.IN_PROGRESS))
+
+        self.item.refresh_from_db()
+        self.assertEqual(self.item.status, ServiceRequest.Status.IN_PROGRESS)
+
+    def test_the_status_change_is_written_into_the_history(self):
+        self.client.force_login(self.admin)
+        self.client.post(self.change_url(), self.referral_payload())
+        self.assertTrue(
+            RequestEvent.objects.filter(request=self.item, text__contains="ارجاع شده").exists()
+        )
+
     def test_both_full_access_groups_are_site_admins(self):
         self.assertTrue(is_site_admin(self.admin))
         self.assertTrue(is_site_admin(self.tech))
