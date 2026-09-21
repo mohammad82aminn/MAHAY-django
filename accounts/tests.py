@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.contrib.auth import authenticate
 from django.core import mail
 from django.core.exceptions import ValidationError
@@ -6,7 +8,8 @@ from django.urls import reverse
 
 from domains.models import Domain
 
-from .models import User
+from . import otp
+from .models import User, VerificationCode
 from .roles import role_label
 from .validators import normalize_mobile_number
 
@@ -157,18 +160,139 @@ class ProfileViewTests(TestCase):
 
 
 class PasswordResetTests(TestCase):
-    def test_reset_email_is_sent(self):
-        User.objects.create_user("09121234567", PASSWORD, email="ali@example.com")
-        response = self.client.post(reverse("accounts:password_reset"), {"email": "ali@example.com"})
-        self.assertRedirects(response, reverse("accounts:password_reset_done"))
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn("/accounts/password/reset/", mail.outbox[0].body)
+    """
+    Sign-up never asked for an email, so the account's own mobile number is what proves
+    ownership. The number is also what must not be given away by this form.
+    """
 
-    def test_unknown_email_sends_nothing_but_same_page(self):
-        # Same response either way, so nobody can find out which emails are registered
-        response = self.client.post(reverse("accounts:password_reset"), {"email": "no@example.com"})
-        self.assertRedirects(response, reverse("accounts:password_reset_done"))
-        self.assertEqual(len(mail.outbox), 0)
+    NEW_PASSWORD = "An0ther-pass!"
+
+    def setUp(self):
+        self.user = User.objects.create_user("09121234567", PASSWORD, first_name="علی")
+        self.user.mobile_verified = True
+        self.user.save(update_fields=["mobile_verified"])
+
+    def ask(self, number="09121234567"):
+        return self.client.post(reverse("accounts:password_reset"), {"mobile_number": number})
+
+    def sent_code(self):
+        return VerificationCode.objects.filter(purpose=VerificationCode.Purpose.PASSWORD_RESET).first()
+
+    def reach_the_new_password_page(self):
+        self.ask()
+        self.client.post(reverse("accounts:password_reset_verify"), {"code": "111111"})
+
+    # --- the happy path -----------------------------------------------------------
+
+    def test_a_code_is_sent_and_the_password_can_be_changed(self):
+        with patch("accounts.otp.get_random_string", return_value="424242"):
+            self.ask()
+        self.assertIsNotNone(self.sent_code())
+
+        response = self.client.post(reverse("accounts:password_reset_verify"), {"code": "424242"})
+        self.assertRedirects(response, reverse("accounts:password_reset_new"))
+
+        response = self.client.post(reverse("accounts:password_reset_new"), {
+            "new_password1": self.NEW_PASSWORD, "new_password2": self.NEW_PASSWORD,
+        })
+        self.assertRedirects(response, reverse("accounts:login"))
+        self.assertIsNotNone(authenticate(username="09121234567", password=self.NEW_PASSWORD))
+
+    def test_the_reset_code_lives_longer_than_a_sign_up_code(self):
+        # A real provider adds delay, and this message is usually read later
+        self.assertGreater(otp.RESET_CODE_TTL, otp.CODE_TTL)
+
+    # --- what the form must not give away -----------------------------------------
+
+    def test_an_unknown_number_looks_exactly_like_a_known_one(self):
+        known = self.ask()
+        unknown = self.ask("09350000000")
+        self.assertEqual(known.status_code, unknown.status_code)
+        self.assertEqual(known.url, unknown.url)
+        self.assertEqual(
+            VerificationCode.objects.filter(mobile_number="+989350000000").count(), 0
+        )
+
+    def test_an_unverified_account_gets_no_code(self):
+        # Signing up again picks that account back up; reset must not be a second way in
+        User.objects.create_user("09351234567", PASSWORD, is_active=False)
+        self.ask("09351234567")
+        self.assertEqual(
+            VerificationCode.objects.filter(mobile_number="+989351234567").count(), 0
+        )
+
+    # --- the steps cannot be jumped ------------------------------------------------
+
+    def test_the_code_page_needs_a_request_first(self):
+        response = self.client.get(reverse("accounts:password_reset_verify"))
+        self.assertRedirects(response, reverse("accounts:password_reset"))
+
+    def test_the_new_password_page_needs_a_verified_code(self):
+        self.ask()  # asked, but never entered the code
+        response = self.client.get(reverse("accounts:password_reset_new"))
+        self.assertRedirects(response, reverse("accounts:password_reset"))
+
+    def test_a_wrong_code_does_not_open_the_next_step(self):
+        self.ask()
+        response = self.client.post(reverse("accounts:password_reset_verify"), {"code": "000000"})
+        self.assertContains(response, "نادرست")
+        self.assertRedirects(
+            self.client.get(reverse("accounts:password_reset_new")),
+            reverse("accounts:password_reset"),
+        )
+
+    def test_the_proof_is_spent_once_the_password_is_set(self):
+        with patch("accounts.otp.get_random_string", return_value="424242"):
+            self.ask()
+        self.client.post(reverse("accounts:password_reset_verify"), {"code": "424242"})
+        self.client.post(reverse("accounts:password_reset_new"), {
+            "new_password1": self.NEW_PASSWORD, "new_password2": self.NEW_PASSWORD,
+        })
+        # Coming back to set a second password must start over
+        self.assertRedirects(
+            self.client.get(reverse("accounts:password_reset_new")),
+            reverse("accounts:password_reset"),
+        )
+
+    def test_a_verified_code_cannot_be_pointed_at_another_account(self):
+        other = User.objects.create_user("09351234567", PASSWORD)
+        other.mobile_verified = True
+        other.save(update_fields=["mobile_verified"])
+
+        with patch("accounts.otp.get_random_string", return_value="424242"):
+            self.ask()
+        self.client.post(reverse("accounts:password_reset_verify"), {"code": "424242"})
+
+        session = self.client.session
+        session["reset_mobile"] = other.mobile_number  # the proof was for a different number
+        session.save()
+        self.assertRedirects(
+            self.client.get(reverse("accounts:password_reset_new")),
+            reverse("accounts:password_reset"),
+        )
+
+
+class SignUpEmailTests(TestCase):
+    def data(self, **changes):
+        return {
+            "mobile_number": "09121234567", "first_name": "علی", "last_name": "احمدی",
+            "password1": PASSWORD, "password2": PASSWORD, **changes,
+        }
+
+    def test_email_is_optional(self):
+        response = self.client.post(reverse("accounts:signup"), self.data())
+        self.assertEqual(response.status_code, 302)
+        self.assertIsNone(User.objects.get().email)
+
+    def test_an_email_that_is_given_is_kept_in_lower_case(self):
+        self.client.post(reverse("accounts:signup"), self.data(email="  Ali@Example.COM "))
+        self.assertEqual(User.objects.get().email, "ali@example.com")
+
+    def test_the_same_email_cannot_be_used_twice(self):
+        User.objects.create_user("09351234567", PASSWORD, email="ali@example.com")
+        response = self.client.post(reverse("accounts:signup"), self.data(email="ALI@EXAMPLE.COM"))
+        self.assertContains(response, "کاربری با این ایمیل وجود دارد")
+        self.assertEqual(User.objects.count(), 1)
 
 # --- Role label ---------------------------------------------------------------
 

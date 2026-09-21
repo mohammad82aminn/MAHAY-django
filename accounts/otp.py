@@ -18,9 +18,16 @@ from .models import VerificationCode
 
 CODE_LENGTH = 6
 CODE_TTL = timedelta(minutes=2)
+# Someone resetting a password is usually away from the sign-up flow and reads the message later,
+# and a real SMS provider adds its own delay, so that code is given longer to be useful.
+RESET_CODE_TTL = timedelta(minutes=5)
 RESEND_AFTER = timedelta(seconds=90)
 MAX_ATTEMPTS = 5
 MAX_PER_HOUR = 5
+
+
+def ttl_for(purpose):
+    return RESET_CODE_TTL if purpose == VerificationCode.Purpose.PASSWORD_RESET else CODE_TTL
 
 
 class TooManyRequests(Exception):
@@ -56,7 +63,7 @@ def create_and_send(mobile_number, purpose=VerificationCode.Purpose.SIGNUP):
     )
     VerificationCode.objects.create(
         mobile_number=mobile_number, purpose=purpose, code_hash=make_password(code),
-        expires_at=timezone.now() + CODE_TTL,
+        expires_at=timezone.now() + ttl_for(purpose),
     )
     sms.send_verification_code(mobile_number, code)
     return code

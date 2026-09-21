@@ -17,18 +17,24 @@ MOBILE_ATTRS = {
 
 
 class SignUpForm(auth_forms.BaseUserCreationForm):
-    """Website sign-up: mobile, name and password (email is added later in profile)."""
+    """Website sign-up: mobile, name, an optional email, and a password."""
 
     class Meta:
         model = User
-        fields = ("mobile_number", "first_name", "last_name")
-        widgets = {"mobile_number": forms.TextInput(attrs=MOBILE_ATTRS)}
+        fields = ("mobile_number", "first_name", "last_name", "email")
+        widgets = {
+            "mobile_number": forms.TextInput(attrs=MOBILE_ATTRS),
+            "email": forms.EmailInput(attrs={"dir": "ltr", "autocomplete": "email"}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["first_name"].required = True
         self.fields["last_name"].required = True
         self.fields["mobile_number"].widget.attrs["autofocus"] = True
+        # The account is reached by mobile number; an email is only a way to contact the person.
+        # Two people leaving it empty do not clash: the model stores an empty one as NULL.
+        self.fields["email"].help_text = "اختیاری"
 
     def clean_mobile_number(self):
         number = self.cleaned_data["mobile_number"]
@@ -36,6 +42,21 @@ class SignUpForm(auth_forms.BaseUserCreationForm):
         if unverified is not None:
             self.instance = unverified  # continue the unfinished sign-up instead of refusing the number
         return number
+
+
+class PasswordResetRequestForm(forms.Form):
+    """
+    Step one of a forgotten password: which number.
+
+    Whether that number has an account is never said here — see the view. Answering would turn
+    this page into a way of finding out who is registered.
+    """
+
+    mobile_number = forms.CharField(label="شماره موبایل", max_length=20,
+                                    widget=forms.TextInput(attrs={**MOBILE_ATTRS, "autofocus": True}))
+
+    def clean_mobile_number(self):
+        return normalize_mobile_number(self.cleaned_data["mobile_number"])
 
 
 class VerifyCodeForm(forms.Form):
