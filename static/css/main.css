@@ -398,6 +398,23 @@ h2, h3, h4 { line-height: 1.6; }
 }
 .field input:focus { background: var(--surface); border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
 .field input[dir="ltr"], .field input[dir="ltr"]::placeholder { text-align: left; }
+
+/* Dropdowns were left with the browser's own look while every field around them was styled.
+   The chevron is drawn here rather than left to the browser so it sits on the reading-end side
+   and matches the one the header menus use. */
+.field select {
+  width: 100%; padding: .75rem .95rem; padding-inline-end: 2.6rem;
+  font: inherit; color: var(--text); cursor: pointer; outline: none; appearance: none;
+  background-color: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: left 1rem center; background-size: 15px;
+  transition: border-color .15s, box-shadow .15s, background-color .15s;
+}
+.field select:hover { border-color: var(--muted); }
+.field select:focus { background-color: var(--surface); border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
+[data-theme="dark"] .field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
 .has-error input { border-color: var(--error); }
 .field-error { margin: .35rem 0 0; font-size: .85rem; color: var(--error); }
 .field-help { margin-top: .35rem; font-size: .8rem; color: var(--muted); }
