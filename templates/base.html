@@ -48,11 +48,20 @@
               پنل مدیریت{% if pending_total %}<span class="unread-badge">{{ pending_total }}</span>{% endif %}
             </a>
           {% endif %}
-          <a class="btn btn-ghost btn-sm btn-staff" href="{% url 'commerce:library' %}">خریدهای من</a>
-          <a class="nav-user" href="{% url 'accounts:profile' %}">
-            <span class="avatar">{{ user.first_name|first|default:"؟" }}</span>
-            <span class="nav-user-name">{{ user.get_short_name|default:"پروفایل" }}</span>
-          </a>
+          {# Everything to do with this person's own account lives under their name #}
+          <div class="has-menu user-menu">
+            <a class="nav-user" href="{% url 'accounts:profile' %}">
+              <span class="avatar">{{ user.first_name|first|default:"؟" }}</span>
+              <span class="nav-user-name">{{ user.get_short_name|default:"پروفایل" }}</span>
+            </a>
+            <div class="menu">
+              <a href="{% url 'accounts:profile' %}">پروفایل</a>
+              <a href="{% url 'commerce:library' %}">خریدهای من</a>
+              <a href="{% url 'commerce:order_list' %}">سفارش‌ها</a>
+              <a href="{% url 'services:my_requests' %}">درخواست‌های من</a>
+              <a href="{% url 'commerce:cart' %}">سبد خرید</a>
+            </div>
+          </div>
           {# Django 5: logout must be a POST request, not a simple link #}
           <form method="post" action="{% url 'accounts:logout' %}">
             {% csrf_token %}
@@ -67,6 +76,12 @@
 
     <div class="header-nav">
       <nav class="container main-links" aria-label="بخش‌های سایت">
+        <a class="home-link" href="{% url 'home' %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.8V20h14V9.8"/><path d="M10 20v-5h4v5"/></svg>
+          خانه
+        </a>
+        <span class="divider"></span>
+
         {% comment %}
           Each section opens onto the domains it holds, so the bar stays short while every
           domain is still one step away.
@@ -136,20 +151,6 @@
             <a href="{{ page.get_absolute_url }}">{{ page.title }}</a>
           {% endfor %}
           <a href="{% url 'pages:contact' %}">تماس با ما</a>
-        </div>
-      </div>
-      <div>
-        <h4>حساب کاربری</h4>
-        <div class="footer-links">
-          {% if user.is_authenticated %}
-            <a href="{% url 'accounts:profile' %}">پروفایل</a>
-            <a href="{% url 'commerce:library' %}">خریدهای من</a>
-            <a href="{% url 'commerce:order_list' %}">سفارش‌ها</a>
-            <a href="{% url 'services:my_requests' %}">درخواست‌های من</a>
-          {% else %}
-            <a href="{% url 'accounts:login' %}">ورود</a>
-            <a href="{% url 'accounts:signup' %}">ثبت‌نام</a>
-          {% endif %}
         </div>
       </div>
     </div>
