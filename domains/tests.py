@@ -220,3 +220,42 @@ class DefaultPermissionTests(TestCase):
             "action": "restore_default_permissions", "_selected_action": [plain.pk],
         })
         self.assertEqual(plain.permissions.count(), 0)
+
+
+class AdminFormCompletenessTests(TestCase):
+    """
+    A ModelAdmin with an explicit `fields` list does not complain when a new model field is
+    missing from it — the field simply never appears, and the feature behind it looks broken
+    while the code is fine. This catches that.
+    """
+
+    # Deliberately kept out of their forms: permissions come from groups, and an approval
+    # request's target is recorded by the system, not typed in.
+    ALLOWED_TO_BE_HIDDEN = {
+        ("accounts", "user"): {"user_permissions"},
+        ("approvals", "changerequest"): {"content_type", "object_id", "object_repr", "data"},
+    }
+
+    def test_every_editable_field_is_reachable_in_the_admin(self):
+        from django.contrib import admin
+
+        missing = []
+        for model, model_admin in admin.site._registry.items():
+            declared = model_admin.fields
+            if not declared and model_admin.fieldsets:
+                declared = sum([list(options["fields"]) for _name, options in model_admin.fieldsets], [])
+            if not declared:
+                continue  # no explicit list: Django shows everything
+
+            shown = set()
+            for entry in declared:
+                shown.update(entry if isinstance(entry, (tuple, list)) else [entry])
+            shown.update(model_admin.readonly_fields or ())
+            allowed = self.ALLOWED_TO_BE_HIDDEN.get((model._meta.app_label, model._meta.model_name), set())
+
+            for field in model._meta.get_fields():
+                if getattr(field, "editable", False) and not field.auto_created:
+                    if field.name not in shown and field.name not in allowed:
+                        missing.append(f"{model._meta.label}.{field.name}")
+
+        self.assertEqual(missing, [], f"این فیلدها در پنل دیده نمی‌شوند: {missing}")

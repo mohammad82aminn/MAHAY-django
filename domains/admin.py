@@ -8,11 +8,12 @@ from .models import Domain
 
 @admin.register(Domain)
 class DomainAdmin(admin.ModelAdmin):
-    list_display = ("name", "slug", "is_active", "order", "manager_count")
-    list_editable = ("is_active", "order")
+    list_display = ("name", "slug", "is_active", "order", "consulting_rate", "manager_count")
+    list_editable = ("is_active", "order", "consulting_rate")
     search_fields = ("name", "slug")
     readonly_fields = ("group", "managers", "created_at")
-    fields = ("name", "slug", "description", "is_active", "order", "group", "managers", "created_at")
+    fields = ("name", "slug", "description", "is_active", "order", "consulting_rate",
+              "group", "managers", "created_at")
 
     def get_queryset(self, request):
         # Domain managers only see their own domains; site admins see all

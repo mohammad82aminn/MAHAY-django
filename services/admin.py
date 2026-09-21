@@ -88,9 +88,9 @@ class ServiceRequestAdmin(admin.ModelAdmin):
         }),
         (_("پروژه"), {
             "fields": ("title", "domains", "other_domain", "level", "need", "description",
-                       "deadline", "attachment", "attachment_link"),
+                       "deadline", "minutes", "attachment", "attachment_link"),
         }),
-        (_("مالی"), {"fields": ("agreed_amount", "money_summary")}),
+        (_("مالی"), {"fields": ("agreed_amount", "prepay_override", "money_summary")}),
         (_("یادداشت"), {"fields": ("admin_note",)}),
     )
 
@@ -106,7 +106,7 @@ class ServiceRequestAdmin(admin.ModelAdmin):
             (_("درخواست‌کننده"), {"fields": ("name", "mobile_number", "contact_channel", "contact_id")}),
             (_("پروژه"), {
                 "fields": ("title", "domains", "other_domain", "level", "need", "description",
-                           "deadline", "attachment_link"),
+                           "deadline", "minutes", "attachment_link"),
             }),
         )
 
