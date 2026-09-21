@@ -122,12 +122,27 @@ h2, h3, h4 { line-height: 1.6; }
 
 /* Second header row: sections + domains */
 .header-nav { border-top: 1px solid var(--border); }
-.main-links { display: flex; align-items: center; gap: .25rem; height: 48px; overflow-x: auto; scrollbar-width: none; }
+.main-links { display: flex; align-items: center; gap: .25rem; height: 48px; }
 .main-links::-webkit-scrollbar { display: none; }
 .main-links a { flex-shrink: 0; padding: .35rem .8rem; font-size: .92rem; font-weight: 600; color: var(--text); border-radius: 10px; }
 .main-links a:hover { color: var(--primary); background: var(--primary-soft); }
 .main-links .divider { flex-shrink: 0; width: 1px; height: 20px; margin: 0 .5rem; background: var(--border); }
 .main-links .domain-link { font-weight: 500; color: var(--muted); }
+
+/* A section and the domains inside it. Opens on hover and on keyboard focus, so it is not
+   mouse-only; on a touch screen the link itself still goes to the full list. */
+.has-menu { position: relative; flex-shrink: 0; }
+.has-menu > a::after { content: "⌄"; margin-inline-start: .3rem; font-size: .8em; opacity: .6; }
+.has-menu > .menu {
+  position: absolute; inset-inline-start: 0; top: 100%; z-index: 50;
+  display: none; min-width: 190px; padding: .4rem;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: var(--shadow);
+}
+.has-menu:hover > .menu, .has-menu:focus-within > .menu { display: block; }
+.has-menu .menu a { display: block; padding: .45rem .7rem; border-radius: 8px; font-size: .9rem; color: var(--text); }
+.has-menu .menu a:hover { background: var(--primary-soft); color: var(--primary); }
+.has-menu .menu a:first-child { font-weight: 700; }
 
 .unread-badge {
   display: inline-block; min-width: 1.25rem; padding: 0 .3rem; margin-inline-start: .25rem;
@@ -141,19 +156,22 @@ h2, h3, h4 { line-height: 1.6; }
   .nav-user-name, .nav .btn-staff { display: none; }
   /* Staff buttons are hidden on a phone, but an unread count must still get through */
   .nav .btn-inbox.has-unread { display: inline-block; }
+  /* The bar scrolls sideways only where it has to: this clips the section menus, and on a
+     touch screen they never open anyway — the link itself goes to the full list. */
+  .main-links { overflow-x: auto; scrollbar-width: none; }
 }
 
 /* ---------- Footer ---------- */
 
 .site-footer { margin-top: 3rem; background: var(--surface); border-top: 1px solid var(--border); }
-.footer-grid { display: grid; grid-template-columns: 1.6fr repeat(4, 1fr); gap: 2rem; padding-block: 2.5rem; }
+.footer-grid { display: grid; grid-template-columns: 1.6fr repeat(3, 1fr); gap: 2rem; padding-block: 2.5rem; }
 .footer-grid h4 { margin: 0 0 .75rem; font-size: 1rem; }
 .footer-grid p { margin: .75rem 0 0; max-width: 360px; font-size: .9rem; }
 .footer-links { display: flex; flex-direction: column; gap: .35rem; font-size: .92rem; }
 .footer-links a { color: var(--muted); }
 .footer-links a:hover { color: var(--primary); }
 .footer-bottom { padding-block: 1rem; font-size: .85rem; color: var(--muted); text-align: center; border-top: 1px solid var(--border); }
-@media (max-width: 1000px) { .footer-grid { grid-template-columns: repeat(4, 1fr); } .footer-grid > :first-child { grid-column: 1 / -1; } }
+@media (max-width: 1000px) { .footer-grid { grid-template-columns: repeat(3, 1fr); } .footer-grid > :first-child { grid-column: 1 / -1; } }
 @media (max-width: 700px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
 
 /* ---------- Buttons ---------- */
