@@ -645,15 +645,27 @@ h2, h3, h4 { line-height: 1.6; }
 .service-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
 @media (max-width: 700px) { .service-cards { grid-template-columns: 1fr; } }
 
+/* The art sits beside the words rather than above them: the card was mostly empty space, and
+   this fills it without making the card any taller. */
 .service-card {
-  display: flex; flex-direction: column; gap: .5rem; padding: 1.5rem;
+  display: flex; align-items: center; gap: 1.25rem; padding: 1.5rem;
   color: var(--text); background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); box-shadow: var(--shadow); transition: transform .2s, box-shadow .2s;
 }
 .service-card:hover { color: var(--text); transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+.service-card .service-text { display: flex; flex-direction: column; gap: .5rem; }
 .service-card strong { font-size: 1.15rem; }
 .service-card .service-icon { font-size: 1.8rem; }
+.service-card .service-art { flex: 0 0 auto; width: 124px; height: 106px; }
+.service-card:hover .service-art { transform: scale(1.04); }
+.service-art { transition: transform .2s; }
 .service-card .service-more { margin-top: .35rem; font-weight: 700; color: var(--primary); }
+
+/* On a narrow screen the art would squeeze the words into a column, so it goes back on top */
+@media (max-width: 520px) {
+  .service-card { flex-direction: column; align-items: flex-start; gap: .75rem; }
+  .service-card .service-art { width: 96px; height: 82px; }
+}
 
 /* Strip at the bottom of a product page */
 .service-strip { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.5rem; }

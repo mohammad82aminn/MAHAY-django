@@ -24,3 +24,5 @@ media/
 
 # Paid files (videos, attachments)
 protected_media/
+# Editor/tool settings, not part of the project
+.claude/
