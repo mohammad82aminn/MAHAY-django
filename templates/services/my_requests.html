@@ -7,6 +7,27 @@
 <section class="container section">
   <div class="page-head"><h1>درخواست‌های من</h1></div>
 
+  {% if collaboration %}
+    <div class="card block request-row">
+      <div class="request-main">
+        <span class="badge badge-type">همکاری با مجموعه</span>
+        <h3>درخواست همکاری شما</h3>
+        <p class="muted">{{ collaboration.created_at|date:"Y/m/d"|fa_num }}</p>
+        {% if collaboration.wanted_work %}
+          <p class="muted">{{ collaboration.wanted_work }}</p>
+        {% endif %}
+      </div>
+      <div class="request-side">
+        <span class="status status-{{ collaboration.status }}">{{ collaboration.get_status_display }}</span>
+        {% if collaboration.is_editable %}
+          <a class="btn btn-ghost btn-sm" href="{% url 'collaboration:apply' %}">ویرایش</a>
+        {% elif not collaboration.is_open and may_apply %}
+          <a class="btn btn-ghost btn-sm" href="{% url 'collaboration:apply' %}">درخواست تازه</a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
   {% if requests %}
     <div class="request-list">
       {% for item, stage, due in requests %}

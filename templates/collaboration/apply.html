@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}همکاری با مجموعه{% endblock %}
+
+{% block content %}
+<section class="container section">
+  <div class="page-head">
+    <h1>همکاری با مجموعه</h1>
+    <p class="lead muted">اگر در حوزه‌ای تخصص دارید و دوست دارید با MAHAY کار کنید، این فرم را پر کنید.</p>
+  </div>
+
+  <div class="service-layout">
+    <div>
+      <div class="card block">
+        {% if existing %}
+          <div class="alert alert-info">
+            درخواست شما ثبت شده است. تا وقتی بررسی شروع نشده می‌توانید اصلاحش کنید.
+          </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-error">
+              {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+            </div>
+          {% endif %}
+
+          {# Grouped so a form this long does not read as one unbroken column of boxes #}
+          <h2 class="form-step">چه کاری از شما برمی‌آید</h2>
+          {% with field=form.work %}{% include "partials/field.html" %}{% endwith %}
+          {% with field=form.domains %}{% include "partials/field.html" %}{% endwith %}
+          {% with field=form.other_domain %}{% include "partials/field.html" %}{% endwith %}
+          {% with field=form.pitch %}{% include "partials/field.html" %}{% endwith %}
+
+          <h2 class="form-step">سابقه و تخصص <span class="muted">— اختیاری</span></h2>
+          {% with field=form.degree %}{% include "partials/field.html" %}{% endwith %}
+          {% with field=form.field_of_study %}{% include "partials/field.html" %}{% endwith %}
+          {% with field=form.experience %}{% include "partials/field.html" %}{% endwith %}
+          {% with field=form.skills %}{% include "partials/field.html" %}{% endwith %}
+          {% with field=form.links %}{% include "partials/field.html" %}{% endwith %}
+          {% with field=form.files %}{% include "partials/field.html" %}{% endwith %}
+
+          <h2 class="form-step">چطور با شما تماس بگیریم</h2>
+          {% with field=form.contact_channel %}{% include "partials/field.html" %}{% endwith %}
+          {% with field=form.contact_id %}{% include "partials/field.html" %}{% endwith %}
+
+          <button type="submit" class="btn btn-primary">
+            {% if existing %}ذخیره‌ی تغییرات{% else %}ثبت درخواست{% endif %}
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <aside class="service-side">
+      <div class="card block">
+        <h2>چطور پیش می‌رود</h2>
+        <ol class="steps">
+          <li>این فرم را پر می‌کنید.</li>
+          <li>درخواست شما برای مدیران مجموعه فرستاده می‌شود.</li>
+          <li>اگر مناسب بود، از همان راه ارتباطی که نوشته‌اید با شما تماس می‌گیریم.</li>
+          <li>وضعیت درخواست را همیشه در «درخواست‌های من» می‌بینید.</li>
+        </ol>
+      </div>
+      <div class="card block">
+        <h2>نکته</h2>
+        <p class="muted">
+          نام و شماره‌ی شما از حساب کاربری‌تان برداشته می‌شود و لازم نیست دوباره بنویسید.
+          جز نوع همکاری، معرفی کوتاه و راه ارتباطی، بقیه‌ی فیلدها اختیاری‌اند.
+        </p>
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}

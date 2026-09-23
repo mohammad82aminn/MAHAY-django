@@ -234,6 +234,11 @@ class AdminFormCompletenessTests(TestCase):
     ALLOWED_TO_BE_HIDDEN = {
         ("accounts", "user"): {"user_permissions"},
         ("approvals", "changerequest"): {"content_type", "object_id", "object_repr", "data"},
+        # The applicant's own answers: shown read-only, since a reviewer editing somebody's
+        # application would leave no way to tell what they actually said.
+        ("collaboration", "collaborationrequest"): {
+            "contact_channel", "contact_id", "can_teach", "can_build", "can_advise",
+        },
     }
 
     def test_every_editable_field_is_reachable_in_the_admin(self):

@@ -60,6 +60,10 @@
               <a href="{% url 'commerce:order_list' %}">سفارش‌ها</a>
               <a href="{% url 'services:my_requests' %}">درخواست‌های من</a>
               <a href="{% url 'commerce:cart' %}">سبد خرید</a>
+              {# Not shown to people who already hold a role: they work here already #}
+              {% if not user.is_staff %}
+                <a href="{% url 'collaboration:apply' %}">همکاری با مجموعه</a>
+              {% endif %}
             </div>
           </div>
           {# Django 5: logout must be a POST request, not a simple link #}

@@ -114,8 +114,14 @@ def my_requests(request):
         ServiceRequest.objects.filter(user=request.user)
         .prefetch_related("domains", "referrals__domain", "payments")
     )
+    # This page is where a person looks for anything they have asked us for, so the application
+    # to work with us belongs here too rather than on a page of its own.
+    from collaboration import services as collaboration
+
     return render(request, "services/my_requests.html", {
         "requests": [(item, services.stage_of(item)[1], item.due_now) for item in requests],
+        "collaboration": collaboration.latest_request(request.user),
+        "may_apply": collaboration.may_apply(request.user),
     })
 
 

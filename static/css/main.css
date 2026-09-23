@@ -399,6 +399,15 @@ h2, h3, h4 { line-height: 1.6; }
 .field input:focus { background: var(--surface); border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
 .field input[dir="ltr"], .field input[dir="ltr"]::placeholder { text-align: left; }
 
+/* A textarea had only ever been styled inside two particular pages, so on every other form it
+   fell back to the browser's default box: a narrow column sitting in a wide empty field. */
+.field textarea {
+  width: 100%; padding: .75rem .95rem; font: inherit; color: var(--text); resize: vertical;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; outline: none;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.field textarea:focus { background: var(--surface); border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
+
 /* Dropdowns were left with the browser's own look while every field around them was styled.
    The chevron is drawn here rather than left to the browser so it sits on the reading-end side
    and matches the one the header menus use. */
@@ -420,6 +429,13 @@ h2, h3, h4 { line-height: 1.6; }
 .field-help { margin-top: .35rem; font-size: .8rem; color: var(--muted); }
 .field-help ul { margin: 0; padding-inline-start: 1.1rem; }
 .field-link { display: inline-block; margin: -.4rem 0 1.1rem; font-size: .88rem; }
+/* Breaks a long form into named steps instead of one unbroken column of boxes */
+.form-step {
+  margin: 1.75rem 0 1rem; padding-bottom: .5rem; font-size: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.form-step:first-of-type { margin-top: .5rem; }
+.form-step .muted { font-weight: 500; font-size: .88rem; }
 
 /* Password show/hide (button is added by main.js) */
 .password-wrap { position: relative; }
