@@ -661,26 +661,39 @@ h2, h3, h4 { line-height: 1.6; }
 .service-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
 @media (max-width: 700px) { .service-cards { grid-template-columns: 1fr; } }
 
-/* The art sits beside the words rather than above them: the card was mostly empty space, and
-   this fills it without making the card any taller. */
+/* The words sit at the top and the art fills the rest of the card below them, so the picture
+   carries the card instead of decorating its side. */
 .service-card {
-  display: flex; align-items: center; gap: 1.25rem; padding: 1.5rem;
+  position: relative; display: flex; flex-direction: column; gap: .75rem;
+  min-height: 22rem; padding: 1.25rem 1.75rem .75rem;
   color: var(--text); background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); box-shadow: var(--shadow); transition: transform .2s, box-shadow .2s;
 }
 .service-card:hover { color: var(--text); transform: translateY(-3px); box-shadow: var(--shadow-hover); }
-.service-card .service-text { display: flex; flex-direction: column; gap: .5rem; }
-.service-card strong { font-size: 1.15rem; }
-.service-card .service-icon { font-size: 1.8rem; }
-.service-card .service-art { flex: 0 0 auto; width: 124px; height: 106px; }
-.service-card:hover .service-art { transform: scale(1.04); }
-.service-art { transition: transform .2s; }
-.service-card .service-more { margin-top: .35rem; font-weight: 700; color: var(--primary); }
+.service-card .service-text { position: relative; z-index: 1; display: flex; flex-direction: column; gap: .35rem; }
+.service-card strong { font-size: 1.2rem; }
+/* The art's backdrop is transparent, so the same file sits on the light card and the dark one */
+.service-card .service-art {
+  display: block; width: 100%; height: 23rem; margin-top: auto;
+  object-fit: contain; object-position: bottom center; transform-origin: bottom; transition: transform .2s;
+}
+.service-card:hover .service-art { transform: scale(1.03); }
+.service-card .service-more { margin-top: .15rem; font-weight: 700; color: var(--primary); }
 
-/* On a narrow screen the art would squeeze the words into a column, so it goes back on top */
-@media (max-width: 520px) {
-  .service-card { flex-direction: column; align-items: flex-start; gap: .75rem; }
-  .service-card .service-art { width: 96px; height: 82px; }
+/* The consulting art is tall: it stands on the card's floor and rises past its top edge, and the
+   words sit in its empty upper corner. The section heading leaves that corner of the row free. */
+.service-card--pop { padding-inline-end: 56%; }
+.service-card--pop .service-art {
+  position: absolute; inset-inline-end: 1rem; bottom: .75rem;
+  width: auto; height: calc(100% + 2.75rem); margin: 0; transform-origin: bottom;
+}
+
+/* One column: nothing to rise beside, so every card stacks its art under the words */
+@media (max-width: 700px) {
+  .service-card { min-height: 0; }
+  .service-card .service-art { height: 14rem; }
+  .service-card--pop { padding-inline-end: 1.75rem; }
+  .service-card--pop .service-art { position: static; width: 100%; height: 16rem; margin-top: auto; }
 }
 
 /* Strip at the bottom of a product page */

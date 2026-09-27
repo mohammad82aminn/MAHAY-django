@@ -74,20 +74,20 @@
   <div class="section-head"><h2>خدمات تخصصی</h2></div>
   <div class="service-cards">
     <a class="service-card" href="{% url 'services:project' %}">
-      <img class="service-art" src="{% static 'images/service-project.svg' %}" alt="" width="140" height="120">
       <span class="service-text">
         <strong>سفارش پروژه</strong>
         <span class="muted">پروژه‌ی درسی، پایان‌نامه، صنعتی یا استارتاپی خود را به تیم تخصصی ما بسپارید.</span>
         <span class="service-more">ثبت درخواست ←</span>
       </span>
+      <img class="service-art" src="{% static 'images/service-project.webp' %}" alt="" width="900" height="838" loading="lazy">
     </a>
-    <a class="service-card" href="{% url 'services:consulting' %}">
-      <img class="service-art" src="{% static 'images/service-consulting.svg' %}" alt="" width="140" height="120">
+    <a class="service-card service-card--pop" href="{% url 'services:consulting' %}">
       <span class="service-text">
         <strong>مشاوره تخصصی</strong>
         <span class="muted">قبل از شروع یا در میانه‌ی کار، با کارشناس همان حوزه مشورت کنید.</span>
         <span class="service-more">ثبت درخواست ←</span>
       </span>
+      <img class="service-art" src="{% static 'images/service-consulting.webp' %}" alt="" width="640" height="757" loading="lazy">
     </a>
   </div>
 </section>
