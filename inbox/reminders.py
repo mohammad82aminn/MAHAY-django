@@ -8,6 +8,7 @@ What counts as waiting, and on whom:
 - a referral with no expert  -> the domain's managers (the site admins, where it has none)
 - an expert's price not yet agreed to -> the domain's managers
 - work handed to an expert who hasn't started it -> that expert
+- a technical request nobody has picked up -> the technical team
 
 The site admins hear about all of it. Each person gets one message listing everything overdue,
 not one message per item, and each item is reminded once per step (inbox.models.Reminder).
@@ -50,7 +51,19 @@ def active_managers(domain):
 
 def overdue(now=None):
     cutoff = (now or timezone.now()) - REMIND_AFTER
-    return [*_content(cutoff), *_referrals(cutoff)]
+    return [*_content(cutoff), *_referrals(cutoff), *_tech_requests(cutoff)]
+
+
+def _tech_requests(cutoff):
+    """A technical request nobody has picked up: the technical team."""
+    from support.models import TechRequest
+    from support.services import tech_team, url_of
+
+    waiting = list(TechRequest.objects.filter(status=TechRequest.Status.NEW, created_at__lte=cutoff))
+    team = set(tech_team()) if waiting else set()
+    for request in waiting:
+        yield Overdue(f"tech:{request.pk}:{request.created_at.isoformat()}",
+                      f"درخواست فنی «{request.title}» — هنوز برداشته نشده", url_of(request), team)
 
 
 def _content(cutoff):

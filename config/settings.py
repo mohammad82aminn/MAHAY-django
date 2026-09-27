@@ -48,6 +48,7 @@ LOCAL_APPS = [
     "inbox",
     "collaboration",
     "finance",
+    "support",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
