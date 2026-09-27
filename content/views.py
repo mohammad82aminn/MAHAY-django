@@ -11,14 +11,18 @@ from products.models import Product
 
 from . import progress as progress_service
 from .access import can_open
-from .models import Attachment, Lesson, LessonProgress, Section
+from .models import Attachment, Lesson, LessonProgress, ProductFile, Section
 
 # kind in the URL -> (model, file field). A Product is its own product, hence the getattr below.
 PROTECTED_FIELDS = {
     "video": (Lesson, "video_file"),
     "attachment": (Attachment, "file"),
+    "product_file": (ProductFile, "file"),
     "thesis": ("products.Product", "thesis"),
 }
+# Always handed over as a download, never opened in the page: a file someone uploaded must not
+# get to run as a web page on this site (an .html or .svg would)
+DOWNLOADED = {"attachment", "product_file"}
 
 
 @login_required
@@ -38,7 +42,7 @@ def protected_file(request, kind, pk):
     file = getattr(obj, field_name)
     if not file:
         raise Http404
-    return FileResponse(file.open("rb"), as_attachment=(kind == "attachment"), filename=os.path.basename(file.name))
+    return FileResponse(file.open("rb"), as_attachment=(kind in DOWNLOADED), filename=os.path.basename(file.name))
 
 
 # --- Learning pages -------------------------------------------------------------
@@ -66,6 +70,7 @@ def learn(request, slug):
     return render(request, "content/learn.html", {
         "product": product,
         "sections": sections,
+        "companion_files": ProductFile.objects.filter(product=product, is_published=True, is_archived=False),
         **progress_service.summary(request.user, product),
     })
 

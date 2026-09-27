@@ -67,6 +67,28 @@ class ProductModelTests(TestCase):
                                is_published=True, is_archived=True)
         self.assertEqual(list(Product.objects.visible()), [shown])
 
+    def test_three_ways_to_offer_for_free(self):
+        """Free from the start, a 100% discount on a paid one, or a paid one made free: all are allowed."""
+        for product in (self.make(price=0), self.make(price=500_000, sale_price=0)):
+            product.full_clean()
+            self.assertTrue(product.is_free)
+        self.assertEqual(self.make(price=500_000, sale_price=0).discount_percent, 100)
+
+    def test_product_with_public_aparat_lessons_cannot_become_paid(self):
+        from content.models import Lesson, Section
+
+        product = Product.objects.create(product_type="course", title="t", slug="t", primary_domain=self.domain)
+        section = Section.objects.create(product=product, title="s")
+        Lesson.objects.create(section=section, title="درس آپاراتی", video_url="https://www.aparat.com/v/abc")
+
+        for price, sale_price in ((500_000, None), (500_000, 100_000)):
+            product.price, product.sale_price = price, sale_price
+            with self.subTest(price=price, sale_price=sale_price), self.assertRaises(ValidationError) as caught:
+                product.full_clean()
+            self.assertIn("درس آپاراتی", str(caught.exception))
+        product.price, product.sale_price = 500_000, 0  # still free while the discount lasts
+        product.full_clean()
+
 
 @override_settings(MEDIA_ROOT=TEMP_MEDIA)
 class ApprovalFlowTestCase(TestCase):

@@ -14,7 +14,8 @@ from approvals.models import ChangeRequest
 from domains.models import Domain
 from products.models import Product
 
-from .models import Attachment, Lesson, Section
+from .models import Attachment, Lesson, ProductFile, Section
+from .testing import mp4_upload
 
 PASSWORD = "S3cure-pass!"
 TEMP_PROTECTED = tempfile.mkdtemp()
@@ -23,8 +24,8 @@ APARAT = "https://www.aparat.com/v/abc123"
 GIF = b"GIF89a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\xff\xff\xff!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;"
 
 
-def video(name="lesson.mp4"):
-    return SimpleUploadedFile(name, b"fake video bytes", content_type="video/mp4")
+def video(name="lesson.mp4", seconds=60):
+    return mp4_upload(name, seconds)
 
 
 @override_settings(PROTECTED_MEDIA_ROOT=TEMP_PROTECTED, MEDIA_ROOT=TEMP_MEDIA)
@@ -204,6 +205,126 @@ class RelatedProductTests(ContentTestCase):
         self.client.force_login(self.admin)
         response = self.client.get(reverse("admin:products_product_change", args=[self.product.pk]))
         self.assertContains(response, "فصل ۱")
+
+
+class LessonDurationTests(ContentTestCase):
+    """Nobody types a video's length: it is read from the uploaded MP4."""
+
+    def lesson_post(self, lesson=None, **changes):
+        data = {"section": self.section.pk, "title": "درس", "order": 0, "body": "", "video_url": "",
+                "duration_minutes": "", "is_published": "on"}
+        data.update(changes)
+        url = (reverse("admin:content_lesson_change", args=[lesson.pk]) if lesson
+               else reverse("admin:content_lesson_add"))
+        return self.client.post(url, data)
+
+    def test_length_is_read_from_the_upload(self):
+        lesson = Lesson.objects.create(section=self.section, title="x", video_file=video(seconds=754.4))
+        self.assertEqual(lesson.duration_seconds, 754)
+
+    def test_admin_upload_reads_length_and_drops_typed_minutes(self):
+        self.client.force_login(self.admin)
+        self.lesson_post(video_file=video(seconds=125), duration_minutes=99)
+        lesson = Lesson.objects.get(title="درس")
+        self.assertEqual((lesson.duration_seconds, lesson.duration_minutes), (125, None))
+
+    def test_damaged_or_non_mp4_file_is_refused(self):
+        self.client.force_login(self.admin)
+        for upload in (SimpleUploadedFile("broken.mp4", b"not a video"), video("clip.mkv")):
+            with self.subTest(upload=upload.name):
+                response = self.lesson_post(video_file=upload)
+                self.assertEqual(response.status_code, 200)  # the form comes back with an error
+                self.assertFalse(Lesson.objects.filter(title="درس").exists())
+
+    def test_aparat_lesson_keeps_typed_minutes(self):
+        self.product.price = 0
+        self.product.save()
+        lesson = Lesson.objects.create(section=self.section, title="x", video_url=APARAT, duration_minutes=7)
+        self.assertEqual(lesson.duration_seconds, 420)
+
+    def test_replaced_video_is_measured_when_the_change_is_approved(self):
+        lesson = self.lesson_with_video()
+        self.client.force_login(self.manager)
+        self.lesson_post(lesson, title="درس ۱", video_file=video("new.mp4", seconds=300))
+        lesson.refresh_from_db()
+        self.assertEqual(lesson.duration_seconds, 60)  # buyers still see the live video and its length
+
+        request = ChangeRequest.objects.get(action="update")
+        self.client.force_login(self.admin)
+        self.client.post(reverse("admin:approvals_changerequest_change", args=[request.pk]), {"status": "approved"})
+        lesson.refresh_from_db()
+        self.assertEqual(lesson.duration_seconds, 300)
+
+    def test_existing_lessons_are_measured_once(self):
+        """The data migration: a file wins over typed minutes; without a readable file the minutes stay."""
+        from importlib import import_module
+
+        from django.apps import apps
+
+        uploaded = self.lesson_with_video()
+        missing = Lesson.objects.create(section=self.section, title="y", video_file="videos/gone.mp4")
+        Lesson.objects.filter(pk=uploaded.pk).update(duration_seconds=None, duration_minutes=10)
+        Lesson.objects.filter(pk=missing.pk).update(duration_seconds=None, duration_minutes=4)
+
+        import_module("content.migrations.0004_fill_lesson_durations").fill_durations(apps, None)
+        uploaded.refresh_from_db()
+        missing.refresh_from_db()
+        self.assertEqual((uploaded.duration_seconds, uploaded.duration_minutes), (60, None))
+        self.assertEqual((missing.duration_seconds, missing.duration_minutes), (240, 4))
+
+
+class CompanionFileTests(ContentTestCase):
+    """Files for the whole course: on its table of contents, not on every lesson."""
+
+    def setUp(self):
+        super().setUp()
+        self.companion = ProductFile.objects.create(
+            product=self.product, title="جزوه‌ی کامل دوره", is_published=True,
+            file=SimpleUploadedFile("handbook.pdf", b"%PDF-1.4"),
+        )
+        self.url = reverse("content:protected_file", args=["product_file", self.companion.pk])
+
+    def test_who_can_download(self):
+        self.assertEqual(self.client.get(self.url).status_code, 302)  # anonymous -> login page
+        for user, status in ((self.buyer, 404), (self.other_manager, 404), (self.manager, 200), (self.admin, 200)):
+            with self.subTest(user=user.mobile_number):
+                self.client.force_login(user)
+                self.assertEqual(self.client.get(self.url).status_code, status)
+
+    def test_always_a_download_never_opened_in_the_page(self):
+        self.client.force_login(self.admin)
+        self.assertTrue(self.client.get(self.url)["Content-Disposition"].startswith("attachment"))
+
+    def test_listed_on_the_contents_not_on_a_lesson(self):
+        from commerce.models import Purchase
+
+        lesson = self.lesson_with_video()
+        Purchase.objects.create(user=self.buyer, product=self.product)
+        self.client.force_login(self.buyer)
+        self.assertContains(self.client.get(reverse("content:learn", args=[self.product.slug])), "جزوه‌ی کامل دوره")
+        lesson_page = self.client.get(reverse("content:lesson", args=[self.product.slug, lesson.pk]))
+        self.assertNotContains(lesson_page, "جزوه‌ی کامل دوره")
+
+    def test_product_page_shows_titles_but_locks_the_files(self):
+        response = self.client.get(self.product.get_absolute_url())
+        self.assertContains(response, "🔒 جزوه‌ی کامل دوره")
+        self.assertNotContains(response, self.url)
+        self.client.force_login(self.manager)
+        self.assertContains(self.client.get(self.product.get_absolute_url()), self.url)
+
+    def test_manager_adds_one_and_it_waits_for_approval(self):
+        self.client.force_login(self.manager)
+        self.client.post(reverse("admin:content_productfile_add"), {
+            "product": self.product.pk, "title": "کدهای پروژه", "order": 0,
+            "file": SimpleUploadedFile("code.zip", b"PK"),
+        })
+        added = ProductFile.objects.get(title="کدهای پروژه")
+        self.assertFalse(added.is_published)
+        self.assertTrue(ChangeRequest.objects.filter(action="create", object_id=added.pk, domain=self.fpga).exists())
+
+    def test_published_with_a_new_product(self):
+        self.assertIn(self.companion, self.product.approval_children())
+
 
 def tearDownModule():
     shutil.rmtree(TEMP_PROTECTED, ignore_errors=True)

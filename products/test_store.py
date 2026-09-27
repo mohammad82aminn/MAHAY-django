@@ -8,7 +8,7 @@ from content.models import Lesson, Section
 from domains.models import Domain
 
 from .models import Product, ProductImage
-from .templatetags.store import aparat_embed, fa_num, toman
+from .templatetags.store import aparat_embed, duration, fa_num, toman
 
 COVER = "products/covers/test.png"
 
@@ -103,6 +103,81 @@ class DetailTests(StoreTestCase):
         self.assertContains(response, "aparat.com/video/video/embed/videohash/abc123/vt/frame")
 
 
+class InstructorAndDurationTests(StoreTestCase):
+    """The card and the product page say who teaches it and how long it all runs."""
+
+    def add_lessons(self, product, *seconds, published=True):
+        section = Section.objects.create(product=product, title="فصل", is_published=True)
+        for index, length in enumerate(seconds):
+            lesson = Lesson.objects.create(section=section, title=f"درس {index}", is_published=published)
+            Lesson.objects.filter(pk=lesson.pk).update(duration_seconds=length)  # as if read from its video
+
+    def test_card_shows_instructor_and_total_of_published_lessons(self):
+        self.course.instructor = "علی رضایی"
+        self.course.save()
+        self.add_lessons(self.course, 3600, 1800)
+        self.add_lessons(self.course, 7200, published=False)  # not counted until approved
+        response = self.client.get(reverse("home"))
+        self.assertContains(response, "علی رضایی")
+        self.assertContains(response, "۱ ساعت و ۳۰ دقیقه")
+
+    def test_total_is_not_doubled_by_related_domains(self):
+        self.course.related_domains.add(self.ai)
+        self.add_lessons(self.course, 600)
+        [listed] = [p for p in self.listed(domain="ai") if p == self.course]
+        self.assertEqual(listed.total_seconds, 600)
+
+    def test_card_without_either_shows_neither(self):
+        response = self.client.get(reverse("home"))
+        self.assertNotContains(response, "product-card-meta")
+
+    def test_product_page_facts(self):
+        self.project.instructor = "مریم احمدی، رضا کریمی"
+        self.project.save()
+        self.add_lessons(self.project, 2700)
+        response = self.client.get(self.project.get_absolute_url())
+        self.assertContains(response, "مریم احمدی، رضا کریمی")
+        self.assertContains(response, "۴۵ دقیقه")
+
+
+class EnterWithoutBuyingTests(StoreTestCase):
+    """Site admins and the product's domain managers open the content; nobody asks them to pay."""
+
+    def setUp(self):
+        super().setUp()
+        section = Section.objects.create(product=self.course, title="فصل", is_published=True)
+        Lesson.objects.create(section=section, title="درس پولی", is_published=True)
+
+    def page_for(self, user):
+        if user:
+            self.client.force_login(user)
+        return self.client.get(self.course.get_absolute_url())
+
+    def test_admins_and_own_domain_managers_go_straight_in(self):
+        admin = User.objects.create_user("09122222222", "S3cure-pass!")
+        admin.groups.add(Group.objects.get(name=SITE_ADMINS_GROUP))
+        manager = User.objects.create_user("09121111111", "S3cure-pass!")
+        manager.groups.add(self.fpga.group)
+        for user in (admin, manager):
+            with self.subTest(user=user.mobile_number):
+                response = self.page_for(user)
+                self.assertContains(response, reverse("content:learn", args=[self.course.slug]))
+                self.assertNotContains(response, "🔒")
+                self.assertNotContains(response, reverse("commerce:add_to_cart", args=[self.course.slug]))
+
+    def test_everyone_else_still_sees_the_lock(self):
+        other_manager = User.objects.create_user("09123333333", "S3cure-pass!")
+        other_manager.groups.add(self.ai.group)
+        visitor = User.objects.create_user("09124444444", "S3cure-pass!")
+        for user in (None, visitor, other_manager):
+            with self.subTest(user=getattr(user, "mobile_number", "anonymous")):
+                self.client.logout()
+                response = self.page_for(user)
+                self.assertContains(response, "🔒")
+                self.assertContains(response, reverse("commerce:add_to_cart", args=[self.course.slug]))
+                self.assertNotContains(response, reverse("content:learn", args=[self.course.slug]))
+
+
 class HomeTests(StoreTestCase):
     def test_home_shows_latest_products(self):
         response = self.client.get(reverse("home"))
@@ -119,3 +194,10 @@ class TemplateFilterTests(TestCase):
         self.assertEqual(aparat_embed("https://www.aparat.com/v/xyz9"),
                          "https://www.aparat.com/video/video/embed/videohash/xyz9/vt/frame")
         self.assertEqual(aparat_embed("https://example.com"), "")
+
+    def test_duration(self):
+        self.assertEqual(duration(None), "")
+        self.assertEqual(duration(20), "۱ دقیقه")  # a short clip is never "۰ دقیقه"
+        self.assertEqual(duration(45 * 60), "۴۵ دقیقه")
+        self.assertEqual(duration(2 * 3600), "۲ ساعت")
+        self.assertEqual(duration(8100), "۲ ساعت و ۱۵ دقیقه")

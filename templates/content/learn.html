@@ -32,6 +32,17 @@
     </div>
   {% endif %}
 
+  {% if companion_files %}
+    <div class="card block">
+      <h2>فایل‌های همراه</h2>
+      <ul class="file-list">
+        {% for companion in companion_files %}
+          <li><a href="{% url 'content:protected_file' 'product_file' companion.pk %}">⬇ {{ companion.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
   {% if sections %}
     <div class="card block">
       <h2>سرفصل‌ها</h2>
@@ -54,8 +65,8 @@
                       {% if row.percent and not row.is_completed %}
                         <span class="lesson-percent">{{ row.percent|fa_num }}٪ دیده‌شده</span>
                       {% endif %}
-                      {% if lesson.duration_minutes %}
-                        <span class="muted">{{ lesson.duration_minutes|fa_num }} دقیقه</span>
+                      {% if lesson.duration_seconds %}
+                        <span class="muted">{{ lesson.duration_seconds|duration }}</span>
                       {% endif %}
                     </a>
                     {% if row.percent and not row.is_completed %}

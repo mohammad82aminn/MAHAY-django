@@ -1,10 +1,12 @@
 from django.contrib.contenttypes.fields import GenericRelation
 from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from .storage import protected_storage
 from .validators import validate_aparat_url
+from .video import mp4_seconds
 
 
 class PublishState(models.Model):
@@ -50,13 +52,19 @@ class Lesson(PublishState):
     body = models.TextField(_("متن توضیحی"), blank=True)
     video_file = models.FileField(
         _("فایل ویدیو"), upload_to="videos/%Y/%m/", storage=protected_storage, blank=True,
-        help_text=_("برای محصولات پولی. فقط خریداران می‌توانند ببینند."),
+        validators=[FileExtensionValidator(["mp4"], message=_("فقط ویدیوی MP4 پذیرفته می‌شود."))],
+        help_text=_("فقط MP4. مدت ویدیو خودکار از روی فایل خوانده می‌شود. فقط خریداران می‌توانند ببینند."),
     )
     video_url = models.URLField(
         _("لینک ویدیو در آپارات"), blank=True, validators=[validate_aparat_url],
         help_text=_("فقط برای محصولات رایگان؛ ویدیوی آپارات برای همه قابل مشاهده است."),
     )
-    duration_minutes = models.PositiveSmallIntegerField(_("مدت (دقیقه)"), null=True, blank=True)
+    duration_minutes = models.PositiveSmallIntegerField(
+        _("مدت ویدیوی آپارات (دقیقه)"), null=True, blank=True,
+        help_text=_("فقط برای لینک آپارات. مدت ویدیوی آپلودشده خودکار حساب می‌شود."),
+    )
+    # What every total is summed from: read from the video file, or the minutes typed for an Aparat link
+    duration_seconds = models.PositiveIntegerField(_("مدت (ثانیه)"), null=True, blank=True, editable=False)
 
     class Meta(PublishState.Meta):
         verbose_name = _("درس")
@@ -72,9 +80,28 @@ class Lesson(PublishState):
     def approval_children(self):
         return Attachment.objects.filter(lesson=self)
 
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        lesson = super().from_db(db, field_names, values)
+        row = dict(zip(field_names, values))
+        lesson._saved_video = (row["video_file"] or "") if "video_file" in row else None  # None: not loaded
+        return lesson
+
+    def video_changed(self):
+        saved = getattr(self, "_saved_video", "")  # a new lesson has no saved video
+        return saved is not None and (self.video_file.name or "") != saved
+
     def clean(self):
         if self.video_file and self.video_url:
             raise ValidationError(_("یا فایل ویدیو آپلود کنید یا لینک آپارات بدهید، نه هر دو."))
+        if self.video_file:
+            self.duration_minutes = None  # the file itself says how long it is
+            if self.video_changed():
+                self._video_seconds = mp4_seconds(self.video_file)
+                if self._video_seconds is None:
+                    raise ValidationError({"video_file": _(
+                        "مدت این ویدیو خوانده نشد؛ فایل MP4 سالم آپلود کنید."
+                    )})
         try:
             product = self.section.product
         except Section.DoesNotExist:  # no section chosen yet (the form shows that error)
@@ -83,6 +110,20 @@ class Lesson(PublishState):
             raise ValidationError({"video_url": _(
                 "این محصول پولی است و ویدیوی آپارات برای همه قابل مشاهده است؛ ویدیو را آپلود کنید."
             )})
+
+    def save(self, *args, **kwargs):
+        update_fields = kwargs.get("update_fields")
+        if update_fields is None or {"video_file", "duration_minutes"} & set(update_fields):
+            if self.video_file:
+                if self.video_changed() or self.duration_seconds is None:
+                    seconds = getattr(self, "_video_seconds", None)  # already read by clean()
+                    self.duration_seconds = seconds if seconds is not None else mp4_seconds(self.video_file)
+            else:
+                self.duration_seconds = self.duration_minutes * 60 if self.duration_minutes else None
+            if update_fields is not None:
+                kwargs["update_fields"] = {*update_fields, "duration_seconds"}
+        super().save(*args, **kwargs)
+        self._saved_video, self._video_seconds = self.video_file.name or "", None
 
 
 class Attachment(PublishState):
@@ -104,6 +145,26 @@ class Attachment(PublishState):
         return self.lesson.section.product
 
     
+
+class ProductFile(PublishState):
+    """
+    A file for the whole course or project (a handbook, the full source code...), listed on its
+    table of contents. A file of a single lesson is an Attachment instead.
+    """
+
+    product = models.ForeignKey(
+        "products.Product", on_delete=models.CASCADE, related_name="companion_files", verbose_name=_("محصول"),
+    )
+    title = models.CharField(_("عنوان فایل"), max_length=200)
+    file = models.FileField(_("فایل"), upload_to="product_files/%Y/%m/", storage=protected_storage)
+
+    class Meta(PublishState.Meta):
+        verbose_name = _("فایل همراه")
+        verbose_name_plural = _("فایل‌های همراه")
+
+    def __str__(self):
+        return self.title
+
 
 class LessonProgress(models.Model):
     """

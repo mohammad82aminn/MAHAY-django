@@ -33,7 +33,10 @@
   {% endif %}
 
   {% if lesson.body %}
-    <div class="card block"><div class="prose">{{ lesson.body|linebreaks }}</div></div>
+    <div class="card block">
+      <h2>توضیحات این درس</h2>
+      <div class="prose">{{ lesson.body|linebreaks }}</div>
+    </div>
   {% endif %}
 
   {% if attachments %}

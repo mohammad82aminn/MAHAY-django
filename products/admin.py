@@ -39,15 +39,15 @@ class ProductAdmin(ApprovalModelAdmin):
     list_filter = ("product_type", "primary_domain", "is_published", "is_archived")
     search_fields = ("title", "slug")
     filter_horizontal = ("related_domains", "related_products")
-    readonly_fields = ("cover_preview", "gallery", "thesis_link", "content_outline", "created_by", "created_at", "updated_at")
+    readonly_fields = ("cover_preview", "gallery", "thesis_link", "content_outline", "companion_files_block", "created_by", "created_at", "updated_at")
     fieldsets = (
-        (None, {"fields": ("product_type", "title", "slug", "summary", "description")}),
+        (None, {"fields": ("product_type", "title", "slug", "instructor", "summary", "description")}),
         (_("تصاویر و ویدیوی معرفی"), {"fields": ("cover", "cover_preview", "gallery", "intro_video_url")}),
         (_("حوزه"), {"fields": ("primary_domain", "related_domains")}),
         (_("پایان‌نامه (فقط پروژه‌ها)"), {"fields": ("thesis", "thesis_link")}),
         (_("قیمت"), {"fields": ("price", "sale_price")}),
         (_("محصولات مرتبط"), {"fields": ("related_products",)}),
-        (_("محتوا"), {"fields": ("content_outline",)}),
+        (_("محتوا"), {"fields": ("content_outline", "companion_files_block")}),
         (_("وضعیت"), {"fields": ("is_published", "is_archived", "created_by", "created_at", "updated_at")}),
     )
 
@@ -93,6 +93,23 @@ class ProductAdmin(ApprovalModelAdmin):
         if not obj.pk or not obj.thesis:
             return "—"
         return format_html('<a href="{}">دانلود فایل</a>', reverse("content:protected_file", args=["thesis", obj.pk]))
+
+    @admin.display(description=_("فایل‌های همراه"))
+    def companion_files_block(self, obj):
+        if not obj.pk:
+            return "بعد از ذخیره‌ی محصول، فایل‌های همراه را اضافه کنید."
+        rows = format_html_join(
+            "", '<li><a href="{}">{}</a></li>',
+            ((reverse("admin:content_productfile_change", args=[file.pk]), file.title)
+             for file in obj.companion_files.all()),
+        )
+        add_url = f"{reverse('admin:content_productfile_add')}?product={obj.pk}"
+        list_url = f"{reverse('admin:content_productfile_changelist')}?product__id__exact={obj.pk}"
+        return format_html(
+            '<p style="margin:0 0 .4rem">برای کل دوره یا پروژه؛ فایل یک درس را در همان درس اضافه کنید.</p>'
+            '<ul style="margin:0">{}</ul><p><a href="{}">+ افزودن فایل همراه</a> &nbsp;|&nbsp; <a href="{}">مدیریت فایل‌ها</a></p>',
+            rows or "", add_url, list_url,
+        )
 
     @admin.display(description=_("بخش‌ها و درس‌ها"))
     def content_outline(self, obj):

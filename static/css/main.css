@@ -301,6 +301,13 @@ h2, h3, h4 { line-height: 1.6; }
   margin: 0; font-size: .87rem;
   display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
+/* Who teaches it and how long it runs: small print under the summary; the two wrap on a narrow card */
+.product-card-meta { display: flex; flex-wrap: wrap; gap: .3rem 1rem; margin-top: .25rem; font-size: .82rem; color: var(--muted); }
+.product-card-meta span { display: inline-flex; align-items: center; gap: .3rem; min-width: 0; max-width: 100%; }
+.product-card-meta svg {
+  flex: 0 0 auto; width: 15px; height: 15px;
+  fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
 
 .price { display: flex; align-items: baseline; gap: .5rem; margin-top: auto; padding-top: .75rem; border-top: 1px dashed var(--border); }
 .product-card .price { justify-content: flex-end; }

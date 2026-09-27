@@ -62,14 +62,32 @@
               <ul>
                 {% for lesson in section.visible_lessons %}
                   <li>
-                    <span>{% if not product.is_free %}🔒 {% endif %}{{ lesson.title }}</span>
-                    {% if lesson.duration_minutes %}<span class="muted">{{ lesson.duration_minutes|fa_num }} دقیقه</span>{% endif %}
+                    <span>{% if not product.is_free and not can_enter %}🔒 {% endif %}{{ lesson.title }}</span>
+                    {% if lesson.duration_seconds %}<span class="muted">{{ lesson.duration_seconds|duration }}</span>{% endif %}
                   </li>
                 {% endfor %}
               </ul>
             </details>
           {% endfor %}
         </div>
+      </div>
+    {% endif %}
+
+    {# The titles are on show, so a visitor knows what comes with it; the files open only after buying #}
+    {% if companion_files %}
+      <div class="card block">
+        <h2>فایل‌های همراه</h2>
+        <ul class="file-list">
+          {% for companion in companion_files %}
+            <li>
+              {% if can_enter %}
+                <a href="{% url 'content:protected_file' 'product_file' companion.pk %}">⬇ {{ companion.title }}</a>
+              {% else %}
+                {% if not product.is_free %}🔒 {% endif %}{{ companion.title }}
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
       </div>
     {% endif %}
   </div>
@@ -86,8 +104,8 @@
         {% endif %}
         <strong class="{% if product.is_free %}price-free{% endif %}">{{ product.final_price|toman }}</strong>
       </div>
-            {% if owned %}
-                <a class="btn btn-primary btn-block" href="{% url 'content:learn' product.slug %}">ورود به {{ product.get_product_type_display }}</a>
+      {% if can_enter %}
+        <a class="btn btn-primary btn-block" href="{% url 'content:learn' product.slug %}">ورود به {{ product.get_product_type_display }}</a>
       {% elif in_cart %}
         <a class="btn btn-primary btn-block" href="{% url 'commerce:cart' %}">مشاهده سبد خرید</a>
       {% else %}
@@ -102,11 +120,12 @@
       <ul class="facts">
         <li><span>نوع</span><strong>{{ product.get_product_type_display }}</strong></li>
         <li><span>حوزه</span><strong>{{ product.primary_domain }}</strong></li>
+        {% if product.instructor %}<li><span>مدرس</span><strong>{{ product.instructor }}</strong></li>{% endif %}
         {% if lesson_count %}<li><span>تعداد درس</span><strong>{{ lesson_count|fa_num }}</strong></li>{% endif %}
-                {% if total_minutes %}<li><span>مدت</span><strong>{{ total_minutes|fa_num }} دقیقه</strong></li>{% endif %}
+        {% if total_seconds %}<li><span>مدت کل</span><strong>{{ total_seconds|duration }}</strong></li>{% endif %}
         {% if product.thesis %}<li><span>پایان‌نامه</span><strong>دارد</strong></li>{% endif %}
       </ul>
-      {% if product.thesis and can_open_files %}
+      {% if product.thesis and can_enter %}
         <div class="included">
           📄 <a href="{% url 'content:protected_file' 'thesis' product.pk %}">دانلود پایان‌نامه</a>
         </div>
@@ -121,7 +140,7 @@
     {% if product.sale_price is not None %}<del>{{ product.price|toman }}</del>{% endif %}
     <strong class="{% if product.is_free %}price-free{% endif %}">{{ product.final_price|toman }}</strong>
   </div>
-    {% if owned %}
+  {% if can_enter %}
     <a class="btn btn-primary btn-sm" href="{% url 'content:learn' product.slug %}">ورود</a>
   {% elif in_cart %}
     <a class="btn btn-primary btn-sm" href="{% url 'commerce:cart' %}">سبد خرید</a>
@@ -131,7 +150,7 @@
       <input type="hidden" name="next" value="{{ request.path }}">
       <button type="submit" class="btn btn-primary btn-sm">{% if product.is_free %}دریافت رایگان{% else %}افزودن به سبد{% endif %}</button>
     </form>
-  {% endif %} (به‌زودی)</button>
+  {% endif %}
 </div>
 
 <section class="container section">

@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models import OuterRef, Subquery, Sum
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -17,6 +18,22 @@ class ProductQuerySet(models.QuerySet):
         """Products shown in the store: approved, not removed, and their domain is active."""
         return self.filter(is_published=True, is_archived=False, primary_domain__is_active=True)
 
+    def with_duration(self):
+        """
+        Adds `total_seconds`: the length of the published lessons, for the product cards.
+        A subquery, not a join, so a list filtered through related domains doesn't count a lesson twice.
+        """
+        from content.models import Lesson
+
+        lessons = (
+            Lesson.objects.filter(
+                section__product=OuterRef("pk"), is_published=True, is_archived=False,
+                section__is_published=True, section__is_archived=False,
+            )
+            .order_by().values("section__product").annotate(total=Sum("duration_seconds")).values("total")
+        )
+        return self.annotate(total_seconds=Subquery(lessons))
+
 
 class ProductManager(models.Manager["Product"]):
     def get_queryset(self):
@@ -24,6 +41,9 @@ class ProductManager(models.Manager["Product"]):
 
     def visible(self):
         return self.get_queryset().visible()
+
+    def with_duration(self):
+        return self.get_queryset().with_duration()
 
 
 class Product(models.Model):
@@ -40,6 +60,10 @@ class Product(models.Model):
         help_text=_("بخش انگلیسی آدرس صفحه، مثلاً fpga-basics"),
     )
     summary = models.CharField(_("خلاصه"), max_length=300, blank=True, help_text=_("یک یا دو جمله برای کارت محصول"))
+    instructor = models.CharField(
+        _("مدرس"), max_length=200, blank=True,
+        help_text=_("روی کارت و صفحه‌ی محصول نمایش داده می‌شود. اگر چند نفرند، نام‌ها را با «،» جدا کنید."),
+    )
     description = models.TextField(_("توضیحات کامل"), blank=True)
     cover = models.ImageField(
         _("تصویر کاور"), upload_to="products/covers/", blank=True,
@@ -102,9 +126,12 @@ class Product(models.Model):
         return reverse("products:detail", args=[self.slug])
 
     def approval_children(self):
-        from content.models import Section
+        from content.models import ProductFile, Section
 
-        return [*Section.objects.filter(product=self), *ProductImage.objects.filter(product=self)]
+        return [
+            *Section.objects.filter(product=self), *ProductImage.objects.filter(product=self),
+            *ProductFile.objects.filter(product=self),
+        ]
 
     def clean(self):
         if self.thesis and self.product_type != self.Type.PROJECT:
@@ -116,6 +143,18 @@ class Product(models.Model):
                 raise ValidationError({"sale_price": _("محصول رایگان تخفیف ندارد.")})
             if self.sale_price >= self.price:
                 raise ValidationError({"sale_price": _("قیمت با تخفیف باید کمتر از قیمت اصلی باشد.")})
+        if not self.is_free and self.pk and self.aparat_lessons().exists():
+            # An Aparat video is public; once the product costs money, anyone could skip paying
+            raise ValidationError(
+                _("این محصول درس‌هایی با لینک آپارات دارد که برای همه قابل مشاهده است. "
+                  "برای پولی کردن محصول، اول ویدیوی آن درس‌ها را آپلود کنید: %(lessons)s"),
+                params={"lessons": "، ".join(self.aparat_lessons().values_list("title", flat=True)[:5])},
+            )
+
+    def aparat_lessons(self):
+        from content.models import Lesson
+
+        return Lesson.objects.filter(section__product=self, is_archived=False).exclude(video_url="")
 
     @property
     def final_price(self):

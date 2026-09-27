@@ -1,7 +1,6 @@
 import shutil
 import tempfile
 
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -11,6 +10,7 @@ from domains.models import Domain
 from products.models import Product
 
 from .models import Attachment, Lesson, LessonProgress, Section
+from .testing import mp4_upload
 
 PASSWORD = "S3cure-pass!"
 TEMP_PROTECTED = tempfile.mkdtemp()
@@ -18,7 +18,7 @@ APARAT = "https://www.aparat.com/v/abc123"
 
 
 def video(name="v.mp4"):
-    return SimpleUploadedFile(name, b"fake video", content_type="video/mp4")
+    return mp4_upload(name, seconds=600)
 
 
 @override_settings(PROTECTED_MEDIA_ROOT=TEMP_PROTECTED)
@@ -31,7 +31,7 @@ class LearningTestCase(TestCase):
         )
         self.section = Section.objects.create(product=self.product, title="فصل ۱", is_published=True)
         self.lesson1 = Lesson.objects.create(section=self.section, title="درس یک", is_published=True,
-                                             video_file=video(), duration_minutes=10, order=1)
+                                             video_file=video(), order=1)
         self.lesson2 = Lesson.objects.create(section=self.section, title="درس دو", is_published=True,
                                              body="متن درس", order=2)
         self.hidden = Lesson.objects.create(section=self.section, title="درس منتظر تأیید", order=3)

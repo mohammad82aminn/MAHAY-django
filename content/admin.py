@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from approvals.admin_base import ApprovalModelAdmin
-from .models import Attachment, Lesson, LessonProgress, Section
+from .models import Attachment, Lesson, LessonProgress, ProductFile, Section
 
 
 @admin.register(Section)
@@ -36,10 +36,10 @@ class LessonAdmin(ApprovalModelAdmin):
     list_filter = ("section__product__primary_domain", "section__product")
     search_fields = ("title", "section__title", "section__product__title")
     fields = (
-        "section", "title", "order", "body", "video_file", "video_url", "video_preview",
-        "duration_minutes", "attachments_link", "is_published", "is_archived",
+        "section", "title", "order", "body", "video_file", "video_preview", "duration_display",
+        "video_url", "duration_minutes", "attachments_link", "is_published", "is_archived",
     )
-    readonly_fields = ("video_preview", "attachments_link")
+    readonly_fields = ("video_preview", "duration_display", "attachments_link")
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("section__product")
@@ -56,6 +56,14 @@ class LessonAdmin(ApprovalModelAdmin):
             return "—"
         url = reverse("content:protected_file", args=["video", obj.pk])
         return format_html('<a href="{}" target="_blank">مشاهده ویدیو</a>', url)
+
+    @admin.display(description=_("مدت درس"))
+    def duration_display(self, obj):
+        if not obj.pk or not obj.duration_seconds:
+            return "مدت ویدیوی آپلودشده بعد از ذخیره خودکار خوانده می‌شود."
+        minutes, seconds = divmod(obj.duration_seconds, 60)
+        hours, minutes = divmod(minutes, 60)
+        return f"{hours}:{minutes:02}:{seconds:02}" if hours else f"{minutes}:{seconds:02}"
 
     @admin.display(description=_("فایل‌های ضمیمه"))
     def attachments_link(self, obj):
@@ -86,6 +94,25 @@ class AttachmentAdmin(ApprovalModelAdmin):
         return format_html('<a href="{}">دانلود فایل</a>', reverse("content:protected_file", args=["attachment", obj.pk]))
 
     
+
+@admin.register(ProductFile)
+class ProductFileAdmin(ApprovalModelAdmin):
+    domain_field = "product__primary_domain"
+    list_display = ("title", "product", "order", "state")
+    list_filter = ("product__primary_domain", "product")
+    search_fields = ("title", "product__title")
+    fields = ("product", "title", "file", "file_link", "order", "is_published", "is_archived")
+    readonly_fields = ("file_link",)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("product")
+
+    @admin.display(description=_("دانلود"))
+    def file_link(self, obj):
+        if not obj.pk or not obj.file:
+            return "—"
+        return format_html('<a href="{}">دانلود فایل</a>', reverse("content:protected_file", args=["product_file", obj.pk]))
+
 
 @admin.register(LessonProgress)
 class LessonProgressAdmin(admin.ModelAdmin):

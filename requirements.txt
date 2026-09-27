@@ -3,3 +3,4 @@ psycopg[binary]==3.3.5
 python-decouple==3.8
 Pillow==12.3.0
 requests==2.33.1
+mutagen==1.48.1

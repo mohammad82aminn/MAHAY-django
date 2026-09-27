@@ -14,6 +14,7 @@ DEFAULT_DOMAIN_MANAGER_PERMISSIONS = [
     "content.view_section", "content.add_section", "content.change_section", "content.delete_section",
     "content.view_lesson", "content.add_lesson", "content.change_lesson", "content.delete_lesson",
     "content.view_attachment", "content.add_attachment", "content.change_attachment", "content.delete_attachment",
+    "content.view_productfile", "content.add_productfile", "content.change_productfile", "content.delete_productfile",
     "approvals.view_changerequest",
     # service requests: managers see the files referred to them and report on their own referral
     "services.view_servicerequest",

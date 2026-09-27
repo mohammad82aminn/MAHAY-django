@@ -5,7 +5,7 @@ from django.views.generic import DetailView, ListView, TemplateView
 from commerce import services as commerce
 from commerce.models import CartItem
 from content.access import can_manage, can_open
-from content.models import Lesson, Section
+from content.models import Lesson, ProductFile, Section
 from domains.models import Domain
 
 from .models import Product, ProductImage
@@ -27,11 +27,12 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         visible = Product.objects.visible().select_related("primary_domain")
+        cards = visible.with_duration()
         context["domains"] = Domain.objects.filter(is_active=True).annotate(
             product_count=Count("products", filter=Q(products__is_published=True, products__is_archived=False))
         )
-        context["latest_courses"] = visible.filter(product_type=Product.Type.COURSE)[:8]
-        context["latest_projects"] = visible.filter(product_type=Product.Type.PROJECT)[:8]
+        context["latest_courses"] = cards.filter(product_type=Product.Type.COURSE)[:8]
+        context["latest_projects"] = cards.filter(product_type=Product.Type.PROJECT)[:8]
         context["stats"] = {
             "courses": visible.filter(product_type=Product.Type.COURSE).count(),
             "projects": visible.filter(product_type=Product.Type.PROJECT).count(),
@@ -48,7 +49,7 @@ class ProductListView(ListView):
 
     def get_queryset(self):
         params = self.request.GET
-        queryset = Product.objects.visible().select_related("primary_domain")
+        queryset = Product.objects.visible().with_duration().select_related("primary_domain")
 
         self.product_type = params.get("type") if params.get("type") in Product.Type.values else ""
         if self.product_type:
@@ -112,17 +113,21 @@ class ProductDetailView(DetailView):
             .prefetch_related(Prefetch("lessons", queryset=published_lessons(), to_attr="visible_lessons"))
         )
         totals = published_lessons().filter(section__in=sections).aggregate(
-            count=Count("id"), minutes=Sum("duration_minutes"),
+            count=Count("id"), seconds=Sum("duration_seconds"),
         )
+        # Buyers, and the people who run the product (site admins, its domain's managers), go
+        # straight in: no lock on the lessons and no buy button.
+        can_enter = can_open(self.request.user, product)
         context.update({
             "is_preview": self.is_preview,
             "sections": sections,
             "lesson_count": totals["count"],
-            "total_minutes": totals["minutes"] or 0,
+            "total_seconds": totals["seconds"] or 0,
             "gallery": ProductImage.objects.filter(product=product, is_published=True, is_archived=False),
-            "related": Product.objects.visible().filter(related_products=product),
-            "can_open_files": can_open(self.request.user, product),
-            "owned": product.pk in commerce.owned_product_ids(self.request.user),
-            "in_cart": self.in_cart(product),
+            "companion_files": ProductFile.objects.filter(product=product, is_published=True, is_archived=False),
+            "related": Product.objects.visible().with_duration().select_related("primary_domain")
+                       .filter(related_products=product),
+            "can_enter": can_enter,
+            "in_cart": not can_enter and self.in_cart(product),
         })
         return context

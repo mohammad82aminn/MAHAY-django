@@ -1,4 +1,4 @@
-"""Template helpers for the store: Persian numbers, prices and Aparat videos."""
+"""Template helpers for the store: Persian numbers, prices, lengths and Aparat videos."""
 import re
 
 from django import template
@@ -25,6 +25,19 @@ def toman(value):
     if not value:
         return "رایگان"
     return f"{fa_num(int(value))} تومان"
+
+
+@register.filter
+def duration(seconds):
+    """Length of a lesson or a whole course: 45 -> ۱ دقیقه, 8100 -> ۲ ساعت و ۱۵ دقیقه, none -> empty"""
+    if not seconds:
+        return ""
+    minutes = max(1, round(int(seconds) / 60))  # a short clip still reads as a minute, never "۰ دقیقه"
+    hours, minutes = divmod(minutes, 60)
+    parts = [f"{fa_num(hours)} ساعت"] if hours else []
+    if minutes:
+        parts.append(f"{fa_num(minutes)} دقیقه")
+    return " و ".join(parts)
 
 
 @register.filter
