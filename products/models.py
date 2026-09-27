@@ -111,6 +111,7 @@ class Product(models.Model):
     updated_at = models.DateTimeField(_("آخرین تغییر"), auto_now=True)
 
     change_requests = GenericRelation("approvals.ChangeRequest")  # deleted together with the product
+    review_events = GenericRelation("approvals.ReviewEvent")
 
     objects: ClassVar[ProductManager] = ProductManager()
 

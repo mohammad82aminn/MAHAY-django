@@ -24,7 +24,7 @@
       {% for delivery in deliveries %}
         <tr class="{% if not delivery.read_at %}unread{% endif %}">
           <td class="dot">{% if not delivery.read_at %}●{% endif %}</td>
-          <td>{{ delivery.message.sender.get_full_name|default:"کاربر حذف‌شده" }}</td>
+          <td>{% if delivery.message.from_system %}سامانه{% else %}{{ delivery.message.sender.get_full_name|default:"کاربر حذف‌شده" }}{% endif %}</td>
           <td>
             <a href="{% url 'admin:inbox_message_detail' delivery.message.pk %}">{{ delivery.message.subject }}</a>
             {% if delivery.message.files.all %}<span title="پیوست دارد">📎</span>{% endif %}

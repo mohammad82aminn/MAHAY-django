@@ -15,10 +15,17 @@ class PublishState(models.Model):
     is_published = models.BooleanField(_("منتشر شده"), default=False)
     is_archived = models.BooleanField(_("حذف شده"), default=False)
     order = models.PositiveSmallIntegerField(_("ترتیب"), default=0, help_text=_("عدد کوچک‌تر، بالاتر نمایش داده می‌شود"))
+    # Who made it: an expert may change only their own unpublished work (see ApprovalModelAdmin).
+    # Empty for what existed before this was recorded — only managers and site admins edit those.
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, editable=False,
+        related_name="+", verbose_name=_("سازنده"),
+    )
     created_at = models.DateTimeField(_("تاریخ ایجاد"), auto_now_add=True)
     updated_at = models.DateTimeField(_("آخرین تغییر"), auto_now=True)
 
     change_requests = GenericRelation("approvals.ChangeRequest")  # deleted together with the item
+    review_events = GenericRelation("approvals.ReviewEvent")
 
     class Meta:
         abstract = True

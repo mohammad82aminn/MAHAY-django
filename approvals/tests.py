@@ -96,19 +96,26 @@ class WhoMaySeeAndDecideTests(ApprovalTestCase):
         self.assertIn("is_published", readonly)
         self.assertIn("is_archived", readonly)
 
-    def test_only_a_site_admin_decides(self):
+    def test_who_decides_what(self):
+        """A site admin decides anything open; a domain manager only what waits on their own desk."""
         from django.contrib import admin
 
         model_admin = admin.site._registry[ChangeRequest]
+        expert = User.objects.create_user("09123333333", PASSWORD)
+        expert.groups.add(self.fpga.experts_group)
+        on_desk = services.submit(self.make_product(), ChangeRequest.Action.CREATE, expert, self.fpga)
+        at_admins = services.submit(self.make_product(slug="mine"), ChangeRequest.Action.CREATE, self.manager, self.fpga)
+        self.assertEqual((on_desk.stage, at_admins.stage), (ChangeRequest.Stage.DOMAIN, ChangeRequest.Stage.ADMIN))
 
-        class Request:
-            pass
-
-        for user, allowed in ((self.reviewer, True), (self.manager, False)):
-            with self.subTest(user=user.first_name):
-                fake = Request()
+        fake = type("Request", (), {})()
+        for user, request, allowed in (
+            (self.reviewer, on_desk, True), (self.reviewer, at_admins, True),
+            (self.manager, on_desk, True), (self.manager, at_admins, False),
+            (self.stranger, on_desk, False), (expert, on_desk, False),
+        ):
+            with self.subTest(user=user.mobile_number, stage=request.stage):
                 fake.user = user
-                self.assertIs(model_admin.has_change_permission(fake), allowed)
+                self.assertIs(model_admin.has_change_permission(fake, request), allowed)
 
     def test_a_manager_sees_only_their_domain_s_requests(self):
         mine = self.make_product(self.fpga)

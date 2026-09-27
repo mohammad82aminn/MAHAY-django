@@ -16,7 +16,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import models, transaction
 from django.utils import timezone
 
-from .models import ChangeRequest
+from .models import ChangeRequest, ReviewEvent
 
 PENDING_FILES_DIR = "pending"
 
@@ -114,23 +114,97 @@ def pending_request(obj, action):
     ).first()
 
 
+def stage_for(user, domain):
+    """
+    Where a request from this person starts. The domain's managers look first, unless there is
+    nobody to look (a domain with no manager yet) or the person is one of the reviewers already.
+    """
+    from accounts.roles import is_site_admin
+    from domains.access import has_managers, is_manager
+
+    if domain is None or is_site_admin(user) or is_manager(user, domain) or not has_managers(domain):
+        return ChangeRequest.Stage.ADMIN
+    return ChangeRequest.Stage.DOMAIN
+
+
 def submit(obj, action, user, domain=None, data=None):
-    """Create the pending request, or refresh the open one of the same kind."""
+    """
+    Create the pending request, or refresh the open one of the same kind.
+
+    A domain manager correcting an expert's work that is waiting on their own desk is not sending
+    it anywhere: the request keeps its author and its place, and the correction is recorded as an
+    edit. Anyone else saving is (re)sending it, so it starts again from the right desk.
+    """
     from django.contrib.contenttypes.models import ContentType
+    from domains.access import is_manager
 
     request = pending_request(obj, action)
-    if request is None:
+    is_new = request is None
+    if is_new:
         request = ChangeRequest(content_type=ContentType.objects.get_for_model(obj), object_id=obj.pk, action=action)
     elif request.data != (data or {}):
         delete_pending_files(type(obj), {k: v for k, v in request.data.items() if (data or {}).get(k) != v})
 
+    correcting = (
+        not is_new and request.stage == ChangeRequest.Stage.DOMAIN
+        and request.submitted_by_id not in (None, user.pk)
+        and domain is not None and is_manager(user, domain)
+    )
     request.object_repr = str(obj)[:200]
     request.domain = domain
     request.data = data or {}
-    request.submitted_by = user
-    request.submitted_at = timezone.now()
+    if not correcting:
+        stage = stage_for(user, domain)
+        if is_new or stage != request.stage:
+            request.stage_since = timezone.now()
+        request.stage = stage
+        request.submitted_by = user
+        request.submitted_at = timezone.now()
     request.save()
+    if is_new:
+        record(obj, ReviewEvent.Kind.SUBMITTED, user, request=request)
     return request
+
+
+def forward(request, manager, note=""):
+    """
+    A domain manager agrees with an expert's work and sends it to the site admins. A new course
+    or project takes its waiting sections, lessons and files along, as approving does.
+    """
+    request.stage = ChangeRequest.Stage.ADMIN
+    request.stage_since = timezone.now()
+    request.save(update_fields=["stage", "stage_since"])
+    record(request.target, ReviewEvent.Kind.FORWARDED, manager, note, request=request)
+    for child in getattr(request.target, "approval_children", list)():
+        child_request = pending_request(child, ChangeRequest.Action.CREATE)
+        if child_request is not None and child_request.stage == ChangeRequest.Stage.DOMAIN:
+            forward(child_request, manager, "همراه با مورد بالاتر ارسال شد.")
+
+
+def record(obj, kind, actor, note="", changes=(), request=None):
+    """Add a step to the item's history (see ReviewEvent)."""
+    from django.contrib.contenttypes.models import ContentType
+
+    return ReviewEvent.objects.create(
+        content_type=ContentType.objects.get_for_model(obj), object_id=obj.pk, change_request=request,
+        kind=kind, actor=actor, note=note, changes=list(changes),
+    )
+
+
+def describe(field, value):
+    """A field's value as short plain text, for the history of a manager's corrections."""
+    if isinstance(field, models.BooleanField):
+        return "بله" if value else "خیر"
+    if value in (None, "") or (isinstance(field, models.FileField) and not value):
+        return "—"
+    if isinstance(field, models.ManyToManyField):
+        return "، ".join(str(item) for item in value) or "—"
+    if isinstance(field, models.FileField):
+        return os.path.basename(getattr(value, "name", str(value))) or "—"
+    if field.choices:
+        return str(dict(field.flatchoices).get(value, value))
+    text = str(value)
+    return text if len(text) <= 300 else f"{text[:300]}…"
 
 
 def withdraw(obj, action):
@@ -155,6 +229,7 @@ def approve(request, reviewer, note=""):
         obj.is_archived = True
         obj.save(update_fields=["is_archived"])
     _close(request, ChangeRequest.Status.APPROVED, reviewer, note)
+    record(obj, ReviewEvent.Kind.APPROVED, reviewer, note, request=request)
 
 
 def close_answered_requests(obj, reviewer):
@@ -182,10 +257,49 @@ def approve_waiting_children(obj, reviewer):
 
 
 def reject(request, reviewer, note=""):
+    """
+    Turn the request down and tell the people it concerns straight away: the author always, and
+    when the site admins turn down something a domain manager had sent on, that domain's managers.
+    """
     model = request.content_type.model_class()
     if model is not None:
         delete_pending_files(model, request.data)
+    at_admin_desk = request.stage == ChangeRequest.Stage.ADMIN
     _close(request, ChangeRequest.Status.REJECTED, reviewer, note)
+    target = request.target
+    if target is not None:
+        record(target, ReviewEvent.Kind.REJECTED, reviewer, note, request=request)
+    _tell_about_rejection(request, reviewer, note, at_admin_desk)
+
+
+def _tell_about_rejection(request, reviewer, note, at_admin_desk):
+    from inbox import services as inbox
+
+    people = {request.submitted_by} if request.submitted_by else set()
+    if at_admin_desk and request.domain is not None:
+        people |= set(request.domain.managers_group.user_set.filter(is_active=True))
+    people.discard(reviewer)
+    if not people:
+        return
+    who = reviewer.get_full_name() or "بررسی‌کننده"
+    lines = [
+        f"«{request.object_repr}» ({request.get_action_display()}) توسط {who} رد شد.",
+        f"دلیل: {note}" if note else "دلیلی نوشته نشده است.",
+    ]
+    url = admin_url(request)
+    if url:
+        lines.append(f"برای دیدن و اصلاح: {url}")
+    inbox.send(None, f"رد شد: {request.object_repr}"[:200], "\n".join(lines), sorted(people, key=lambda u: u.pk))
+
+
+def admin_url(request):
+    from django.urls import NoReverseMatch, reverse
+
+    try:
+        return reverse(f"admin:{request.content_type.app_label}_{request.content_type.model}_change",
+                       args=[request.object_id])
+    except NoReverseMatch:
+        return ""
 
 
 def _close(request, status, reviewer, note):

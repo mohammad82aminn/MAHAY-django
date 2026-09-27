@@ -28,6 +28,9 @@ class Message(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
         related_name="sent_messages", verbose_name=_("فرستنده"),
     )
+    # Sent by the site itself (a rejection, a reminder): shown as «سامانه» and never answered,
+    # unlike a message whose sender's account was later deleted
+    from_system = models.BooleanField(_("از طرف سامانه"), default=False, editable=False)
     subject = models.CharField(_("موضوع"), max_length=200)
     body = models.TextField(_("متن پیام"))
     parent = models.ForeignKey(

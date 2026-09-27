@@ -5,7 +5,7 @@ from django.urls import NoReverseMatch, reverse
 from django.utils.html import format_html, format_html_join
 
 from accounts.roles import is_site_admin
-from domains.access import member_domains
+from domains.access import is_manager, managed_domains, member_domains
 
 from . import services
 from .models import ChangeRequest
@@ -34,12 +34,12 @@ def display_value(field, value, change_request=None):
 
 @admin.register(ChangeRequest)
 class ChangeRequestAdmin(admin.ModelAdmin):
-    list_display = ("object_repr", "action", "status", "domain", "submitted_by", "submitted_at")
-    list_filter = ("status", "action", "domain")
+    list_display = ("object_repr", "action", "status", "stage_label", "domain", "submitted_by", "submitted_at")
+    list_filter = ("status", "stage", "action", "domain")
     search_fields = ("object_repr",)
     actions = ("approve_selected", "reject_selected")
     fields = decision_fields = (
-        "target_link", "action", "domain", "submitted_by", "submitted_at",
+        "target_link", "action", "stage", "domain", "submitted_by", "submitted_at",
         "changes_table", "status", "review_note", "reviewed_by", "reviewed_at",
     )
 
@@ -53,12 +53,13 @@ class ChangeRequestAdmin(admin.ModelAdmin):
 
     def pending_count(self, request):
         """
-        Deciding is the site admins' job, so only they get the mark: a manager who can see the
-        request but cannot answer it would be stared at by a red number they cannot clear.
+        Only what is waiting on the visitor's own desk: a site admin counts what reached them, a
+        domain manager what their experts sent. Nobody is shown a red number they cannot clear.
         """
-        if not is_site_admin(request.user):
-            return 0
-        return self.get_queryset(request).filter(status=ChangeRequest.Status.PENDING).count()
+        waiting = self.get_queryset(request).filter(status=ChangeRequest.Status.PENDING)
+        if is_site_admin(request.user):
+            return waiting.filter(stage=ChangeRequest.Stage.ADMIN).count()
+        return waiting.filter(stage=ChangeRequest.Stage.DOMAIN, domain__in=managed_domains(request.user)).count()
 
     def has_add_permission(self, request):
         return False  # requests are created by the system
@@ -67,7 +68,29 @@ class ChangeRequestAdmin(admin.ModelAdmin):
         return False  # kept as history
 
     def has_change_permission(self, request, obj=None):
-        return is_site_admin(request.user) and (obj is None or obj.is_pending)
+        """Site admins decide anything still open; a domain manager what waits on their desk."""
+        if is_site_admin(request.user):
+            return obj is None or obj.is_pending
+        if obj is None:
+            return managed_domains(request.user).exists()
+        return self._on_managers_desk(request, obj)
+
+    @staticmethod
+    def _on_managers_desk(request, obj):
+        return (obj.is_pending and obj.stage == ChangeRequest.Stage.DOMAIN
+                and obj.domain is not None and is_manager(request.user, obj.domain))
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        form = super().get_form(request, obj, change=change, **kwargs)
+        status = form.base_fields.get("status")
+        if status is not None and not is_site_admin(request.user):
+            # For a domain manager, agreeing means sending it on to the site admins, not publishing
+            status.choices = [
+                (ChangeRequest.Status.PENDING, "در انتظار بررسی"),
+                (ChangeRequest.Status.APPROVED, "تأیید و ارسال برای مدیر کل"),
+                (ChangeRequest.Status.REJECTED, "رد (برگشت به کارشناس)"),
+            ]
+        return form
 
     def get_readonly_fields(self, request, obj=None):
         editable = ("status", "review_note")
@@ -117,7 +140,14 @@ class ChangeRequestAdmin(admin.ModelAdmin):
         self._decide(request, obj, obj.status, obj.review_note)
 
     def _decide(self, request, change_request, status, note=""):
+        # Asked of the stored request: the form has already set the new status on this copy
+        if not self.has_change_permission(request, ChangeRequest.objects.get(pk=change_request.pk)):
+            return False  # e.g. a manager's bulk action reaching a request that isn't on their desk
         try:
+            if status == ChangeRequest.Status.APPROVED and not is_site_admin(request.user):
+                services.forward(change_request, request.user, note)
+                change_request.review_note = ""  # the note went into the history; the admin writes their own
+                return True
             if status == ChangeRequest.Status.APPROVED:
                 services.approve(change_request, request.user, note)
             else:
@@ -141,4 +171,8 @@ class ChangeRequestAdmin(admin.ModelAdmin):
         self.message_user(request, f"{done} درخواست رد شد.")
 
     def get_actions(self, request):
-        return super().get_actions(request) if is_site_admin(request.user) else {}
+        return super().get_actions(request) if self.has_change_permission(request) else {}
+
+    @admin.display(description="مرحله", ordering="stage")
+    def stage_label(self, obj):
+        return obj.get_stage_display() if obj.is_pending else "—"

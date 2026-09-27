@@ -108,7 +108,9 @@ def resolve_recipients(users=(), groups=(), everyone=False, exclude=None):
 @transaction.atomic
 def send(sender, subject, body, recipients, parent=None, files=()):
     """Store the message and hand each recipient their own copy. Returns the message."""
-    message = Message.objects.create(sender=sender, subject=subject, body=body, parent=parent)
+    message = Message.objects.create(
+        sender=sender, from_system=sender is None, subject=subject, body=body, parent=parent,
+    )
     Delivery.objects.bulk_create([Delivery(message=message, user=person) for person in recipients])
     for uploaded in files:
         message.files.create(file=uploaded)
