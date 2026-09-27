@@ -666,7 +666,9 @@ h2, h3, h4 { line-height: 1.6; }
 
 
 .service-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
-@media (max-width: 700px) { .service-cards { grid-template-columns: 1fr; } }
+/* Side by side only while a card is wide enough for the consulting words to clear its art;
+   below about 1150px they ran into the monitor in the picture. */
+@media (max-width: 1199px) { .service-cards { grid-template-columns: 1fr; } }
 
 /* The words sit at the top and the art fills the rest of the card below them, so the picture
    carries the card instead of decorating its side. */
@@ -696,7 +698,7 @@ h2, h3, h4 { line-height: 1.6; }
 }
 
 /* One column: nothing to rise beside, so every card stacks its art under the words */
-@media (max-width: 700px) {
+@media (max-width: 1199px) {
   .service-card { min-height: 0; }
   .service-card .service-art { height: 14rem; }
   .service-card--pop { padding-inline-end: 1.75rem; }
