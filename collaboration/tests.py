@@ -38,7 +38,7 @@ class CollaborationTestCase(TestCase):
         self.reviewer.refresh_from_db()  # is_staff is set by a signal through a queryset update
 
         self.expert = User.objects.create_user("09121111111", PASSWORD, first_name="علی")
-        self.expert.groups.add(self.fpga.group)
+        self.expert.groups.add(self.fpga.managers_group)
         self.expert.refresh_from_db()
 
         self.url = reverse("collaboration:apply")

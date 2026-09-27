@@ -1,13 +1,14 @@
 """
 Who may open protected files (videos, attachments, thesis) of a product:
 - the buyer (a Purchase row exists — it stays valid even if the product leaves the store)
-- the managers of the product's domain, and site admins (to check the content)
+- the people of the product's domain (its managers and experts), and site admins (to check the content)
 """
 from accounts.roles import is_site_admin
+from domains.access import is_member
 
 
 def can_manage(user, product):
-    return is_site_admin(user) or product.primary_domain.group.user_set.filter(pk=user.pk).exists()
+    return is_site_admin(user) or is_member(user, product.primary_domain)
 
 
 def owns(user, product):

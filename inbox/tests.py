@@ -25,9 +25,9 @@ class InboxTestCase(TestCase):
         self.power = Domain.objects.create(name="برق", slug="power")
 
         self.admin = self.staff_member("09120000000", "مدیر", Group.objects.get(name=SITE_ADMINS_GROUP))
-        self.ali = self.staff_member("09121111111", "علی", self.ai.group)
-        self.sara = self.staff_member("09122222222", "سارا", self.ai.group)
-        self.reza = self.staff_member("09123333333", "رضا", self.power.group)
+        self.ali = self.staff_member("09121111111", "علی", self.ai.managers_group)
+        self.sara = self.staff_member("09122222222", "سارا", self.ai.managers_group)
+        self.reza = self.staff_member("09123333333", "رضا", self.power.managers_group)
 
         self.customer = User.objects.create_user("09124444444", PASSWORD, first_name="مشتری")
 
@@ -75,8 +75,8 @@ class AccessTests(InboxTestCase):
 
     def test_moving_between_domains_keeps_the_inbox(self):
         message = self.send_to(self.ali)
-        self.ali.groups.remove(self.ai.group)
-        self.ali.groups.add(self.power.group)
+        self.ali.groups.remove(self.ai.managers_group)
+        self.ali.groups.add(self.power.managers_group)
         self.ali.refresh_from_db()
 
         self.assertTrue(services.has_inbox(self.ali))
@@ -92,16 +92,16 @@ class AccessTests(InboxTestCase):
 
 class SendingTests(InboxTestCase):
     def test_a_group_is_expanded_into_its_members(self):
-        people = services.resolve_recipients(groups=[self.ai.group], exclude=self.admin)
+        people = services.resolve_recipients(groups=[self.ai.managers_group], exclude=self.admin)
         self.assertCountEqual(people, [self.ali, self.sara])
 
     def test_a_later_arrival_does_not_see_an_older_message(self):
         message = services.send(
             self.admin, "اطلاعیه", "متن",
-            services.resolve_recipients(groups=[self.ai.group], exclude=self.admin),
+            services.resolve_recipients(groups=[self.ai.managers_group], exclude=self.admin),
         )
         newcomer = User.objects.create_user("09126666666", PASSWORD, first_name="تازه‌وارد")
-        newcomer.groups.add(self.ai.group)
+        newcomer.groups.add(self.ai.managers_group)
 
         self.assertFalse(services.can_read(newcomer, message))
 
@@ -110,7 +110,7 @@ class SendingTests(InboxTestCase):
         self.assertCountEqual(people, [self.ali, self.sara, self.reza])
 
     def test_the_sender_is_never_a_recipient_of_their_own_message(self):
-        people = services.resolve_recipients(groups=[self.ai.group], exclude=self.ali)
+        people = services.resolve_recipients(groups=[self.ai.managers_group], exclude=self.ali)
         self.assertEqual(people, [self.sara])
 
     def test_each_recipient_gets_their_own_copy(self):
@@ -199,7 +199,7 @@ class PageTests(InboxTestCase):
     def test_sending_to_a_group_from_the_page(self):
         self.client.force_login(self.admin)
         self.client.post(reverse("admin:inbox_message_compose"), {
-            "subject": "اطلاعیه", "body": "متن اطلاعیه", "to_groups": [self.ai.group.pk],
+            "subject": "اطلاعیه", "body": "متن اطلاعیه", "to_groups": [self.ai.managers_group.pk],
         })
         message = Message.objects.get(subject="اطلاعیه")
         self.assertCountEqual([d.user for d in message.deliveries.all()], [self.ali, self.sara])
@@ -255,7 +255,7 @@ class PageTests(InboxTestCase):
 
     def test_the_recipient_picker_never_shows_a_phone_number(self):
         nameless = self.staff_member("09127777777", "")
-        nameless.groups.add(self.ai.group)
+        nameless.groups.add(self.ai.managers_group)
         form = ComposeForm(sender=self.admin)
         labels = [str(label) for _value, label in form.fields["to_users"].choices]
 

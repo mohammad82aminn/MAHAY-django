@@ -31,9 +31,9 @@ class ServiceTestCase(TestCase):
         self.tech = User.objects.create_user("09120000001", PASSWORD, first_name="فنی")
         self.tech.groups.add(Group.objects.get(name=TECH_ADMINS_GROUP))
         self.expert = User.objects.create_user("09121111111", PASSWORD, first_name="علی")
-        self.expert.groups.add(self.fpga.group)
+        self.expert.groups.add(self.fpga.managers_group)
         self.other_expert = User.objects.create_user("09122222222", PASSWORD, first_name="سارا")
-        self.other_expert.groups.add(self.ai.group)
+        self.other_expert.groups.add(self.ai.managers_group)
 
     def form_data(self, **changes):
         data = {

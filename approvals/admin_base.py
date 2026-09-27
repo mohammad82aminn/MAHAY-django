@@ -3,6 +3,7 @@ from django.db import models
 from django.db.models import Prefetch
 
 from accounts.roles import is_site_admin
+from domains.access import member_domains
 
 from . import services
 from .models import ChangeRequest
@@ -37,7 +38,7 @@ class ApprovalModelAdmin(admin.ModelAdmin):
         )
         if self.is_reviewer(request):
             return queryset
-        return queryset.filter(**{f"{self.domain_field}__group__user": request.user})
+        return queryset.filter(**{f"{self.domain_field}__in": member_domains(request.user)})
 
     @admin.display(description="وضعیت")
     def state(self, obj):
@@ -54,8 +55,8 @@ class ApprovalModelAdmin(admin.ModelAdmin):
         # A manager can only attach items to their own domains (products: the domain; lessons: their sections...)
         first, _, rest = self.domain_field.partition("__")
         if db_field.name == first and not self.is_reviewer(request):
-            lookup = f"{rest}__group__user" if rest else "group__user"
-            kwargs["queryset"] = db_field.related_model._default_manager.filter(**{lookup: request.user})
+            lookup = f"{rest}__in" if rest else "pk__in"
+            kwargs["queryset"] = db_field.related_model._default_manager.filter(**{lookup: member_domains(request.user)})
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def get_readonly_fields(self, request, obj=None):

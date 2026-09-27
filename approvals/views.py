@@ -4,6 +4,7 @@ from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 
 from accounts.roles import is_site_admin
+from domains.access import is_member
 
 from .models import ChangeRequest
 from .services import PENDING_FILES_DIR
@@ -11,9 +12,9 @@ from .services import PENDING_FILES_DIR
 
 @staff_member_required
 def pending_file(request, pk, field_name):
-    """Let the reviewer (and the request's domain managers) open a file that is waiting for approval."""
+    """Let the reviewers (site admins, and the request's domain people) open a file waiting for approval."""
     change_request = get_object_or_404(ChangeRequest, pk=pk)
-    in_domain = change_request.domain is not None and change_request.domain.group.user_set.filter(pk=request.user.pk).exists()
+    in_domain = change_request.domain is not None and is_member(request.user, change_request.domain)
     if not (is_site_admin(request.user) or in_domain):
         raise Http404
 

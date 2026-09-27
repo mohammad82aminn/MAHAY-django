@@ -60,7 +60,7 @@ class AccessTests(LearningTestCase):
 
     def test_domain_manager_can_review_the_content(self):
         manager = User.objects.create_user("09123333333", PASSWORD)
-        manager.groups.add(self.domain.group)
+        manager.groups.add(self.domain.managers_group)
         self.client.force_login(manager)
         self.assertEqual(self.client.get(self.learn_url()).status_code, 200)
 

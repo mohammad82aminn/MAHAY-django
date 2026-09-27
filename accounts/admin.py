@@ -13,6 +13,8 @@ from .models import User
 from .roles import (
     DOMAIN_MANAGER_APPS, DOMAIN_MANAGER_FORBIDDEN, FULL_ACCESS_GROUPS, is_system_group, role_label,
 )
+from domains.access import domain_of_group, is_domain_group
+
 from .validators import DIGIT_MAP
 from .models import LoginAttempt, User, VerificationCode
 
@@ -61,6 +63,21 @@ class UserAdmin(MobileColumn, BaseUserAdmin):
         if not getattr(request.user, "is_superuser", False):
             fields = (*fields, "is_superuser")
         return fields
+
+    # Only the system owner decides who is a site admin: a second admin runs everything else, but
+    # cannot hand full access to anyone or take it from the owner's chosen people.
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == "groups" and not request.user.is_superuser:
+            kwargs["queryset"] = Group.objects.exclude(name__in=FULL_ACCESS_GROUPS)
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
+
+    def save_related(self, request, form, formsets, change):
+        # The full-access groups aren't in a non-owner's form, so saving it would silently drop them
+        kept = [] if request.user.is_superuser else list(form.instance.groups.filter(name__in=FULL_ACCESS_GROUPS))
+        super().save_related(request, form, formsets, change)
+        if kept:
+            form.instance.groups.add(*kept)
 
     @admin.display(description=_("نقش‌ها"))
     def roles(self, obj):
@@ -137,7 +154,7 @@ class GroupAdmin(BaseGroupAdmin):
     # No bulk delete: system groups must not be deleted by mistake
     actions = ("restore_default_permissions",)
 
-    @admin.action(description=_("اعمال دسترسی‌های پیش‌فرض مدیر حوزه"))
+    @admin.action(description=_("اعمال دسترسی‌های پیش‌فرض گروه‌های حوزه"))
     def restore_default_permissions(self, request, queryset):
         """
         Bring a domain group back to what the role needs.
@@ -149,7 +166,7 @@ class GroupAdmin(BaseGroupAdmin):
         from domains.services import apply_default_permissions
 
         for group in queryset:
-            if not hasattr(group, "domain"):
+            if not is_domain_group(group):
                 self.message_user(
                     request, f"«{group.name}» گروه حوزه نیست و تغییری نکرد.", messages.WARNING,
                 )
@@ -164,7 +181,10 @@ class GroupAdmin(BaseGroupAdmin):
             )
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related("domain").annotate(_member_count=Count("user"))
+        return (
+            super().get_queryset(request).select_related("managers_domain", "experts_domain")
+            .annotate(_member_count=Count("user"))
+        )
 
     def get_fields(self, request, obj=None):
         if obj is not None and obj.name in FULL_ACCESS_GROUPS:
@@ -185,7 +205,7 @@ class GroupAdmin(BaseGroupAdmin):
     def get_form(self, request, obj=None, change=False, **kwargs):
         form = super().get_form(request, obj, change=change, **kwargs)
         permissions = form.base_fields.get("permissions")
-        if isinstance(permissions, PermissionChoiceField) and obj is not None and hasattr(obj, "domain"):
+        if isinstance(permissions, PermissionChoiceField) and obj is not None and is_domain_group(obj):
             # Domain groups: only content permissions (never users, groups, logs...)
             permissions.queryset = (
                 Permission.objects.filter(content_type__app_label__in=DOMAIN_MANAGER_APPS)
@@ -203,8 +223,9 @@ class GroupAdmin(BaseGroupAdmin):
     def group_type(self, obj):
         if obj.name in FULL_ACCESS_GROUPS:
             return "دسترسی کامل"
-        if hasattr(obj, "domain"):
-            return f"مدیران حوزه ({obj.domain})"
+        domain, kind = domain_of_group(obj)
+        if domain is not None:
+            return f"{'مدیران' if kind == 'managers' else 'کارشناسان'} حوزه ({domain})"
         return "سایر"
 
     @admin.display(description=_("تعداد اعضا"), ordering="_member_count")

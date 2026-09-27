@@ -80,7 +80,7 @@ class DetailTests(StoreTestCase):
 
     def test_managers_can_preview_draft(self):
         manager = User.objects.create_user("09121111111", "S3cure-pass!")
-        manager.groups.add(self.fpga.group)
+        manager.groups.add(self.fpga.managers_group)
         self.client.force_login(manager)
         response = self.client.get(self.draft.get_absolute_url())
         self.assertContains(response, "پیش‌نمایش")
@@ -157,7 +157,7 @@ class EnterWithoutBuyingTests(StoreTestCase):
         admin = User.objects.create_user("09122222222", "S3cure-pass!")
         admin.groups.add(Group.objects.get(name=SITE_ADMINS_GROUP))
         manager = User.objects.create_user("09121111111", "S3cure-pass!")
-        manager.groups.add(self.fpga.group)
+        manager.groups.add(self.fpga.managers_group)
         for user in (admin, manager):
             with self.subTest(user=user.mobile_number):
                 response = self.page_for(user)
@@ -167,7 +167,7 @@ class EnterWithoutBuyingTests(StoreTestCase):
 
     def test_everyone_else_still_sees_the_lock(self):
         other_manager = User.objects.create_user("09123333333", "S3cure-pass!")
-        other_manager.groups.add(self.ai.group)
+        other_manager.groups.add(self.ai.managers_group)
         visitor = User.objects.create_user("09124444444", "S3cure-pass!")
         for user in (None, visitor, other_manager):
             with self.subTest(user=getattr(user, "mobile_number", "anonymous")):

@@ -97,7 +97,7 @@ class ApprovalFlowTestCase(TestCase):
         self.ai = Domain.objects.create(name="هوش مصنوعی", slug="ai")
 
         self.manager = User.objects.create_user("09121111111", PASSWORD)
-        self.manager.groups.add(self.fpga.group)
+        self.manager.groups.add(self.fpga.managers_group)
         self.admin = User.objects.create_user("09122222222", PASSWORD)
         self.admin.groups.add(Group.objects.get(name=SITE_ADMINS_GROUP))
 

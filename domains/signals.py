@@ -7,12 +7,15 @@ from .models import Domain
 
 
 @receiver(pre_delete, sender=Domain)
-def remember_domain_managers(sender, instance, **kwargs):
-    instance._manager_ids = list(instance.group.user_set.values_list("pk", flat=True))
+def remember_domain_members(sender, instance, **kwargs):
+    instance._member_ids = [
+        pk for group in instance.groups for pk in group.user_set.values_list("pk", flat=True)
+    ]
 
 
 @receiver(post_delete, sender=Domain)
-def delete_domain_group(sender, instance, **kwargs):
-    # Deleting a domain removes its group; former managers lose admin access if they have no other group
-    instance.group.delete()
-    sync_staff_status(getattr(instance, "_manager_ids", []))
+def delete_domain_groups(sender, instance, **kwargs):
+    # Deleting a domain removes its groups; its people lose admin access if they have no other group
+    for group in instance.groups:
+        group.delete()
+    sync_staff_status(getattr(instance, "_member_ids", []))

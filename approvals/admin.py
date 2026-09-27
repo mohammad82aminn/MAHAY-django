@@ -5,6 +5,7 @@ from django.urls import NoReverseMatch, reverse
 from django.utils.html import format_html, format_html_join
 
 from accounts.roles import is_site_admin
+from domains.access import member_domains
 
 from . import services
 from .models import ChangeRequest
@@ -48,7 +49,7 @@ class ChangeRequestAdmin(admin.ModelAdmin):
         queryset = super().get_queryset(request).select_related("domain", "submitted_by", "content_type")
         if is_site_admin(request.user):
             return queryset
-        return queryset.filter(domain__group__user=request.user)  # managers: their domains' requests
+        return queryset.filter(domain__in=member_domains(request.user))  # their domains' requests
 
     def pending_count(self, request):
         """

@@ -5,6 +5,7 @@ from django.urls import reverse
 from accounts.models import User
 from accounts.roles import SITE_ADMINS_GROUP, ensure_site_admins_group
 
+from . import access
 from .models import Domain
 
 PASSWORD = "S3cure-pass!"
@@ -13,25 +14,78 @@ PASSWORD = "S3cure-pass!"
 class DomainGroupTests(TestCase):
     def test_creating_domain_creates_its_group_with_permissions(self):
         domain = Domain.objects.create(name="FPGA", slug="fpga")
-        self.assertEqual(domain.group.name, "مدیران حوزه FPGA")
-        self.assertTrue(domain.group.permissions.filter(codename="view_domain").exists())
+        self.assertEqual(domain.managers_group.name, "مدیران حوزه FPGA")
+        self.assertTrue(domain.managers_group.permissions.filter(codename="view_domain").exists())
 
     def test_renaming_domain_renames_group(self):
         domain = Domain.objects.create(name="شبکه", slug="network")
         domain.name = "شبکه و امنیت"
         domain.save()
-        domain.group.refresh_from_db()
-        self.assertEqual(domain.group.name, "مدیران حوزه شبکه و امنیت")
+        domain.managers_group.refresh_from_db()
+        self.assertEqual(domain.managers_group.name, "مدیران حوزه شبکه و امنیت")
 
     def test_deleting_domain_deletes_group_and_staff_access(self):
         domain = Domain.objects.create(name="FPGA", slug="fpga")
         user = User.objects.create_user("09121234567", PASSWORD)
-        user.groups.add(domain.group)
-        group_id = domain.group.pk
+        user.groups.add(domain.managers_group)
+        group_id = domain.managers_group.pk
         domain.delete()
         user.refresh_from_db()
         self.assertFalse(Group.objects.filter(pk=group_id).exists())
         self.assertFalse(user.is_staff)
+
+
+class ManagersAndExpertsTests(TestCase):
+    """Each domain has a managers group and an experts group; roles come only from them."""
+
+    def setUp(self):
+        self.fpga = Domain.objects.create(name="FPGA", slug="fpga")
+        self.ai = Domain.objects.create(name="هوش مصنوعی", slug="ai")
+        self.person = User.objects.create_user("09121234567", PASSWORD)
+
+    def test_a_new_domain_gets_both_groups(self):
+        self.assertEqual(self.fpga.managers_group.name, "مدیران حوزه FPGA")
+        self.assertEqual(self.fpga.experts_group.name, "کارشناسان حوزه FPGA")
+        for group in self.fpga.groups:
+            self.assertTrue(group.permissions.filter(codename="add_lesson").exists())
+
+    def test_renaming_renames_both_and_deleting_removes_both(self):
+        self.fpga.name = "FPGA و ASIC"
+        self.fpga.save()
+        names = set(Group.objects.filter(pk__in=[g.pk for g in self.fpga.groups]).values_list("name", flat=True))
+        self.assertEqual(names, {"مدیران حوزه FPGA و ASIC", "کارشناسان حوزه FPGA و ASIC"})
+        ids = [group.pk for group in self.fpga.groups]
+        self.fpga.delete()
+        self.assertFalse(Group.objects.filter(pk__in=ids).exists())
+
+    def test_a_domain_may_have_several_managers(self):
+        other = User.objects.create_user("09129999999", PASSWORD)
+        self.fpga.managers_group.user_set.add(self.person, other)
+        for user in (self.person, other):
+            self.assertTrue(access.is_manager(user, self.fpga))
+
+    def test_manager_here_expert_there(self):
+        self.person.groups.add(self.fpga.managers_group, self.ai.experts_group)
+        self.assertEqual(list(access.managed_domains(self.person)), [self.fpga])
+        self.assertCountEqual(access.member_domains(self.person), [self.fpga, self.ai])
+        self.assertTrue(access.is_member(self.person, self.ai))
+        self.assertFalse(access.is_manager(self.person, self.ai))
+
+    def test_being_in_both_groups_of_a_domain_counts_it_once(self):
+        self.person.groups.add(self.fpga.managers_group, self.fpga.experts_group)
+        self.assertEqual(list(access.member_domains(self.person)), [self.fpga])
+
+    def test_a_domain_without_managers(self):
+        self.assertFalse(access.has_managers(self.fpga))
+        self.person.groups.add(self.fpga.experts_group)
+        self.assertFalse(access.has_managers(self.fpga))  # experts don't count
+        self.person.groups.add(self.fpga.managers_group)
+        self.assertTrue(access.has_managers(self.fpga))
+
+    def test_which_group_is_which(self):
+        self.assertEqual(access.domain_of_group(self.fpga.managers_group), (self.fpga, "managers"))
+        self.assertEqual(access.domain_of_group(self.fpga.experts_group), (self.fpga, "experts"))
+        self.assertEqual(access.domain_of_group(Group.objects.create(name="سایر")), (None, None))
 
 
 class StaffStatusTests(TestCase):
@@ -42,30 +96,30 @@ class StaffStatusTests(TestCase):
         self.user = User.objects.create_user("09121234567", PASSWORD)
 
     def test_adding_to_group_gives_admin_access(self):
-        self.user.groups.add(self.domain.group)
+        self.user.groups.add(self.domain.managers_group)
         self.user.refresh_from_db()
         self.assertTrue(self.user.is_staff)
 
     def test_adding_from_group_side_works_too(self):
-        self.domain.group.user_set.add(self.user)  # type: ignore[attr-defined]
+        self.domain.managers_group.user_set.add(self.user)  # type: ignore[attr-defined]
         self.user.refresh_from_db()
         self.assertTrue(self.user.is_staff)
 
     def test_removing_last_group_removes_admin_access(self):
-        self.user.groups.add(self.domain.group)
-        self.user.groups.remove(self.domain.group)
+        self.user.groups.add(self.domain.managers_group)
+        self.user.groups.remove(self.domain.managers_group)
         self.user.refresh_from_db()
         self.assertFalse(self.user.is_staff)
 
     def test_clearing_group_members_removes_admin_access(self):
-        self.domain.group.user_set.add(self.user)  # type: ignore[attr-defined]
-        self.domain.group.user_set.clear()  # type: ignore[attr-defined]
+        self.domain.managers_group.user_set.add(self.user)  # type: ignore[attr-defined]
+        self.domain.managers_group.user_set.clear()  # type: ignore[attr-defined]
         self.user.refresh_from_db()
         self.assertFalse(self.user.is_staff)
 
     def test_superuser_stays_staff(self):
         admin = User.objects.create_superuser("09351234567", PASSWORD)
-        admin.groups.add(self.domain.group)
+        admin.groups.add(self.domain.managers_group)
         admin.groups.clear()
         admin.refresh_from_db()
         self.assertTrue(admin.is_staff)
@@ -83,7 +137,7 @@ class RolesTests(TestCase):
         self.assertTrue(group.permissions.filter(codename="change_user").exists())
 
     def test_one_person_can_manage_two_domains(self):
-        self.user.groups.add(self.fpga.group, self.ai.group)
+        self.user.groups.add(self.fpga.managers_group, self.ai.managers_group)
         self.assertEqual(set(self.user.managed_domains), {self.fpga, self.ai})
         self.assertFalse(self.user.is_site_admin)
 
@@ -110,13 +164,13 @@ class AdminPanelAccessTests(TestCase):
         self.assertEqual(response.status_code, 302)  # redirected to admin login
 
     def test_domain_manager_sees_only_own_domain(self):
-        self.login_with_groups(self.fpga.group)
+        self.login_with_groups(self.fpga.managers_group)
         response = self.client.get(self.changelist)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(list(response.context["cl"].queryset), [self.fpga])
 
     def test_domain_manager_cannot_edit_domain(self):
-        self.login_with_groups(self.fpga.group)
+        self.login_with_groups(self.fpga.managers_group)
         url = reverse("admin:domains_domain_change", args=[self.fpga.pk])
         response = self.client.post(url, {"name": "X", "slug": "x", "order": 0})
         self.assertEqual(response.status_code, 403)
@@ -148,13 +202,13 @@ class GroupAdminTests(TestCase):
 
     def test_admin_can_set_domain_group_permissions_and_they_stay(self):
         change = Permission.objects.get(codename="change_product")
-        response = self.client.post(self.change_url(self.domain.group), {"permissions": [change.pk]})
+        response = self.client.post(self.change_url(self.domain.managers_group), {"permissions": [change.pk]})
         self.assertEqual(response.status_code, 302)
         ensure_site_admins_group()  # what runs after every migrate
-        self.assertEqual(list(self.domain.group.permissions.all()), [change])
+        self.assertEqual(list(self.domain.managers_group.permissions.all()), [change])
 
     def test_domain_group_only_offers_content_permissions(self):
-        response = self.client.get(self.change_url(self.domain.group))
+        response = self.client.get(self.change_url(self.domain.managers_group))
         choices = response.context["adminform"].form.fields["permissions"].queryset
         self.assertTrue(choices.filter(codename="change_product").exists())
         self.assertFalse(choices.filter(codename="change_user").exists())
@@ -163,12 +217,12 @@ class GroupAdminTests(TestCase):
 
     def test_domain_group_cannot_get_user_permissions(self):
         change_user = Permission.objects.get(codename="change_user")
-        response = self.client.post(self.change_url(self.domain.group), {"permissions": [change_user.pk]})
+        response = self.client.post(self.change_url(self.domain.managers_group), {"permissions": [change_user.pk]})
         self.assertEqual(response.status_code, 200)  # form error, nothing saved
-        self.assertFalse(self.domain.group.permissions.filter(codename="change_user").exists())
+        self.assertFalse(self.domain.managers_group.permissions.filter(codename="change_user").exists())
 
     def test_system_groups_cannot_be_deleted(self):
-        for group in (self.site_admins, self.domain.group):
+        for group in (self.site_admins, self.domain.managers_group):
             with self.subTest(group=group.name):
                 response = self.client.post(reverse("admin:auth_group_delete", args=[group.pk]), {"post": "yes"})
                 self.assertEqual(response.status_code, 403)
@@ -191,28 +245,28 @@ class DefaultPermissionTests(TestCase):
         self.client.force_login(self.owner)
 
     def test_a_new_domain_group_can_price_its_referrals(self):
-        held = {p.codename for p in self.domain.group.permissions.all()}
+        held = {p.codename for p in self.domain.managers_group.permissions.all()}
         self.assertIn("change_referral", held)
         self.assertIn("view_referral", held)
         self.assertIn("view_servicerequest", held)
 
     def test_the_action_puts_back_what_was_removed(self):
-        self.domain.group.permissions.remove(Permission.objects.get(codename="change_referral"))
-        self.assertNotIn("change_referral", {p.codename for p in self.domain.group.permissions.all()})
+        self.domain.managers_group.permissions.remove(Permission.objects.get(codename="change_referral"))
+        self.assertNotIn("change_referral", {p.codename for p in self.domain.managers_group.permissions.all()})
 
         self.client.post(reverse("admin:auth_group_changelist"), {
-            "action": "restore_default_permissions", "_selected_action": [self.domain.group.pk],
+            "action": "restore_default_permissions", "_selected_action": [self.domain.managers_group.pk],
         })
-        self.assertIn("change_referral", {p.codename for p in self.domain.group.permissions.all()})
+        self.assertIn("change_referral", {p.codename for p in self.domain.managers_group.permissions.all()})
 
     def test_the_action_never_takes_away_what_someone_granted(self):
         extra = Permission.objects.get(codename="view_requestpayment")
-        self.domain.group.permissions.add(extra)
+        self.domain.managers_group.permissions.add(extra)
 
         self.client.post(reverse("admin:auth_group_changelist"), {
-            "action": "restore_default_permissions", "_selected_action": [self.domain.group.pk],
+            "action": "restore_default_permissions", "_selected_action": [self.domain.managers_group.pk],
         })
-        self.assertIn(extra, self.domain.group.permissions.all())
+        self.assertIn(extra, self.domain.managers_group.permissions.all())
 
     def test_the_action_leaves_a_group_that_is_not_a_domain_alone(self):
         plain = Group.objects.create(name="یک گروه معمولی")

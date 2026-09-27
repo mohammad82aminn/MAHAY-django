@@ -129,10 +129,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def managed_domains(self):
-        """Domains this user manages (through the domain groups)."""
-        from domains.models import Domain
+        """Domains this user manages (through their «مدیران حوزه» groups)."""
+        from domains.access import managed_domains
 
-        return Domain.objects.filter(group__user=self)
+        return managed_domains(self)
 
     @property
     def mobile_display(self):

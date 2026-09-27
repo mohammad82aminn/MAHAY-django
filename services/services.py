@@ -1,9 +1,11 @@
 """Helpers shared by the views and the admin panel."""
 from datetime import timedelta
 
+from django.db.models import Q
 from django.utils import timezone
 
 from accounts.roles import is_site_admin
+from domains.access import member_domains
 
 from .models import Referral, RequestEvent, ServiceRequest
 
@@ -48,7 +50,7 @@ def visible_requests(user):
     """Site admins see everything; a domain manager sees only what was referred to their domains."""
     if is_site_admin(user):
         return ServiceRequest.objects.all()
-    return ServiceRequest.objects.filter(referrals__domain__group__user=user).distinct()
+    return ServiceRequest.objects.filter(referrals__domain__in=member_domains(user)).distinct()
 
 
 # Where a request has got to, worked out from what it already holds rather than stored: a saved
@@ -130,16 +132,17 @@ def domain_managers(domain=None):
     """
     from accounts.models import User
 
-    people = User.objects.filter(is_active=True, groups__domain__isnull=False)
+    in_a_domain = Q(groups__managers_domain__isnull=False) | Q(groups__experts_domain__isnull=False)
+    people = User.objects.filter(in_a_domain, is_active=True)
     if domain is not None:
-        people = people.filter(groups=domain.group)
+        people = User.objects.filter(is_active=True, groups__in=domain.groups)
     return people.distinct()
 
 
 def visible_referrals(user):
     if is_site_admin(user):
         return Referral.objects.all()
-    return Referral.objects.filter(domain__group__user=user)
+    return Referral.objects.filter(domain__in=member_domains(user))
 
 
 def can_read(user, request_object):

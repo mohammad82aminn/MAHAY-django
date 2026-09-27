@@ -3,9 +3,12 @@ Access rules of MAHAY (group based — permissions are never given to individual
 
 - Site admins: members of "مدیران کل" or "مدیران فنی" -> every permission of the site (kept automatically).
   The two groups have the same access; only the name differs (site management vs. technical duties).
-- Domain managers: members of a domain's group (created automatically for each domain).
+- Domain managers and experts: members of a domain's «مدیران حوزه» / «کارشناسان حوزه» group
+  (both created automatically for each domain; see domains.access).
   WHAT they may do is chosen by site admins in the admin panel (group permissions);
-  WHERE they may do it (only their own domain) is enforced in code.
+  WHERE they may do it (only their own domain) and what a manager may do beyond an expert
+  are enforced in code.
+- Who is in the full-access groups is the system owner's (superuser's) decision alone.
 - Normal users: no group.
 
 Anyone who is in at least one group can log into the admin panel (is_staff is set automatically).
@@ -55,8 +58,10 @@ def is_site_admin(user):
 
 
 def is_system_group(group):
-    """Groups managed by the system: the full-access groups and every domain group."""
-    return group.name in FULL_ACCESS_GROUPS or hasattr(group, "domain")
+    """Groups managed by the system: the full-access groups and every domain's two groups."""
+    from domains.access import is_domain_group
+
+    return group.name in FULL_ACCESS_GROUPS or is_domain_group(group)
 
 
 def ensure_site_admins_group():

@@ -15,12 +15,13 @@ from domains.models import Domain
 
 
 def domains_by_manager():
-    """{user id: [domain id, ...]} for every domain manager, in one query."""
-    mapping = defaultdict(list)
-    pairs = Domain.objects.filter(group__user__isnull=False).values_list("group__user", "pk")
-    for user_id, domain_id in pairs:
-        mapping[str(user_id)].append(str(domain_id))
-    return mapping
+    """{user id: [domain id, ...]} for everyone who works in a domain, in two queries."""
+    mapping = defaultdict(set)
+    for group_field in ("managers_group", "experts_group"):
+        pairs = Domain.objects.filter(**{f"{group_field}__user__isnull": False}).values_list(f"{group_field}__user", "pk")
+        for user_id, domain_id in pairs:
+            mapping[str(user_id)].add(str(domain_id))
+    return {user_id: sorted(domains) for user_id, domains in mapping.items()}
 
 
 class ExpertSelect(forms.Select):

@@ -47,7 +47,7 @@ class ApprovalTestCase(TestCase):
     @staticmethod
     def domain_manager(number, name, domain):
         user = User.objects.create_user(number, PASSWORD, first_name=name)
-        user.groups.add(domain.group)
+        user.groups.add(domain.managers_group)
         user.refresh_from_db()  # is_staff is set by a signal through a queryset update
         return user
 

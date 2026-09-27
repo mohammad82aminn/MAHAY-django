@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import Group
 from django.core import mail
 from django.core.exceptions import ValidationError
 from django.test import TestCase, override_settings
@@ -304,7 +305,7 @@ class RoleLabelTests(TestCase):
 
     def test_a_domain_manager_is_named_after_their_group(self):
         user = User.objects.create_user("09121111111", PASSWORD, first_name="علی")
-        user.groups.add(self.domain.group)
+        user.groups.add(self.domain.managers_group)
         self.assertEqual(role_label(user), "مدیران حوزه هوش مصنوعی")
 
     def test_a_superuser_is_the_system_owner_even_without_a_group(self):
@@ -317,8 +318,55 @@ class RoleLabelTests(TestCase):
 
     def test_the_admin_header_shows_the_role(self):
         user = User.objects.create_user("09124444444", PASSWORD, first_name="علی")
-        user.groups.add(self.domain.group)
+        user.groups.add(self.domain.managers_group)
         self.client.force_login(user)
 
         response = self.client.get(reverse("admin:index"))
         self.assertContains(response, "مدیران حوزه هوش مصنوعی")
+
+
+
+class SiteAdminMembershipTests(TestCase):
+    """Only the system owner puts people into, or takes them out of, the full-access groups."""
+
+    def setUp(self):
+        from accounts.roles import SITE_ADMINS_GROUP, TECH_ADMINS_GROUP
+        from domains.models import Domain
+
+        self.site_admins = Group.objects.get(name=SITE_ADMINS_GROUP)
+        self.tech_admins = Group.objects.get(name=TECH_ADMINS_GROUP)
+        self.domain = Domain.objects.create(name="FPGA", slug="fpga")
+        self.owner = User.objects.create_superuser("09120000000", "S3cure-pass!")
+        self.second_admin = User.objects.create_user("09120000001", "S3cure-pass!")
+        self.second_admin.groups.add(self.site_admins)
+        self.person = User.objects.create_user("09121111111", "S3cure-pass!")
+
+    def post_groups(self, actor, target, groups):
+        self.client.force_login(actor)
+        return self.client.post(reverse("admin:accounts_user_change", args=[target.pk]), {
+            "mobile_number": target.mobile_number, "first_name": "", "last_name": "", "email": "",
+            "contact_handle": "", "groups": [group.pk for group in groups], "mobile_verified": "on",
+            "is_active": "on", "date_joined_0": "1404/01/01", "date_joined_1": "00:00:00",
+        })
+
+    def test_a_second_admin_is_not_offered_the_full_access_groups(self):
+        self.client.force_login(self.second_admin)
+        response = self.client.get(reverse("admin:accounts_user_change", args=[self.person.pk]))
+        offered = response.context["adminform"].form.fields["groups"].queryset
+        self.assertNotIn(self.site_admins, offered)
+        self.assertNotIn(self.tech_admins, offered)
+        self.assertIn(self.domain.managers_group, offered)
+
+    def test_a_second_admin_cannot_grant_full_access(self):
+        self.post_groups(self.second_admin, self.person, [self.site_admins, self.domain.experts_group])
+        self.assertNotIn(self.site_admins, self.person.groups.all())
+
+    def test_a_second_admin_editing_an_admin_keeps_their_full_access(self):
+        other_admin = User.objects.create_user("09120000002", "S3cure-pass!")
+        other_admin.groups.add(self.site_admins)
+        self.post_groups(self.second_admin, other_admin, [self.domain.managers_group])
+        self.assertCountEqual(other_admin.groups.all(), [self.site_admins, self.domain.managers_group])
+
+    def test_the_owner_decides(self):
+        self.post_groups(self.owner, self.person, [self.site_admins])
+        self.assertIn(self.site_admins, self.person.groups.all())
