@@ -5,7 +5,7 @@ from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 
-from accounts.roles import is_site_admin
+from accounts.roles import is_site_admin, sees_everything
 from domains.access import has_managers, is_manager, managed_domains
 
 from .models import Referral, RequestEvent, ServiceRequest
@@ -52,7 +52,7 @@ def visible_requests(user):
     Site admins see everything; a domain manager what was referred to their domains; an expert
     only the requests whose work was handed to them, not their colleagues'.
     """
-    if is_site_admin(user):
+    if sees_everything(user):
         return ServiceRequest.objects.all()
     return ServiceRequest.objects.filter(pk__in=visible_referrals(user).values("request"))
 
@@ -155,7 +155,7 @@ def domain_people(domain=None):
 
 def visible_referrals(user):
     """The whole domain's share for its managers; for an expert, what was handed to them."""
-    if is_site_admin(user):
+    if sees_everything(user):
         return Referral.objects.all()
     if not user.is_authenticated:
         return Referral.objects.none()

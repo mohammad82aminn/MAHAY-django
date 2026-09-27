@@ -11,7 +11,8 @@ from .forms import AdminUserCreationForm, UserChangeForm
 from .formatting import ltr
 from .models import User
 from .roles import (
-    DOMAIN_MANAGER_APPS, DOMAIN_MANAGER_FORBIDDEN, FINANCE_GROUP, FULL_ACCESS_GROUPS, OWNER_ONLY_GROUPS,
+    DOMAIN_MANAGER_APPS, DOMAIN_MANAGER_FORBIDDEN, FINANCE_GROUP, FULL_ACCESS_GROUPS, OFFICE_GROUP,
+    OWNER_ONLY_GROUPS, TECH_ADMINS_GROUP,
     is_system_group, role_label,
 )
 from domains.access import domain_of_group, is_domain_group
@@ -224,8 +225,9 @@ class GroupAdmin(BaseGroupAdmin):
     def group_type(self, obj):
         if obj.name in FULL_ACCESS_GROUPS:
             return "دسترسی کامل"
-        if obj.name == FINANCE_GROUP:
-            return "ستاد مالی"
+        staff = {FINANCE_GROUP: "ستاد مالی", TECH_ADMINS_GROUP: "ستاد فنی", OFFICE_GROUP: "ستاد اداری"}
+        if obj.name in staff:
+            return staff[obj.name]
         domain, kind = domain_of_group(obj)
         if domain is not None:
             return f"{'مدیران' if kind == 'managers' else 'کارشناسان'} حوزه ({domain})"
@@ -237,6 +239,12 @@ class GroupAdmin(BaseGroupAdmin):
 
     @admin.display(description=_("دسترسی‌ها"))
     def site_admins_note(self, obj):
-        if obj.name == FINANCE_GROUP:
-            return "این گروه به‌صورت خودکار همه‌ی دسترسی‌های بخش «امور مالی» را دارد و قابل تغییر نیست."
+        notes = {
+            FINANCE_GROUP: "این گروه به‌صورت خودکار همه‌ی دسترسی‌های بخش «امور مالی» را دارد و قابل تغییر نیست.",
+            TECH_ADMINS_GROUP: "این گروه به‌صورت خودکار همه‌ی پنل را فقط می‌بیند (به‌جز امور مالی، گزارش‌های اداری، "
+                               "کارپوشه‌ها و درخواست‌های همکاری) و فقط صفحه‌های ثابت و راه‌های ارتباطی را ویرایش می‌کند.",
+            OFFICE_GROUP: "این گروه به‌صورت خودکار دسترسی‌های بخش «امور اداری» را دارد و قابل تغییر نیست.",
+        }
+        if obj.name in notes:
+            return notes[obj.name]
         return "این گروه به‌صورت خودکار همه‌ی دسترسی‌های سایت را دارد و قابل تغییر نیست."

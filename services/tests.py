@@ -294,9 +294,9 @@ class AdminWorkflowTests(ServiceTestCase):
         self.assertContains(response, "payments-TOTAL_FORMS")
         self.assertContains(response, "events-TOTAL_FORMS")
 
-    def test_both_full_access_groups_are_site_admins(self):
+    def test_only_the_site_admins_decide(self):
         self.assertTrue(is_site_admin(self.admin))
-        self.assertTrue(is_site_admin(self.tech))
+        self.assertFalse(is_site_admin(self.tech))  # support sees everything but decides nothing
         self.assertFalse(is_site_admin(self.expert))
 
     def test_admin_sees_every_request(self):
@@ -665,8 +665,8 @@ class HeardFromReportTests(ServiceTestCase):
                                       contact_channel="phone", title="ثبت دستی", description=DESCRIPTION,
                                       level="university", need="full")  # typed in by an admin: no answer
 
-    def test_site_and_tech_admins_read_the_counts(self):
-        for user in (self.admin, self.tech):
+    def test_site_admins_read_the_counts(self):
+        for user in (self.admin,):
             with self.subTest(user=user.first_name):
                 self.client.force_login(user)
                 response = self.client.get(self.url, {"period": "all"})
@@ -679,9 +679,11 @@ class HeardFromReportTests(ServiceTestCase):
                 self.assertContains(response, "نمایشگاه الکامپ")
 
     def test_nobody_else_gets_the_page_or_the_menu_entry(self):
-        self.client.force_login(self.expert)
-        self.assertEqual(self.client.get(self.url).status_code, 404)
-        self.assertNotContains(self.client.get(reverse("admin:index")), self.url)
+        for user in (self.expert, self.tech):  # marketing isn't support's business
+            with self.subTest(user=user.first_name):
+                self.client.force_login(user)
+                self.assertEqual(self.client.get(self.url).status_code, 404)
+                self.assertNotContains(self.client.get(reverse("admin:index")), self.url)
         self.client.force_login(self.admin)
         self.assertContains(self.client.get(reverse("admin:index")), self.url)
 

@@ -141,6 +141,11 @@ class ServiceRequestAdmin(admin.ModelAdmin):
             }),
         )
 
+    def get_list_display(self, request):
+        if is_site_admin(request.user):
+            return self.list_display
+        return [column for column in self.list_display if column != "money"]  # the money is the admins' side
+
     def get_inlines(self, request, obj):
         if is_site_admin(request.user):
             return self.inlines

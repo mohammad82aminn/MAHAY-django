@@ -1,14 +1,21 @@
 """
 Access rules of MAHAY (group based — permissions are never given to individual users).
 
-- Site admins: members of "مدیران کل" or "مدیران فنی" -> every permission of the site (kept automatically).
-  The two groups have the same access; only the name differs (site management vs. technical duties).
+- Site admins: members of "مدیران کل" -> every permission of the site (kept automatically). They
+  alone make the decisions: approving, referring, pricing, payments, roles.
+- Staff (ستاد), each with a group of its own and nothing beyond it:
+  - "مدیران فنی": support. Sees the whole panel read-only to find what is wrong (sees_everything),
+    edits only the site's own pages and contact channels, and runs «درخواست‌های فنی». Never the
+    money, the office reports, anyone's CV or anyone's کارپوشه.
+  - "مدیران مالی": the finance pages (see can_see_finance).
+  - "مدیران اداری": watches the staff — directory, activity, performance — and reports to the site
+    admins; decides nothing.
 - Domain managers and experts: members of a domain's «مدیران حوزه» / «کارشناسان حوزه» group
   (both created automatically for each domain; see domains.access).
   WHAT they may do is chosen by site admins in the admin panel (group permissions);
   WHERE they may do it (only their own domain) and what a manager may do beyond an expert
   are enforced in code.
-- Who is in the full-access groups is the system owner's (superuser's) decision alone.
+- Who is in the full-access and staff groups is the system owner's (superuser's) decision alone.
 - Normal users: no group.
 
 Anyone who is in at least one group can log into the admin panel (is_staff is set automatically).
@@ -17,12 +24,25 @@ from django.contrib.auth.models import Group, Permission
 
 SITE_ADMINS_GROUP = "مدیران کل"
 
+FULL_ACCESS_GROUPS = (SITE_ADMINS_GROUP,)
+# Staff (ستاد)
 TECH_ADMINS_GROUP = "مدیران فنی"
-FULL_ACCESS_GROUPS = (SITE_ADMINS_GROUP, TECH_ADMINS_GROUP)
-# Staff (ستاد): sees every toman that comes in and records payouts, and nothing else of the site
 FINANCE_GROUP = "مدیران مالی"
+OFFICE_GROUP = "مدیران اداری"
+STAFF_GROUPS = (TECH_ADMINS_GROUP, FINANCE_GROUP, OFFICE_GROUP)
 # Who is in these is the system owner's decision alone (see accounts.admin.UserAdmin)
-OWNER_ONLY_GROUPS = (*FULL_ACCESS_GROUPS, FINANCE_GROUP)
+OWNER_ONLY_GROUPS = (*FULL_ACCESS_GROUPS, *STAFF_GROUPS)
+
+# What the technical admins may not even look at: the money, the office's reports, the inboxes and
+# applicants' CVs are nobody's business in fixing the site
+TECH_HIDDEN_APPS = ("finance", "office", "inbox", "collaboration")
+# ...and within the other apps, the payments and orders (money too) and the marketing report.
+# Purchases stay visible: "I paid but can't open the course" is exactly a support question.
+TECH_HIDDEN_MODELS = (
+    ("services", "requestpayment"), ("services", "heardfromreport"), ("commerce", "order"), ("commerce", "orderitem"),
+)
+# ...and the only things they change: the site's own pages and how to reach us
+TECH_EDITS = (("pages", "page"), ("services", "contactchannel"))
 # Apps whose permissions may be given to domain groups (content only; never users or groups).
 # When courses and projects are built, their app labels are added here.
 DOMAIN_MANAGER_APPS = ("domains", "products", "content", "approvals", "services")
@@ -70,17 +90,49 @@ def is_system_group(group):
 
 def ensure_site_admins_group():
     """
-    Create the system's staff groups if missing and keep their permissions whole: every permission
-    of the site for the full-access groups, the finance app's for the finance managers.
+    Create the system's groups if missing and keep their permissions whole (runs after every
+    migrate, so new models are covered): everything for the site admins; for the technical admins,
+    viewing all but TECH_HIDDEN_APPS and changing TECH_EDITS; the finance app for the finance
+    managers; the office app for the office managers.
     """
-    groups = []
-    for name in FULL_ACCESS_GROUPS:
+    from django.db.models import Q
+
+    site_admins, _ = Group.objects.get_or_create(name=SITE_ADMINS_GROUP)
+    site_admins.permissions.set(Permission.objects.all())
+
+    edits = Q()
+    for app_label, model in TECH_EDITS:
+        edits |= Q(content_type__app_label=app_label, **({"content_type__model": model} if model else {}))
+    hidden = Q(content_type__app_label__in=TECH_HIDDEN_APPS)
+    for app_label, model in TECH_HIDDEN_MODELS:
+        hidden |= Q(content_type__app_label=app_label, content_type__model=model)
+    tech, _ = Group.objects.get_or_create(name=TECH_ADMINS_GROUP)
+    tech.permissions.set(Permission.objects.exclude(hidden).filter(Q(codename__startswith="view_") | edits))
+
+    for name, app_label in ((FINANCE_GROUP, "finance"), (OFFICE_GROUP, "office")):
         group, _ = Group.objects.get_or_create(name=name)
-        group.permissions.set(Permission.objects.all())
-        groups.append(group)
-    finance, _ = Group.objects.get_or_create(name=FINANCE_GROUP)
-    finance.permissions.set(Permission.objects.filter(content_type__app_label="finance"))
-    return groups[0]
+        group.permissions.set(Permission.objects.filter(content_type__app_label=app_label))
+    return site_admins
+
+
+def in_group(user, name):
+    return bool(user.is_authenticated and user.groups.filter(name=name).exists())
+
+
+def is_tech_admin(user):
+    return in_group(user, TECH_ADMINS_GROUP)
+
+
+def is_office_manager(user):
+    return in_group(user, OFFICE_GROUP)
+
+
+def sees_everything(user):
+    """
+    Who is shown every domain's content and every request, not just their own: the site admins,
+    and the technical admins to find what is wrong. Seeing is not deciding — that stays is_site_admin.
+    """
+    return is_site_admin(user) or is_tech_admin(user)
 
 
 def is_finance_manager(user):

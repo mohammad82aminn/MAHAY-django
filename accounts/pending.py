@@ -15,7 +15,17 @@ def count_for(model, request):
     counter = getattr(model_admin, "pending_count", None)
     if counter is None or not model_admin.has_view_permission(request):
         return 0
+    # The technical admins see everything to find faults, not to do the work: a new order or a
+    # waiting approval isn't theirs to clear, so only a section that says so counts for them
+    if is_tech_only(request.user) and not getattr(model_admin, "counts_for_tech_admins", False):
+        return 0
     return counter(request)
+
+
+def is_tech_only(user):
+    from .roles import is_site_admin, is_tech_admin
+
+    return is_tech_admin(user) and not is_site_admin(user)
 
 
 def total(request):

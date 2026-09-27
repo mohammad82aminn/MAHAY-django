@@ -4,7 +4,7 @@ from django.db import models
 from django.urls import NoReverseMatch, reverse
 from django.utils.html import format_html, format_html_join
 
-from accounts.roles import is_site_admin
+from accounts.roles import is_site_admin, sees_everything
 from domains.access import is_manager, managed_domains, member_domains
 
 from . import services
@@ -47,7 +47,7 @@ class ChangeRequestAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request).select_related("domain", "submitted_by", "content_type")
-        if is_site_admin(request.user):
+        if sees_everything(request.user):
             return queryset
         return queryset.filter(domain__in=member_domains(request.user))  # their domains' requests
 

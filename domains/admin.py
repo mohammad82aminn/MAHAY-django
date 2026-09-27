@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db.models import Count
 
-from accounts.roles import is_site_admin
+from accounts.roles import sees_everything
 
 from .access import member_domains
 from .models import Domain
@@ -24,7 +24,7 @@ class DomainAdmin(admin.ModelAdmin):
             .prefetch_related("managers_group__user_set")
             .annotate(_expert_count=Count("experts_group__user", distinct=True))
         )
-        if is_site_admin(request.user):
+        if sees_everything(request.user):
             return queryset
         return queryset.filter(pk__in=member_domains(request.user))
 

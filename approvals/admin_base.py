@@ -4,7 +4,7 @@ from django.db.models import Prefetch
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import gettext_lazy as _
 
-from accounts.roles import is_site_admin
+from accounts.roles import is_site_admin, sees_everything
 from domains.access import is_manager, member_domains
 
 from . import services
@@ -32,14 +32,19 @@ class ApprovalModelAdmin(admin.ModelAdmin):
     # --- Who sees what -------------------------------------------------------------
 
     def is_reviewer(self, request):
+        """Decides: publishes, and changes things straight away."""
         return is_site_admin(request.user)
+
+    def sees_all(self, request):
+        """Is shown every domain's items (the technical admins too, read-only by their permissions)."""
+        return sees_everything(request.user)
 
     def get_queryset(self, request):
         pending = ChangeRequest.objects.filter(status=ChangeRequest.Status.PENDING)
         queryset = super().get_queryset(request).prefetch_related(
             Prefetch("change_requests", queryset=pending, to_attr="pending_requests")
         )
-        if self.is_reviewer(request):
+        if self.sees_all(request):
             return queryset
         return queryset.filter(**{f"{self.domain_field}__in": member_domains(request.user)})
 
