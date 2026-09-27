@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from accounts.heard_from import HeardFromFormMixin
 from domains.models import Domain
 
 from .models import CollaborationRequest
@@ -30,7 +31,7 @@ class MultipleFileField(forms.FileField):
 WORK_FIELDS = {"teach": "can_teach", "build": "can_build", "advise": "can_advise"}
 
 
-class CollaborationForm(forms.ModelForm):
+class CollaborationForm(HeardFromFormMixin, forms.ModelForm):
     # One question with three ticks, rather than three separate yes/no fields stacked down the
     # page with their labels adrift from their boxes.
     work = forms.MultipleChoiceField(
@@ -57,7 +58,7 @@ class CollaborationForm(forms.ModelForm):
         fields = (
             "domains", "other_domain", "pitch",
             "degree", "field_of_study", "experience", "skills", "links",
-            "contact_channel", "contact_id",
+            "contact_channel", "contact_id", "heard_from", "heard_from_other",
         )
         widgets = {
             "contact_id": forms.TextInput(attrs={"dir": "ltr", "placeholder": "@username"}),

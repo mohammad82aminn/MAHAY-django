@@ -38,7 +38,7 @@ class ServiceTestCase(TestCase):
     def form_data(self, **changes):
         data = {
             "name": "رضا محمدی", "mobile_number": "09351234567", "email": "",
-            "contact_channel": "telegram", "contact_id": "@reza",
+            "contact_channel": "telegram", "contact_id": "@reza", "heard_from": "instagram",
             "title": "ربات تعقیب خط", "domains": [self.fpga.pk], "other_domain": "",
             "level": "university", "need": "full", "description": DESCRIPTION, "deadline": "",
         }
@@ -610,3 +610,84 @@ class ConsultingTests(ServiceTestCase):
         item = ServiceRequest.objects.get()
         self.assertIsNone(item.consulting_price)
         self.assertIsNone(item.agreed_amount)
+
+
+class HeardFromTests(ServiceTestCase):
+    """«از کجا با ما آشنا شدید؟»: asked of everyone, read only by the site admins."""
+
+    def test_the_question_is_required_on_both_forms(self):
+        for url_name in ("services:project", "services:consulting"):
+            with self.subTest(form=url_name):
+                response = self.submit(url_name, heard_from="", minutes=30)
+                self.assertContains(response, "یکی از گزینه‌ها را انتخاب کنید.")
+        self.assertFalse(ServiceRequest.objects.exists())
+
+    def test_the_answer_is_kept(self):
+        self.submit(heard_from="aparat")
+        self.assertEqual(ServiceRequest.objects.get().heard_from, "aparat")
+
+    def test_other_needs_words_and_only_other_keeps_them(self):
+        response = self.submit(heard_from="other", heard_from_other=" ")
+        self.assertContains(response, "بنویسید از کجا با ما آشنا شدید.")
+        self.submit(heard_from="other", heard_from_other="نمایشگاه الکامپ")
+        self.submit(heard_from="telegram", heard_from_other="جا مانده از انتخاب قبلی", title="دومی")
+        self.assertEqual(ServiceRequest.objects.get(title="ربات تعقیب خط").heard_from_other, "نمایشگاه الکامپ")
+        self.assertEqual(ServiceRequest.objects.get(title="دومی").heard_from_other, "")
+
+    def test_the_expert_never_sees_the_answer(self):
+        self.submit(heard_from="other", heard_from_other="نمایشگاه الکامپ")
+        item = ServiceRequest.objects.get()
+        Referral.objects.create(request=item, domain=self.fpga, expert=self.expert)
+        url = reverse("admin:services_servicerequest_change", args=[item.pk])
+        self.client.force_login(self.expert)
+        self.assertNotContains(self.client.get(url), "نمایشگاه الکامپ")
+        self.client.force_login(self.admin)
+        self.assertContains(self.client.get(url), "نمایشگاه الکامپ")
+
+
+class HeardFromReportTests(ServiceTestCase):
+    def setUp(self):
+        super().setUp()
+        self.url = reverse("admin:services_heardfromreport_changelist")
+        self.submit(heard_from="instagram")
+        self.submit(heard_from="instagram", title="دومی")
+        self.submit("services:consulting", heard_from="other", heard_from_other="نمایشگاه الکامپ", minutes=30)
+        ServiceRequest.objects.create(kind="project", name="x", mobile_number="09350000000",
+                                      contact_channel="phone", title="ثبت دستی", description=DESCRIPTION,
+                                      level="university", need="full")  # typed in by an admin: no answer
+
+    def test_site_and_tech_admins_read_the_counts(self):
+        for user in (self.admin, self.tech):
+            with self.subTest(user=user.first_name):
+                self.client.force_login(user)
+                response = self.client.get(self.url, {"period": "all"})
+                rows = {row["label"]: row for row in response.context["rows"]}
+                self.assertEqual(rows["اینستاگرام"]["cells"], [2, 0, 0])
+                self.assertEqual(rows["سایر"]["cells"], [0, 1, 0])
+                self.assertEqual(rows["بدون پاسخ"]["total"], 1)
+                self.assertEqual(response.context["answered"], 3)
+                self.assertEqual(rows["اینستاگرام"]["percent"], 67)
+                self.assertContains(response, "نمایشگاه الکامپ")
+
+    def test_nobody_else_gets_the_page_or_the_menu_entry(self):
+        self.client.force_login(self.expert)
+        self.assertEqual(self.client.get(self.url).status_code, 404)
+        self.assertNotContains(self.client.get(reverse("admin:index")), self.url)
+        self.client.force_login(self.admin)
+        self.assertContains(self.client.get(reverse("admin:index")), self.url)
+
+    def test_the_report_takes_a_fixed_number_of_queries(self):
+        self.client.force_login(self.admin)
+        self.client.get(self.url)  # warm the session and the admin's own lookups
+        before = self.queries_for_one_view()
+        for index in range(5):
+            self.submit(heard_from="other", heard_from_other=f"جای {index}", title=f"بیشتر {index}")
+        self.assertEqual(self.queries_for_one_view(), before)
+
+    def queries_for_one_view(self):
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        with CaptureQueriesContext(connection) as captured:
+            self.client.get(self.url, {"period": "all"})
+        return len(captured)

@@ -1,15 +1,18 @@
 from django.contrib import admin
+from django.http import Http404
+from django.shortcuts import render
+from django.urls import path
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import gettext_lazy as _
 
 from accounts.formatting import ltr
 from accounts.roles import is_site_admin
 
-from . import services
+from . import heard_from_report, services
 from .services import domain_managers
 from .widgets import ExpertSelect
 from .models import (
-    ContactChannel, Referral, RequestEvent, RequestMessage, RequestPayment, ServiceRequest,
+    ContactChannel, HeardFromReport, Referral, RequestEvent, RequestMessage, RequestPayment, ServiceRequest,
 )
 
 
@@ -84,7 +87,8 @@ class ServiceRequestAdmin(admin.ModelAdmin):
         (None, {"fields": ("stage_note", "tracking_code", "kind", "status", "source",
                            "created_at", "updated_at")}),
         (_("درخواست‌کننده"), {
-            "fields": ("user", "name", "mobile_number", "email", "contact_channel", "contact_id"),
+            "fields": ("user", "name", "mobile_number", "email", "contact_channel", "contact_id",
+                       "heard_from", "heard_from_other"),
         }),
         (_("پروژه"), {
             "fields": ("title", "domains", "other_domain", "level", "need", "description",
@@ -100,7 +104,7 @@ class ServiceRequestAdmin(admin.ModelAdmin):
         if is_site_admin(request.user):
             return self.fieldsets
         # An expert is here to read the brief, not to audit the file: the source it arrived by,
-        # the money and the admin's private note are none of their business.
+        # how the person heard of us, the money and the admin's private note are none of their business.
         return (
             (None, {"fields": ("stage_note", "tracking_code", "kind", "status")}),
             (_("درخواست‌کننده"), {"fields": ("name", "mobile_number", "contact_channel", "contact_id")}),
@@ -353,3 +357,44 @@ class RequestPaymentAdmin(admin.ModelAdmin):
 class ContactChannelAdmin(admin.ModelAdmin):
     list_display = ("kind", "label", "value", "is_active", "order")
     list_editable = ("is_active", "order")
+
+@admin.register(HeardFromReport)
+class HeardFromReportAdmin(admin.ModelAdmin):
+    """
+    One page, no list and no form: how people heard of us. Only site admins see it or its menu
+    entry — the answers are about the business, not about any one domain's work.
+    """
+
+    def get_urls(self):
+        return [path("", self.admin_site.admin_view(self.report_view), name="services_heardfromreport_changelist")]
+
+    def report_view(self, request):
+        if not is_site_admin(request.user):
+            raise Http404
+        period = request.GET.get("period")
+        if period not in heard_from_report.PERIODS:
+            period = heard_from_report.DEFAULT_PERIOD
+        return render(request, "admin/services/heard_from_report.html", {
+            **self.admin_site.each_context(request),
+            **heard_from_report.build(period),
+            "title": self.model._meta.verbose_name,
+            "opts": self.model._meta,
+            "period": period,
+            "periods": [(key, label) for key, (_days, label) in heard_from_report.PERIODS.items()],
+            "columns": [ServiceRequest.Kind.PROJECT.label, ServiceRequest.Kind.CONSULTING.label, "همکاری با ما"],
+        })
+
+    def has_module_permission(self, request):
+        return is_site_admin(request.user)
+
+    def has_view_permission(self, request, obj=None):
+        return is_site_admin(request.user)
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

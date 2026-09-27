@@ -2,6 +2,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from accounts.forms import MOBILE_ATTRS
+from accounts.heard_from import HeardFromFormMixin
 from accounts.validators import normalize_mobile_number
 from domains.models import Domain
 
@@ -10,13 +11,13 @@ from .models import CONSULTING_CHOICES, ServiceRequest
 MIN_DESCRIPTION = 30  # characters, so we don't get a request that only says "hello"
 
 
-class ServiceRequestForm(forms.ModelForm):
+class ServiceRequestForm(HeardFromFormMixin, forms.ModelForm):
     class Meta:
         model = ServiceRequest
         fields = (
             "name", "mobile_number", "email", "contact_channel", "contact_id",
             "title", "domains", "other_domain", "level", "need", "description", "deadline",
-            "minutes", "attachment",
+            "minutes", "attachment", "heard_from", "heard_from_other",
         )
         widgets = {
             "mobile_number": forms.TextInput(attrs=MOBILE_ATTRS),

@@ -44,6 +44,8 @@
           <h2 class="form-step">چطور با شما تماس بگیریم</h2>
           {% with field=form.contact_channel %}{% include "partials/field.html" %}{% endwith %}
           {% with field=form.contact_id %}{% include "partials/field.html" %}{% endwith %}
+          {% with field=form.heard_from %}{% include "partials/field.html" %}{% endwith %}
+          {% with field=form.heard_from_other %}{% include "partials/field.html" %}{% endwith %}
 
           <button type="submit" class="btn btn-primary">
             {% if existing %}ذخیره‌ی تغییرات{% else %}ثبت درخواست{% endif %}

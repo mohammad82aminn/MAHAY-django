@@ -15,6 +15,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from accounts.heard_from import heard_from_field, heard_from_other_field
 from content.storage import protected_storage
 
 from .validators import validate_file_extension, validate_file_size
@@ -54,6 +55,8 @@ class CollaborationRequest(models.Model):
         _("آیدی در آن بستر"), max_length=150, blank=True,
         help_text=_("اگر تماس تلفنی را انتخاب کرده‌اید، لازم نیست."),
     )
+    heard_from = heard_from_field()
+    heard_from_other = heard_from_other_field()
 
     pitch = models.TextField(
         _("چه کمکی می‌توانید بکنید"),

@@ -33,10 +33,12 @@ class CollaborationRequestAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
     filter_horizontal = ("domains",)
     inlines = (FileInline,)
-    readonly_fields = ("user", "applicant_contact", "wanted_work", "created_at", "updated_at",
-                       "reviewed_by", "reviewed_at")
+    # How they heard of us is the applicant's own answer, so nobody here edits it
+    readonly_fields = ("user", "applicant_contact", "wanted_work", "heard_from", "heard_from_other",
+                       "created_at", "updated_at", "reviewed_by", "reviewed_at")
     fieldsets = (
-        (None, {"fields": ("user", "applicant_contact", "status", "created_at", "updated_at")}),
+        (None, {"fields": ("user", "applicant_contact", "heard_from", "heard_from_other", "status",
+                           "created_at", "updated_at")}),
         (_("معرفی"), {"fields": ("pitch", "wanted_work", "domains", "other_domain")}),
         (_("سابقه"), {"fields": ("degree", "field_of_study", "experience", "skills", "links")}),
         (_("بررسی"), {"fields": ("admin_note", "reviewed_by", "reviewed_at")}),

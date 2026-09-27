@@ -1,0 +1,95 @@
+{% extends "admin/base_site.html" %}
+{% load store %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+  .hf-periods { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .hf-periods a { padding: .35rem .9rem; border-radius: 999px; text-decoration: none; border: 1px solid var(--hairline-color); }
+  .hf-periods a.on { background: var(--selected-bg, #e0e0e0); font-weight: 700; }
+  .hf-note { color: var(--body-quiet-color); margin: 0 0 1rem; }
+
+  .hf-table { width: 100%; max-width: 900px; border-collapse: collapse; margin-bottom: 2rem; }
+  .hf-table th, .hf-table td { padding: .55rem .6rem; border-bottom: 1px solid var(--hairline-color); text-align: right; }
+  .hf-table td.num, .hf-table th.num { text-align: center; }
+  .hf-table tfoot td { font-weight: 700; border-top: 2px solid var(--hairline-color); }
+  .hf-table tr.no-answer td { color: var(--body-quiet-color); }
+  .hf-bar { display: inline-block; height: .55rem; margin-inline-start: .5rem; vertical-align: middle;
+            border-radius: 999px; background: var(--link-fg); opacity: .55; }
+
+  .hf-others { list-style: none; padding: 0; margin: 0; max-width: 900px; }
+  .hf-others li { padding: .5rem 0; border-bottom: 1px solid var(--hairline-color); }
+  .hf-others .meta { color: var(--body-quiet-color); font-size: .85rem; margin-inline-start: .5rem; }
+  .hf-empty { color: var(--body-quiet-color); }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">خانه</a> &rsaquo; {{ title }}
+</div>
+{% endblock %}
+
+{% block content %}
+<p class="hf-note">
+  پاسخ کاربران به «از کجا با ما آشنا شدید؟» در فرم‌های سفارش پروژه، مشاوره تخصصی و همکاری با ما.
+  فقط مدیران کل و مدیران فنی این صفحه را می‌بینند.
+</p>
+
+<nav class="hf-periods">
+  {% for key, label in periods %}
+    <a href="?period={{ key }}" class="{% if key == period %}on{% endif %}">{{ label }}</a>
+  {% endfor %}
+</nav>
+
+{% if grand_total %}
+  <table class="hf-table">
+    <thead>
+      <tr>
+        <th>نحوه‌ی آشنایی</th>
+        {% for column in columns %}<th class="num">{{ column }}</th>{% endfor %}
+        <th class="num">جمع</th>
+        <th>سهم از پاسخ‌ها</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+        <tr{% if not row.is_answer %} class="no-answer"{% endif %}>
+          <td>{{ row.label }}</td>
+          {% for cell in row.cells %}<td class="num">{{ cell|fa_num }}</td>{% endfor %}
+          <td class="num"><strong>{{ row.total|fa_num }}</strong></td>
+          <td>
+            {% if row.percent is not None %}
+              {{ row.percent|fa_num }}٪<span class="hf-bar" style="width: {{ row.percent }}px"></span>
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td>جمع</td>
+        {% for total in column_totals %}<td class="num">{{ total|fa_num }}</td>{% endfor %}
+        <td class="num">{{ grand_total|fa_num }}</td>
+        <td>{{ answered|fa_num }} پاسخ</td>
+      </tr>
+    </tfoot>
+  </table>
+  <p class="hf-note">«بدون پاسخ»: درخواست‌های قبل از اضافه شدن این سؤال، یا درخواستی که مدیر دستی ثبت کرده است.</p>
+{% else %}
+  <p class="hf-empty">در این بازه درخواستی ثبت نشده است.</p>
+{% endif %}
+
+<h2>پاسخ‌های «سایر»</h2>
+{% if other_answers %}
+  <ul class="hf-others">
+    {% for answer in other_answers %}
+      <li>
+        <a href="{{ answer.url }}">{{ answer.text }}</a>
+        <span class="meta">{{ answer.where }} · {{ answer.at|date }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="hf-empty">در این بازه کسی «سایر» را انتخاب نکرده است.</p>
+{% endif %}
+{% endblock %}

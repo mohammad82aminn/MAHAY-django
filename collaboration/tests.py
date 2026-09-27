@@ -45,7 +45,7 @@ class CollaborationTestCase(TestCase):
 
     def form_data(self, **changes):
         data = {
-            "contact_channel": "telegram", "contact_id": "@reza", "pitch": PITCH,
+            "contact_channel": "telegram", "contact_id": "@reza", "heard_from": "instagram", "pitch": PITCH,
             "work": ["teach"], "domains": [self.fpga.pk], "degree": "master",
             "field_of_study": "برق", "experience": "", "skills": "", "links": "", "other_domain": "",
         }
@@ -128,6 +128,18 @@ class ApplyingTests(CollaborationTestCase):
         response = self.apply_as(self.applicant, work=[])
         self.assertContains(response, "دست‌کم یک نوع همکاری")
         self.assertFalse(CollaborationRequest.objects.exists())
+
+
+class HeardFromTests(CollaborationTestCase):
+    def test_the_question_is_required(self):
+        response = self.apply_as(self.applicant, heard_from="")
+        self.assertContains(response, "یکی از گزینه‌ها را انتخاب کنید.")
+        self.assertFalse(CollaborationRequest.objects.exists())
+
+    def test_the_answer_is_kept(self):
+        self.apply_as(self.applicant, heard_from="other", heard_from_other="کانال دانشگاه")
+        application = CollaborationRequest.objects.get()
+        self.assertEqual((application.heard_from, application.heard_from_other), ("other", "کانال دانشگاه"))
 
 
 class ReviewingTests(CollaborationTestCase):

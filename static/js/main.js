@@ -125,3 +125,20 @@ document.addEventListener("DOMContentLoaded", () => {
     tick();
   });
 });
+
+// 7) A follow-up question shown only for the answer it follows:
+//    <input data-show-when="heard_from=other"> sits in its .field, hidden until «سایر» is picked.
+//    Without this script the box is simply always there.
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("[data-show-when]").forEach((input) => {
+    if (!input.form) return;
+    const [name, value] = input.dataset.showWhen.split("=");
+    const field = input.closest(".field") || input;
+    const radios = [...input.form.querySelectorAll(`input[name="${name}"]`)];
+    const update = () => {
+      field.hidden = !radios.some((radio) => radio.checked && radio.value === value);
+    };
+    radios.forEach((radio) => radio.addEventListener("change", update));
+    update();
+  });
+});

@@ -15,6 +15,7 @@ from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
 
+from accounts.heard_from import heard_from_field, heard_from_other_field
 from content.storage import protected_storage
 
 from .validators import validate_attachment_extension, validate_attachment_size
@@ -90,6 +91,8 @@ class ServiceRequest(models.Model):
         _("آیدی یا شماره در آن بستر"), max_length=150, blank=True,
         help_text=_("اگر تماس تلفنی را انتخاب کرده‌اید، لازم نیست."),
     )
+    heard_from = heard_from_field()
+    heard_from_other = heard_from_other_field()
 
     # About the work
     domains = models.ManyToManyField(
@@ -418,3 +421,15 @@ class ContactChannel(models.Model):
             self.Kind.EMAIL: f"mailto:{self.value}",
         }
         return templates.get(self.Kind(self.kind), "")
+
+class HeardFromReport(ServiceRequest):
+    """
+    Not a table of its own: it only gives the «از کجا با ما آشنا شدید؟» report a place in the
+    admin menu. The report itself counts project orders, consultations and collaboration
+    applications alike (services.admin.HeardFromReportAdmin).
+    """
+
+    class Meta:
+        proxy = True
+        verbose_name = _("آمار نحوه‌ی آشنایی")
+        verbose_name_plural = _("آمار نحوه‌ی آشنایی")
