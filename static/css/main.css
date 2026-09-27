@@ -681,7 +681,7 @@ h2, h3, h4 { line-height: 1.6; }
 .service-card strong { font-size: 1.2rem; }
 /* The art's backdrop is transparent, so the same file sits on the light card and the dark one */
 .service-card .service-art {
-  display: block; width: 100%; height: 23rem; margin-top: auto;
+  display: block; width: 100%; height: 14rem; margin-top: auto;
   object-fit: contain; object-position: bottom center; transform-origin: bottom; transition: transform .2s;
 }
 .service-card:hover .service-art { transform: scale(1.03); }
