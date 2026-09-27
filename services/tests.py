@@ -241,11 +241,20 @@ class AdminWorkflowTests(ServiceTestCase):
         stage = lambda: services.stage_of(ServiceRequest.objects.get(pk=self.item.pk))[0]
         self.assertEqual(stage(), "review")  # no referral yet
 
-        referral = Referral.objects.create(request=self.item, domain=self.fpga, expert=self.expert)
+        referral = Referral.objects.create(request=self.item, domain=self.fpga)
+        self.assertEqual(services.stage_of(ServiceRequest.objects.get(pk=self.item.pk))[1:],
+                         ("منتظر انتخاب کارشناس", "مدیر حوزه"))
+
+        referral.expert = self.expert
+        referral.save(update_fields=["expert"])
         self.assertEqual(stage(), "quotes")  # waiting for a price
 
         referral.quoted_price = 5_000_000
         referral.save(update_fields=["quoted_price"])
+        self.assertEqual(stage(), "quote_review")  # waiting for a domain manager to agree to it
+
+        services.approve_price(referral, self.expert)
+        referral.save()
         self.assertEqual(stage(), "amount")  # waiting for the admin to settle a total
 
         self.item.agreed_amount = 5_000_000

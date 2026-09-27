@@ -2,10 +2,11 @@
 from datetime import timedelta
 
 from django.db.models import Q
+from django.urls import reverse
 from django.utils import timezone
 
 from accounts.roles import is_site_admin
-from domains.access import member_domains
+from domains.access import has_managers, is_manager, managed_domains
 
 from .models import Referral, RequestEvent, ServiceRequest
 
@@ -47,16 +48,22 @@ def too_many_requests(mobile_number, ip_address):
 
 
 def visible_requests(user):
-    """Site admins see everything; a domain manager sees only what was referred to their domains."""
+    """
+    Site admins see everything; a domain manager what was referred to their domains; an expert
+    only the requests whose work was handed to them, not their colleagues'.
+    """
     if is_site_admin(user):
         return ServiceRequest.objects.all()
-    return ServiceRequest.objects.filter(referrals__domain__in=member_domains(user)).distinct()
+    return ServiceRequest.objects.filter(pk__in=visible_referrals(user).values("request"))
 
 
 # Where a request has got to, worked out from what it already holds rather than stored: a saved
 # stage would be one more thing to keep in step, and it would quietly go wrong.
 STAGE_REVIEW = ("review", "منتظر بررسی و ارجاع", "شما")
+STAGE_ASSIGN = ("assign", "منتظر انتخاب کارشناس", "مدیر حوزه")
+STAGE_ASSIGN_ADMIN = ("assign", "منتظر انتخاب کارشناس", "شما")  # a domain with no manager
 STAGE_QUOTES = ("quotes", "منتظر قیمت حوزه‌ها", "کارشناس")
+STAGE_QUOTE_REVIEW = ("quote_review", "منتظر تأیید قیمت", "مدیر حوزه")
 STAGE_AMOUNT = ("amount", "منتظر تعیین مبلغ کل", "شما")
 STAGE_PREPAY = ("prepay", "منتظر پیش‌پرداخت", "مشتری")
 STAGE_WORKING = ("working", "در حال انجام", "کارشناس")
@@ -82,8 +89,15 @@ def stage_of(request_object):
     if request_object.agreed_amount is None:
         if not referrals:
             return STAGE_REVIEW
+        unassigned = [referral for referral in referrals if referral.expert_id is None]
+        if unassigned:
+            if all(domain_has_managers(referral) for referral in unassigned):
+                return STAGE_ASSIGN
+            return STAGE_ASSIGN_ADMIN
         if any(referral.quoted_price is None for referral in referrals):
             return STAGE_QUOTES
+        if any(referral.quote_approved_at is None for referral in referrals):
+            return STAGE_QUOTE_REVIEW
         return STAGE_AMOUNT
 
     if request_object.paid_total == 0:
@@ -123,9 +137,9 @@ def claim_guest_requests(user):
     ).update(user=user)
 
 
-def domain_managers(domain=None):
+def domain_people(domain=None):
     """
-    Who a referral may be handed to: the managers of one domain, or of any domain.
+    Who a referral may be handed to: the managers and experts of one domain, or of any domain.
 
     Customers are never in here — the expert picker used to search every registered user, which
     put the whole customer list in front of whoever was making a referral.
@@ -140,9 +154,57 @@ def domain_managers(domain=None):
 
 
 def visible_referrals(user):
+    """The whole domain's share for its managers; for an expert, what was handed to them."""
     if is_site_admin(user):
         return Referral.objects.all()
-    return Referral.objects.filter(domain__in=member_domains(user))
+    if not user.is_authenticated:
+        return Referral.objects.none()
+    return Referral.objects.filter(Q(domain__in=managed_domains(user)) | Q(expert=user))
+
+
+def domain_has_managers(referral):
+    """Read from the list's own annotation when there is one (see ServiceRequestAdmin), so a
+    page of requests doesn't ask it once per row."""
+    known = getattr(referral, "domain_has_managers", None)
+    return has_managers(referral.domain) if known is None else known
+
+
+def may_assign(user, referral):
+    """A domain's managers pick who does its share; where it has none, a site admin does."""
+    if is_manager(user, referral.domain):
+        return True
+    return is_site_admin(user) and not has_managers(referral.domain)
+
+
+def assign(referral, expert, actor):
+    """Hand the work to an expert, and tell them at once."""
+    from inbox import services as inbox
+
+    log(referral.request, actor, f"کار حوزه‌ی {referral.domain} به {expert.get_full_name() or expert} سپرده شد.")
+    if expert != actor:
+        inbox.send(
+            None, f"کار تازه: {referral.request.tracking_code}",
+            f"«{referral.request.title}» در حوزه‌ی {referral.domain} به شما سپرده شد.\n"
+            f"برای دیدن و ثبت قیمت: {reverse('admin:services_referral_change', args=[referral.pk])}",
+            [expert],
+        )
+
+
+def price_set(referral, actor, now=None):
+    """
+    Someone just put a price on the domain's share. A domain manager or a site admin setting it
+    has agreed to it by doing so, and so has everybody in a domain with no manager; an expert's
+    price waits for a manager.
+    """
+    agreed = is_manager(actor, referral.domain) or is_site_admin(actor) or not has_managers(referral.domain)
+    referral.quote_approved_by = actor if agreed else None
+    referral.quote_approved_at = (now or timezone.now()) if agreed else None
+
+
+def approve_price(referral, manager):
+    referral.quote_approved_by = manager
+    referral.quote_approved_at = timezone.now()
+    log(referral.request, manager, f"قیمت حوزه‌ی {referral.domain} ({referral.quoted_price:,} تومان) تأیید شد.")
 
 
 def can_read(user, request_object):

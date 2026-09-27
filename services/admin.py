@@ -1,4 +1,7 @@
+from django import forms
 from django.contrib import admin
+from django.contrib.auth.models import Group
+from django.db.models import Exists, OuterRef, Prefetch, Q
 from django.http import Http404
 from django.shortcuts import render
 from django.urls import path
@@ -7,19 +10,43 @@ from django.utils.translation import gettext_lazy as _
 
 from accounts.formatting import ltr
 from accounts.roles import is_site_admin
+from domains.access import has_managers, is_manager, managed_domains
 
 from . import heard_from_report, services
-from .services import domain_managers
+from .services import domain_people
 from .widgets import ExpertSelect
 from .models import (
     ContactChannel, HeardFromReport, Referral, RequestEvent, RequestMessage, RequestPayment, ServiceRequest,
 )
 
 
+class ReferralInlineForm(forms.ModelForm):
+    class Meta:
+        model = Referral
+        fields = "__all__"
+
+    def clean(self):
+        data = super().clean()
+        domain, expert = data.get("domain"), data.get("expert")
+        if expert and "expert" in self.changed_data and domain is not None and has_managers(domain):
+            # The site admin chooses the domain; who inside it does the work is its managers' call
+            self.add_error("expert", _("این حوزه مدیر دارد و انتخاب کارشناس با مدیر حوزه است؛ فقط حوزه را انتخاب کنید."))
+        return data
+
+
 class ReferralInline(admin.TabularInline):
-    """Site admins refer a request here; the expert's own fields are edited on the referral page."""
+    """
+    Site admins refer a request here by choosing the domain; its managers then pick the expert
+    (a site admin picks one only for a domain with no manager). The expert's own fields are edited
+    on the referral page.
+    """
 
     model = Referral
+    form = ReferralInlineForm
+
+    def get_queryset(self, request):
+        # Another domain's price on the same request is none of an expert's business
+        return super().get_queryset(request).filter(pk__in=services.visible_referrals(request.user).values("pk"))
     extra = 0
     fields = ("domain", "expert", "expert_handle", "status", "quoted_price", "duration_text")
     readonly_fields = ("expert_handle",)
@@ -39,7 +66,7 @@ class ReferralInline(admin.TabularInline):
         if db_field.name == "expert":
             # Autocomplete searched every registered user, customers included. The list is the
             # domain managers instead, and the row narrows it to the domain that was chosen.
-            kwargs["queryset"] = domain_managers()
+            kwargs["queryset"] = domain_people()
             kwargs["widget"] = ExpertSelect()
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -120,7 +147,12 @@ class ServiceRequestAdmin(admin.ModelAdmin):
         return (ReferralInline, MessageInline)  # no payments, no full history
 
     def get_queryset(self, request):
-        return services.visible_requests(request.user).prefetch_related("domains", "payments", "referrals")
+        # Whether each referral's domain has a manager is read once for the whole page, for the stage column
+        has_managers_now = Exists(Group.objects.filter(managers_domain=OuterRef("domain"), user__is_active=True))
+        referrals = Referral.objects.annotate(domain_has_managers=has_managers_now)
+        return services.visible_requests(request.user).prefetch_related(
+            "domains", "payments", Prefetch("referrals", queryset=referrals),
+        )
 
     def pending_count(self, request):
         """Requests nobody has picked up yet. Moving one off «جدید» is what clears the mark."""
@@ -184,6 +216,15 @@ class ServiceRequestAdmin(admin.ModelAdmin):
         ]
         return format_html_join("", "<div><b>{}:</b> {}</div>", rows)
 
+    @admin.display(description=_("وضعیت قیمت"))
+    def quote_state(self, obj):
+        if obj.quoted_price is None:
+            return "—"
+        if obj.quote_approved_at is None:
+            return "منتظر تأیید مدیر حوزه"
+        who = obj.quote_approved_by.get_full_name() if obj.quote_approved_by else ""
+        return f"تأیید شده{f' توسط {who}' if who else ''}"
+
     @admin.display(description=_("دانلود ضمیمه"))
     def attachment_link(self, obj):
         if not obj.pk or not obj.attachment:
@@ -212,11 +253,16 @@ class ServiceRequestAdmin(admin.ModelAdmin):
                 instance.author = request.user
             if isinstance(instance, RequestPayment) and instance.recorded_by is None:
                 instance.recorded_by = request.user
+            changed = next((f.changed_data for f in formset.forms if f.instance is instance), [])
+            if isinstance(instance, Referral) and "quoted_price" in changed and instance.quoted_price is not None:
+                services.price_set(instance, request.user)
             instance.save()
 
             if isinstance(instance, Referral):
                 services.log(form.instance, request.user, f"ارجاع به حوزه‌ی {instance.domain}.")
                 services.mark_referred(form.instance, request.user)
+                if "expert" in changed and instance.expert is not None:
+                    services.assign(instance, instance.expert, request.user)
             elif isinstance(instance, RequestPayment):
                 services.log(form.instance, request.user, f"پرداخت {instance.amount:,} تومان ثبت شد.")
         for instance in formset.deleted_objects:
@@ -224,30 +270,82 @@ class ServiceRequestAdmin(admin.ModelAdmin):
         formset.save_m2m()
 
 
+class ReferralForm(forms.ModelForm):
+    approve_quote = forms.BooleanField(
+        label=_("تأیید قیمت کارشناس"), required=False,
+        help_text=_("با تأیید، قیمت برای مدیر کل فرستاده می‌شود تا مبلغ نهایی را تعیین کند."),
+    )
+
+    class Meta:
+        model = Referral
+        fields = "__all__"
+
+
 @admin.register(Referral)
 class ReferralAdmin(admin.ModelAdmin):
-    """Where the domain's expert reports the price and the state of the work."""
+    """
+    Where a domain works on its share of a request: its managers pick the expert and agree to
+    the price, the expert reports the price and the state of the work.
+    """
+
+    form = ReferralForm
 
     list_display = ("request", "domain", "expert", "status", "quoted_price", "updated_at")
     list_filter = ("status", "domain")
     search_fields = ("request__tracking_code", "request__title")
     readonly_fields = ("request", "domain", "referred_by", "created_at", "updated_at",
-                       "request_summary", "attachment_link")
-    fieldsets = (
-        (None, {"fields": ("request", "request_summary", "domain", "expert", "introduced_at", "status")}),
-        (_("گزارش کارشناس"), {
-            "fields": ("quoted_price", "duration_text", "feasibility", "done_work", "remaining_work",
-                       "attachment", "attachment_link"),
-        }),
-        (_("اطلاعات ارجاع"), {"fields": ("referred_by", "created_at", "updated_at")}),
-    )
+                       "request_summary", "attachment_link", "quote_state")
+
+    def get_fieldsets(self, request, obj=None):
+        price = ["quoted_price", "quote_state"]
+        if obj is not None and self._may_approve_price(request, obj):
+            price.append("approve_quote")
+        return (
+            (None, {"fields": ("request", "request_summary", "domain", "expert", "introduced_at", "status")}),
+            (_("گزارش کارشناس"), {
+                "fields": (*price, "duration_text", "feasibility", "done_work", "remaining_work",
+                           "attachment", "attachment_link"),
+            }),
+            (_("اطلاعات ارجاع"), {"fields": ("referred_by", "created_at", "updated_at")}),
+        )
+
+    def get_readonly_fields(self, request, obj=None):
+        fields = super().get_readonly_fields(request, obj)
+        if obj is not None and not services.may_assign(request.user, obj):
+            fields = (*fields, "expert")  # an expert doesn't hand their work on
+        return fields
+
+    @staticmethod
+    def _may_approve_price(request, obj):
+        return (obj.quoted_price is not None and obj.quote_approved_at is None
+                and is_manager(request.user, obj.domain))
 
     def get_queryset(self, request):
         return services.visible_referrals(request.user).select_related("request", "domain", "expert")
 
     def pending_count(self, request):
-        """Work handed to a domain that its expert has not started on yet."""
-        return self.get_queryset(request).filter(status=Referral.Status.REFERRED).count()
+        """
+        What waits on the visitor: for a domain manager, work still without an expert and prices
+        to agree to; for an expert, work handed to them not yet started; for a site admin, work in
+        a domain with no manager that still needs an expert.
+        """
+        if is_site_admin(request.user):
+            has_managers_now = Exists(Group.objects.filter(managers_domain=OuterRef("domain"), user__is_active=True))
+            return Referral.objects.filter(~has_managers_now, expert__isnull=True).count()
+        mine = managed_domains(request.user)
+        waiting = (
+            Q(domain__in=mine, expert__isnull=True)
+            | Q(domain__in=mine, quoted_price__isnull=False, quote_approved_at__isnull=True)
+            | Q(expert=request.user, status=Referral.Status.REFERRED)
+        )
+        return self.get_queryset(request).filter(waiting).count()
+
+    def has_change_permission(self, request, obj=None):
+        if not super().has_change_permission(request, obj):
+            return False
+        if obj is None or is_site_admin(request.user) or is_manager(request.user, obj.domain):
+            return True
+        return obj.expert_id == request.user.pk
 
     def get_form(self, request, obj=None, **kwargs):
         request._referral = obj  # the domain is fixed here, so the expert list can follow it
@@ -256,7 +354,7 @@ class ReferralAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "expert":
             referral = getattr(request, "_referral", None)
-            kwargs["queryset"] = domain_managers(referral.domain if referral else None)
+            kwargs["queryset"] = domain_people(referral.domain if referral else None)
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def has_add_permission(self, request):
@@ -281,6 +379,15 @@ class ReferralAdmin(admin.ModelAdmin):
         ]
         return format_html_join("", "<div style='margin-bottom:.3rem'><b>{}:</b> {}</div>", rows)
 
+    @admin.display(description=_("وضعیت قیمت"))
+    def quote_state(self, obj):
+        if obj.quoted_price is None:
+            return "—"
+        if obj.quote_approved_at is None:
+            return "منتظر تأیید مدیر حوزه"
+        who = obj.quote_approved_by.get_full_name() if obj.quote_approved_by else ""
+        return f"تأیید شده{f' توسط {who}' if who else ''}"
+
     @admin.display(description=_("دانلود ضمیمه"))
     def attachment_link(self, obj):
         if not obj.pk or not obj.attachment:
@@ -291,8 +398,17 @@ class ReferralAdmin(admin.ModelAdmin):
                            reverse("services:attachment", args=["referral", obj.pk]))
 
     def save_model(self, request, obj, form, change):
+        if "quoted_price" in form.changed_data:
+            if obj.quoted_price is None:
+                obj.quote_approved_by, obj.quote_approved_at = None, None
+            else:
+                services.price_set(obj, request.user)  # an expert's new price waits for a manager again
+        elif form.cleaned_data.get("approve_quote") and self._may_approve_price(request, obj):
+            services.approve_price(obj, request.user)
         super().save_model(request, obj, form, change)
-        changed = "، ".join(form.changed_data) if change else ""
+        if "expert" in form.changed_data and obj.expert is not None:
+            services.assign(obj, obj.expert, request.user)
+        changed = "، ".join(name for name in form.changed_data if name != "approve_quote") if change else ""
         services.log(obj.request, request.user,
                      f"گزارش حوزه‌ی {obj.domain} به‌روز شد ({changed})." if changed
                      else f"ارجاع به حوزه‌ی {obj.domain}.")

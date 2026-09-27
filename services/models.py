@@ -246,12 +246,19 @@ class Referral(models.Model):
     expert = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
         related_name="referrals", verbose_name=_("کارشناس"),
-        help_text=_("یکی از مدیران همین حوزه. خالی یعنی هنوز شخص مشخص نشده است."),
+        help_text=_("یکی از کارشناسان یا مدیران همین حوزه، به انتخاب مدیر حوزه. خالی یعنی هنوز انتخاب نشده است."),
     )
     status = models.CharField(_("وضعیت"), max_length=12, choices=Status.choices, default=Status.REFERRED)
 
     # Filled in by the expert
     quoted_price = models.PositiveIntegerField(_("قیمت پیشنهادی این بخش (تومان)"), null=True, blank=True)
+    # An expert's price reaches the site admin only once one of the domain's managers agrees with
+    # it. A price set by a manager or a site admin, or in a domain with no manager, needs no one else.
+    quote_approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, editable=False,
+        related_name="+", verbose_name=_("تأییدکننده‌ی قیمت"),
+    )
+    quote_approved_at = models.DateTimeField(_("زمان تأیید قیمت"), null=True, blank=True, editable=False)
     duration_text = models.CharField(_("مدت زمان تقریبی"), max_length=100, blank=True, help_text=_("مثلاً ۳ هفته"))
     done_work = models.TextField(_("کارهای انجام‌شده"), blank=True)
     remaining_work = models.TextField(_("کارهای باقی‌مانده"), blank=True)
