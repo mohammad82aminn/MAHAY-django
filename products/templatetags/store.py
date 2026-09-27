@@ -28,6 +28,12 @@ def toman(value):
 
 
 @register.filter
+def money(value):
+    """An amount of money, zero included: 0 -> ۰ تومان (a price uses `toman`, where zero means free)"""
+    return f"{fa_num(int(value or 0))} تومان"
+
+
+@register.filter
 def duration(seconds):
     """Length of a lesson or a whole course: 45 -> ۱ دقیقه, 8100 -> ۲ ساعت و ۱۵ دقیقه, none -> empty"""
     if not seconds:

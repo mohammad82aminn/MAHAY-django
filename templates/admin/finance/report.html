@@ -1,0 +1,105 @@
+{% extends "admin/base_site.html" %}
+{% load store %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+  .fin-periods { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .fin-periods a { padding: .35rem .9rem; border-radius: 999px; text-decoration: none; border: 1px solid var(--hairline-color); }
+  .fin-periods a.on { background: var(--selected-bg, #e0e0e0); font-weight: 700; }
+  .fin-note { color: var(--body-quiet-color); margin: 0 0 1rem; }
+  .fin-cards { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+  .fin-card { padding: .9rem 1.2rem; border: 1px solid var(--hairline-color); border-radius: 10px; min-width: 180px; }
+  .fin-card b { display: block; font-size: 1.3rem; margin-top: .3rem; }
+  .fin-table { width: 100%; max-width: 900px; border-collapse: collapse; margin-bottom: 1.8rem; }
+  .fin-table th, .fin-table td { padding: .5rem .6rem; border-bottom: 1px solid var(--hairline-color); text-align: right; }
+  .fin-table td.num, .fin-table th.num { text-align: left; direction: ltr; }
+  .fin-table tr.owed td { font-weight: 700; }
+  .fin-head { display: flex; align-items: baseline; gap: 1rem; max-width: 900px; }
+  .fin-head a { font-size: .9rem; }
+  .fin-empty { color: var(--body-quiet-color); }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs"><a href="{% url 'admin:index' %}">خانه</a> &rsaquo; {{ title }}</div>
+{% endblock %}
+
+{% block content %}
+<h2>درآمد</h2>
+<nav class="fin-periods">
+  {% for key, label in periods %}
+    <a href="?period={{ key }}" class="{% if key == period %}on{% endif %}">{{ label }}</a>
+  {% endfor %}
+</nav>
+
+<div class="fin-cards">
+  <div class="fin-card">کل دریافت‌ها<b>{{ income.total|money }}</b><span class="fin-note">{{ income.count|fa_num }} دریافت</span></div>
+  {% for label, total in income.by_source %}
+    <div class="fin-card">{{ label }}<b>{{ total|money }}</b></div>
+  {% endfor %}
+  <div class="fin-card">سهم مجموعه<b>{{ income.company|money }}</b></div>
+  {% if income.unsplit_count %}
+    <div class="fin-card">سهم‌بندی‌نشده<b>{{ income.unsplit_total|money }}</b>
+      <a href="{% url 'admin:finance_receipt_changelist' %}?split=waiting">{{ income.unsplit_count|fa_num }} دریافت ←</a></div>
+  {% endif %}
+</div>
+
+<h3>ماه به ماه</h3>
+{% if income.by_month %}
+  <table class="fin-table">
+    <thead><tr><th>ماه</th><th class="num">تعداد</th><th class="num">مبلغ</th></tr></thead>
+    <tbody>
+      {% for row in income.by_month %}
+        <tr><td>{{ row.month|date:"Y/m" }}</td><td class="num">{{ row.count|fa_num }}</td><td class="num">{{ row.total|money }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}<p class="fin-empty">در این بازه دریافتی نبوده است.</p>{% endif %}
+
+<h3>به تفکیک حوزه</h3>
+<p class="fin-note">فقط دریافت‌های سهم‌بندی‌شده؛ هر پرداخت سفارش چندحوزه‌ای به نسبت قیمت هر حوزه تقسیم شده است.</p>
+{% if income.by_domain %}
+  <table class="fin-table">
+    <thead><tr><th>حوزه</th><th class="num">مبلغ</th></tr></thead>
+    <tbody>
+      {% for row in income.by_domain %}
+        <tr><td>{{ row.domain__name|default:"—" }}</td><td class="num">{{ row.total|money }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}<p class="fin-empty">هنوز دریافت سهم‌بندی‌شده‌ای در این بازه نیست.</p>{% endif %}
+
+<div class="fin-head">
+  <h2>مانده‌ی طلب افراد</h2>
+  {% if people %}<a href="?export=people">خروجی Excel</a>{% endif %}
+</div>
+<p class="fin-note">از ابتدا تا امروز: سهم‌هایی که به هر نفر رسیده، منهای تسویه‌هایی که ثبت شده است.</p>
+{% if people %}
+  <table class="fin-table">
+    <thead><tr><th>نام</th><th class="num">سهم کل</th><th class="num">تسویه‌شده</th><th class="num">مانده</th></tr></thead>
+    <tbody>
+      {% for row in people %}
+        <tr{% if row.owed %} class="owed"{% endif %}>
+          <td>{{ row.person.get_full_name|default:row.person.mobile_number }}</td>
+          <td class="num">{{ row.earned|money }}</td><td class="num">{{ row.paid|money }}</td><td class="num">{{ row.owed|money }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}<p class="fin-empty">هنوز سهمی به کسی نرسیده است.</p>{% endif %}
+
+<div class="fin-head">
+  <h2>صندوق حوزه‌ها</h2>
+  {% if funds %}<a href="?export=funds">خروجی Excel</a>{% endif %}
+</div>
+{% if funds %}
+  <table class="fin-table">
+    <thead><tr><th>حوزه</th><th class="num">سهم کل</th><th class="num">برداشت‌شده</th><th class="num">مانده</th></tr></thead>
+    <tbody>
+      {% for row in funds %}
+        <tr><td>{{ row.domain }}</td><td class="num">{{ row.earned|money }}</td><td class="num">{{ row.paid|money }}</td><td class="num">{{ row.owed|money }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}<p class="fin-empty">هنوز سهمی به صندوق حوزه‌ای نرسیده است.</p>{% endif %}
+{% endblock %}

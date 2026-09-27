@@ -11,7 +11,8 @@ from .forms import AdminUserCreationForm, UserChangeForm
 from .formatting import ltr
 from .models import User
 from .roles import (
-    DOMAIN_MANAGER_APPS, DOMAIN_MANAGER_FORBIDDEN, FULL_ACCESS_GROUPS, is_system_group, role_label,
+    DOMAIN_MANAGER_APPS, DOMAIN_MANAGER_FORBIDDEN, FINANCE_GROUP, FULL_ACCESS_GROUPS, OWNER_ONLY_GROUPS,
+    is_system_group, role_label,
 )
 from domains.access import domain_of_group, is_domain_group
 
@@ -64,17 +65,17 @@ class UserAdmin(MobileColumn, BaseUserAdmin):
             fields = (*fields, "is_superuser")
         return fields
 
-    # Only the system owner decides who is a site admin: a second admin runs everything else, but
-    # cannot hand full access to anyone or take it from the owner's chosen people.
+    # Only the system owner decides who is a site admin or a finance manager: a second admin runs
+    # everything else, but cannot hand out full access or the money, or take them from anyone.
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "groups" and not request.user.is_superuser:
-            kwargs["queryset"] = Group.objects.exclude(name__in=FULL_ACCESS_GROUPS)
+            kwargs["queryset"] = Group.objects.exclude(name__in=OWNER_ONLY_GROUPS)
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
     def save_related(self, request, form, formsets, change):
         # The full-access groups aren't in a non-owner's form, so saving it would silently drop them
-        kept = [] if request.user.is_superuser else list(form.instance.groups.filter(name__in=FULL_ACCESS_GROUPS))
+        kept = [] if request.user.is_superuser else list(form.instance.groups.filter(name__in=OWNER_ONLY_GROUPS))
         super().save_related(request, form, formsets, change)
         if kept:
             form.instance.groups.add(*kept)
@@ -187,7 +188,7 @@ class GroupAdmin(BaseGroupAdmin):
         )
 
     def get_fields(self, request, obj=None):
-        if obj is not None and obj.name in FULL_ACCESS_GROUPS:
+        if obj is not None and obj.name in OWNER_ONLY_GROUPS:
             return ("name", "site_admins_note")
         return ("name", "permissions")
 
@@ -223,6 +224,8 @@ class GroupAdmin(BaseGroupAdmin):
     def group_type(self, obj):
         if obj.name in FULL_ACCESS_GROUPS:
             return "دسترسی کامل"
+        if obj.name == FINANCE_GROUP:
+            return "ستاد مالی"
         domain, kind = domain_of_group(obj)
         if domain is not None:
             return f"{'مدیران' if kind == 'managers' else 'کارشناسان'} حوزه ({domain})"
@@ -234,4 +237,6 @@ class GroupAdmin(BaseGroupAdmin):
 
     @admin.display(description=_("دسترسی‌ها"))
     def site_admins_note(self, obj):
+        if obj.name == FINANCE_GROUP:
+            return "این گروه به‌صورت خودکار همه‌ی دسترسی‌های بخش «امور مالی» را دارد و قابل تغییر نیست."
         return "این گروه به‌صورت خودکار همه‌ی دسترسی‌های سایت را دارد و قابل تغییر نیست."

@@ -1,0 +1,71 @@
+{% extends "admin/base_site.html" %}
+{% load store %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+  .fin-note { color: var(--body-quiet-color); margin: 0 0 1rem; }
+  .fin-cards { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+  .fin-card { padding: .9rem 1.2rem; border: 1px solid var(--hairline-color); border-radius: 10px; min-width: 180px; }
+  .fin-card b { display: block; font-size: 1.3rem; margin-top: .3rem; }
+  .fin-table { width: 100%; max-width: 900px; border-collapse: collapse; margin-bottom: 1.8rem; }
+  .fin-table th, .fin-table td { padding: .5rem .6rem; border-bottom: 1px solid var(--hairline-color); text-align: right; }
+  .fin-table td.num, .fin-table th.num { text-align: left; direction: ltr; }
+  .fin-empty { color: var(--body-quiet-color); }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs"><a href="{% url 'admin:index' %}">خانه</a> &rsaquo; {{ title }}</div>
+{% endblock %}
+
+{% block content %}
+<p class="fin-note">فقط شما این صفحه را می‌بینید. سهم هر دریافت با درصدهای همان زمان حساب شده است.</p>
+
+<div class="fin-cards">
+  <div class="fin-card">سهم کل<b>{{ totals.earned|money }}</b></div>
+  <div class="fin-card">تسویه‌شده<b>{{ totals.paid|money }}</b></div>
+  <div class="fin-card">مانده‌ی طلب<b>{{ totals.owed|money }}</b></div>
+</div>
+
+<h2>سهم‌های من</h2>
+{% if shares %}
+  <table class="fin-table">
+    <thead><tr><th>تاریخ</th><th>بابت</th><th>نقش</th><th class="num">درصد</th><th class="num">مبلغ</th></tr></thead>
+    <tbody>
+      {% for share in shares %}
+        <tr>
+          <td>{{ share.receipt.received_at|date:"Y/m/d" }}</td>
+          <td>{{ share.receipt.title }}</td>
+          <td>{{ share.get_role_display }}{% if share.domain %} — {{ share.domain }}{% endif %}</td>
+          <td class="num">{{ share.percent|floatformat:"-2" }}٪</td>
+          <td class="num">{{ share.amount|money }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}<p class="fin-empty">هنوز سهمی ثبت نشده است.</p>{% endif %}
+
+<h2>تسویه‌ها</h2>
+{% if payouts %}
+  <table class="fin-table">
+    <thead><tr><th>تاریخ واریز</th><th>شماره پیگیری</th><th>توضیح</th><th class="num">مبلغ</th></tr></thead>
+    <tbody>
+      {% for payout in payouts %}
+        <tr><td>{{ payout.paid_on|date:"Y/m/d" }}</td><td dir="ltr">{{ payout.reference }}</td><td>{{ payout.note|default:"—" }}</td><td class="num">{{ payout.amount|money }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}<p class="fin-empty">هنوز تسویه‌ای ثبت نشده است.</p>{% endif %}
+
+{% if funds %}
+  <h2>صندوق حوزه‌های من</h2>
+  <table class="fin-table">
+    <thead><tr><th>حوزه</th><th class="num">سهم کل</th><th class="num">برداشت‌شده</th><th class="num">مانده</th></tr></thead>
+    <tbody>
+      {% for row in funds %}
+        <tr><td>{{ row.domain }}</td><td class="num">{{ row.earned|money }}</td><td class="num">{{ row.paid|money }}</td><td class="num">{{ row.owed|money }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+{% endblock %}

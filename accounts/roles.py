@@ -19,6 +19,10 @@ SITE_ADMINS_GROUP = "مدیران کل"
 
 TECH_ADMINS_GROUP = "مدیران فنی"
 FULL_ACCESS_GROUPS = (SITE_ADMINS_GROUP, TECH_ADMINS_GROUP)
+# Staff (ستاد): sees every toman that comes in and records payouts, and nothing else of the site
+FINANCE_GROUP = "مدیران مالی"
+# Who is in these is the system owner's decision alone (see accounts.admin.UserAdmin)
+OWNER_ONLY_GROUPS = (*FULL_ACCESS_GROUPS, FINANCE_GROUP)
 # Apps whose permissions may be given to domain groups (content only; never users or groups).
 # When courses and projects are built, their app labels are added here.
 DOMAIN_MANAGER_APPS = ("domains", "products", "content", "approvals", "services")
@@ -61,17 +65,31 @@ def is_system_group(group):
     """Groups managed by the system: the full-access groups and every domain's two groups."""
     from domains.access import is_domain_group
 
-    return group.name in FULL_ACCESS_GROUPS or is_domain_group(group)
+    return group.name in OWNER_ONLY_GROUPS or is_domain_group(group)
 
 
 def ensure_site_admins_group():
-    """Create the full-access groups (if missing) and give them every permission of the site."""
+    """
+    Create the system's staff groups if missing and keep their permissions whole: every permission
+    of the site for the full-access groups, the finance app's for the finance managers.
+    """
     groups = []
     for name in FULL_ACCESS_GROUPS:
         group, _ = Group.objects.get_or_create(name=name)
         group.permissions.set(Permission.objects.all())
         groups.append(group)
+    finance, _ = Group.objects.get_or_create(name=FINANCE_GROUP)
+    finance.permissions.set(Permission.objects.filter(content_type__app_label="finance"))
     return groups[0]
+
+
+def is_finance_manager(user):
+    """In the finance managers group. Site admins see the money too, through is_site_admin."""
+    return bool(user.is_authenticated and user.groups.filter(name=FINANCE_GROUP).exists())
+
+
+def can_see_finance(user):
+    return is_site_admin(user) or is_finance_manager(user)
 
 
 def sync_staff_status(user_ids):

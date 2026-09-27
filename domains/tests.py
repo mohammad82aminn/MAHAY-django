@@ -293,6 +293,9 @@ class AdminFormCompletenessTests(TestCase):
         ("collaboration", "collaborationrequest"): {
             "contact_channel", "contact_id", "can_teach", "can_build", "can_advise",
         },
+        # Shown formatted instead (the number left-to-right, the sum with separators and «تومان»);
+        # a receipt is never edited anyway
+        ("finance", "receipt"): {"payer_mobile", "amount"},
     }
 
     def test_every_editable_field_is_reachable_in_the_admin(self):
