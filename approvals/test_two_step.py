@@ -42,7 +42,7 @@ class TwoDeskTestCase(ApprovalTestCase):
         data = {
             "product_type": "course", "title": "دوره تازه", "slug": slug, "summary": "", "description": "",
             "primary_domain": (domain or self.fpga).pk, "related_domains": [], "related_products": [],
-            "price": 500_000, "sale_price": "", "intro_video_url": "", "instructor": "",
+            "price": 500_000, "sale_price": "", "intro_video_url": "",
             "cover": image_file(),
         }
         data.update(changes)
@@ -112,7 +112,7 @@ class ManagersDeskTests(TwoDeskTestCase):
     def test_a_manager_corrects_the_draft_and_the_expert_sees_what_changed(self):
         product = self.add_product(self.expert, title="دوره‌ی تازه با غلط")
         self.client.force_login(self.manager)
-        self.client.post(self.change_url(product), self.form_data(product, title="دوره‌ی تازه", instructor=""))
+        self.client.post(self.change_url(product), self.form_data(product, title="دوره‌ی تازه"))
 
         request = self.pending(product, ChangeRequest.Action.CREATE)
         self.assertEqual((request.stage, request.submitted_by), (ChangeRequest.Stage.DOMAIN, self.expert))
@@ -177,13 +177,13 @@ class WhatAnExpertMayTouchTests(TwoDeskTestCase):
         published = self.make_product(published=True, slug="live")
         self.client.force_login(self.expert)
 
-        self.client.post(self.change_url(mine), self.form_data(mine, title="عنوان من", instructor=""))
+        self.client.post(self.change_url(mine), self.form_data(mine, title="عنوان من"))
         mine.refresh_from_db()
         self.assertEqual(mine.title, "عنوان من")
 
         for product in (theirs, published):
             with self.subTest(product=product.slug):
-                response = self.client.post(self.change_url(product), self.form_data(product, title="دست‌کاری", instructor=""))
+                response = self.client.post(self.change_url(product), self.form_data(product, title="دست‌کاری"))
                 self.assertEqual(response.status_code, 403)
                 product.refresh_from_db()
                 self.assertNotEqual(product.title, "دست‌کاری")
@@ -212,7 +212,7 @@ class WhatAnExpertMayTouchTests(TwoDeskTestCase):
         request = self.pending(mine, ChangeRequest.Action.CREATE)
         self.decide(self.manager, request, "approved")
         self.client.force_login(self.expert)
-        self.client.post(self.change_url(mine), self.form_data(mine, title="نسخه‌ی تازه", instructor=""))
+        self.client.post(self.change_url(mine), self.form_data(mine, title="نسخه‌ی تازه"))
         request.refresh_from_db()
         self.assertEqual(request.stage, ChangeRequest.Stage.DOMAIN)
 

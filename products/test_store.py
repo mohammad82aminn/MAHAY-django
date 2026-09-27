@@ -112,9 +112,13 @@ class InstructorAndDurationTests(StoreTestCase):
             lesson = Lesson.objects.create(section=section, title=f"درس {index}", is_published=published)
             Lesson.objects.filter(pk=lesson.pk).update(duration_seconds=length)  # as if read from its video
 
+    def teacher(self, number, first, last):
+        user = User.objects.create_user(number, "S3cure-pass!", first_name=first, last_name=last)
+        user.groups.add(self.fpga.experts_group)
+        return user
+
     def test_card_shows_instructor_and_total_of_published_lessons(self):
-        self.course.instructor = "علی رضایی"
-        self.course.save()
+        self.course.instructors.add(self.teacher("09121111111", "علی", "رضایی"))
         self.add_lessons(self.course, 3600, 1800)
         self.add_lessons(self.course, 7200, published=False)  # not counted until approved
         response = self.client.get(reverse("home"))
@@ -127,16 +131,34 @@ class InstructorAndDurationTests(StoreTestCase):
         [listed] = [p for p in self.listed(domain="ai") if p == self.course]
         self.assertEqual(listed.total_seconds, 600)
 
+    def test_more_cards_with_instructors_cost_no_more_queries(self):
+        teacher = self.teacher("09120000009", "مدرس", "یک")
+        self.course.instructors.add(teacher)
+        self.client.get(reverse("home"))  # warm up
+        before = self.queries_for_home()
+        for index in range(3):
+            self.make("course", f"دوره‌ی دیگر {index}", f"other-{index}").instructors.add(teacher)
+        self.assertEqual(self.queries_for_home(), before)
+
+    def queries_for_home(self):
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        with CaptureQueriesContext(connection) as captured:
+            self.client.get(reverse("home"))
+        return len(captured)
+
     def test_card_without_either_shows_neither(self):
         response = self.client.get(reverse("home"))
         self.assertNotContains(response, "product-card-meta")
 
     def test_product_page_facts(self):
-        self.project.instructor = "مریم احمدی، رضا کریمی"
-        self.project.save()
+        self.project.instructors.add(self.teacher("09121111111", "مریم", "احمدی"))
+        self.project.instructors.add(self.teacher("09122222222", "رضا", "کریمی"))
         self.add_lessons(self.project, 2700)
         response = self.client.get(self.project.get_absolute_url())
-        self.assertContains(response, "مریم احمدی، رضا کریمی")
+        self.assertContains(response, "مریم احمدی")
+        self.assertContains(response, "رضا کریمی")
         self.assertContains(response, "۴۵ دقیقه")
 
 

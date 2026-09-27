@@ -38,10 +38,10 @@ class ProductAdmin(ApprovalModelAdmin):
     list_display = ("title", "product_type", "primary_domain", "price_display", "state")
     list_filter = ("product_type", "primary_domain", "is_published", "is_archived")
     search_fields = ("title", "slug")
-    filter_horizontal = ("related_domains", "related_products")
+    filter_horizontal = ("instructors", "related_domains", "related_products")
     readonly_fields = ("cover_preview", "gallery", "thesis_link", "content_outline", "companion_files_block", "created_by", "created_at", "updated_at")
     fieldsets = (
-        (None, {"fields": ("product_type", "title", "slug", "instructor", "summary", "description")}),
+        (None, {"fields": ("product_type", "title", "slug", "instructors", "summary", "description")}),
         (_("تصاویر و ویدیوی معرفی"), {"fields": ("cover", "cover_preview", "gallery", "intro_video_url")}),
         (_("حوزه"), {"fields": ("primary_domain", "related_domains")}),
         (_("پایان‌نامه (فقط پروژه‌ها)"), {"fields": ("thesis", "thesis_link")}),

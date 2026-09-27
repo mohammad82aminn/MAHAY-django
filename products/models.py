@@ -60,9 +60,12 @@ class Product(models.Model):
         help_text=_("بخش انگلیسی آدرس صفحه، مثلاً fpga-basics"),
     )
     summary = models.CharField(_("خلاصه"), max_length=300, blank=True, help_text=_("یک یا دو جمله برای کارت محصول"))
-    instructor = models.CharField(
-        _("مدرس"), max_length=200, blank=True,
-        help_text=_("روی کارت و صفحه‌ی محصول نمایش داده می‌شود. اگر چند نفرند، نام‌ها را با «،» جدا کنید."),
+    # People with an account, so their share of each sale can be worked out (see finance). Picked from
+    # the staff only: the whole customer list should never open up in front of whoever makes a course.
+    instructors = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, blank=True, related_name="taught_products", verbose_name=_("مدرسان"),
+        limit_choices_to={"is_staff": True, "is_active": True},
+        help_text=_("روی کارت و صفحه‌ی محصول نمایش داده می‌شوند. اگر چند نفرند، سهم مدرس بینشان مساوی تقسیم می‌شود."),
     )
     description = models.TextField(_("توضیحات کامل"), blank=True)
     cover = models.ImageField(
@@ -156,6 +159,11 @@ class Product(models.Model):
         from content.models import Lesson
 
         return Lesson.objects.filter(section__product=self, is_archived=False).exclude(video_url="")
+
+    @property
+    def instructor_names(self):
+        """«علی رضایی، مریم احمدی» — reads prefetched instructors when the list prefetched them."""
+        return "، ".join(person.get_full_name() or person.mobile_number for person in self.instructors.all())
 
     @property
     def final_price(self):

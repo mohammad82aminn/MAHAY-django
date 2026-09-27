@@ -120,7 +120,7 @@
       <ul class="facts">
         <li><span>نوع</span><strong>{{ product.get_product_type_display }}</strong></li>
         <li><span>حوزه</span><strong>{{ product.primary_domain }}</strong></li>
-        {% if product.instructor %}<li><span>مدرس</span><strong>{{ product.instructor }}</strong></li>{% endif %}
+        {% with names=product.instructor_names %}{% if names %}<li><span>مدرس</span><strong>{{ names }}</strong></li>{% endif %}{% endwith %}
         {% if lesson_count %}<li><span>تعداد درس</span><strong>{{ lesson_count|fa_num }}</strong></li>{% endif %}
         {% if total_seconds %}<li><span>مدت کل</span><strong>{{ total_seconds|duration }}</strong></li>{% endif %}
         {% if product.thesis %}<li><span>پایان‌نامه</span><strong>دارد</strong></li>{% endif %}

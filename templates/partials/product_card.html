@@ -15,12 +15,13 @@
     <span class="product-card-domain">{{ product.primary_domain }}</span>
     <h3>{{ product.title }}</h3>
     {% if product.summary %}<p class="muted">{{ product.summary }}</p>{% endif %}
-    {% if product.instructor or product.total_seconds %}
+    {% with names=product.instructor_names %}
+    {% if names or product.total_seconds %}
       <div class="product-card-meta">
-        {% if product.instructor %}
+        {% if names %}
           <span title="مدرس">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-            {{ product.instructor }}
+            {{ names }}
           </span>
         {% endif %}
         {% if product.total_seconds %}
@@ -31,6 +32,7 @@
         {% endif %}
       </div>
     {% endif %}
+    {% endwith %}
     <div class="price">
       {% if owned %}
         <strong class="price-free">مشاهده محتوا</strong>

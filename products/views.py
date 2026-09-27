@@ -27,7 +27,7 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         visible = Product.objects.visible().select_related("primary_domain")
-        cards = visible.with_duration()
+        cards = visible.with_duration().prefetch_related("instructors")
         context["domains"] = Domain.objects.filter(is_active=True).annotate(
             product_count=Count("products", filter=Q(products__is_published=True, products__is_archived=False))
         )
@@ -49,7 +49,7 @@ class ProductListView(ListView):
 
     def get_queryset(self):
         params = self.request.GET
-        queryset = Product.objects.visible().with_duration().select_related("primary_domain")
+        queryset = Product.objects.visible().with_duration().select_related("primary_domain").prefetch_related("instructors")
 
         self.product_type = params.get("type") if params.get("type") in Product.Type.values else ""
         if self.product_type:
@@ -125,7 +125,7 @@ class ProductDetailView(DetailView):
             "total_seconds": totals["seconds"] or 0,
             "gallery": ProductImage.objects.filter(product=product, is_published=True, is_archived=False),
             "companion_files": ProductFile.objects.filter(product=product, is_published=True, is_archived=False),
-            "related": Product.objects.visible().with_duration().select_related("primary_domain")
+            "related": Product.objects.visible().with_duration().select_related("primary_domain").prefetch_related("instructors")
                        .filter(related_products=product),
             "can_enter": can_enter,
             "in_cart": not can_enter and self.in_cart(product),
