@@ -180,6 +180,9 @@ def assign(referral, expert, actor):
     """Hand the work to an expert, and tell them at once."""
     from inbox import services as inbox
 
+    referral.assigned_at = timezone.now()
+    referral.save(update_fields=["assigned_at"])
+
     log(referral.request, actor, f"کار حوزه‌ی {referral.domain} به {expert.get_full_name() or expert} سپرده شد.")
     if expert != actor:
         inbox.send(
@@ -197,6 +200,7 @@ def price_set(referral, actor, now=None):
     price waits for a manager.
     """
     agreed = is_manager(actor, referral.domain) or is_site_admin(actor) or not has_managers(referral.domain)
+    referral.quoted_at = now or timezone.now()
     referral.quote_approved_by = actor if agreed else None
     referral.quote_approved_at = (now or timezone.now()) if agreed else None
 

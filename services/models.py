@@ -259,6 +259,10 @@ class Referral(models.Model):
         related_name="+", verbose_name=_("تأییدکننده‌ی قیمت"),
     )
     quote_approved_at = models.DateTimeField(_("زمان تأیید قیمت"), null=True, blank=True, editable=False)
+    # When the work reached the expert and when its price was last given: what the 48-hour
+    # reminders count from (see inbox.reminders)
+    assigned_at = models.DateTimeField(_("زمان سپردن به کارشناس"), null=True, blank=True, editable=False)
+    quoted_at = models.DateTimeField(_("زمان ثبت قیمت"), null=True, blank=True, editable=False)
     duration_text = models.CharField(_("مدت زمان تقریبی"), max_length=100, blank=True, help_text=_("مثلاً ۳ هفته"))
     done_work = models.TextField(_("کارهای انجام‌شده"), blank=True)
     remaining_work = models.TextField(_("کارهای باقی‌مانده"), blank=True)

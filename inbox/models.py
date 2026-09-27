@@ -113,3 +113,21 @@ class MessageFile(models.Model):
     @property
     def name(self):
         return os.path.basename(self.file.name)
+
+
+class Reminder(models.Model):
+    """
+    A reminder that was already sent, so the hourly run never repeats it. The key names the
+    waiting item and the moment it started waiting at that step: when it moves on and waits again,
+    the key is new and it may be reminded again (see inbox.reminders).
+    """
+
+    key = models.CharField(_("کلید"), max_length=200, unique=True)
+    sent_at = models.DateTimeField(_("زمان ارسال"), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _("یادآوری ارسال‌شده")
+        verbose_name_plural = _("یادآوری‌های ارسال‌شده")
+
+    def __str__(self):
+        return self.key
