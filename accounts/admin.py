@@ -4,7 +4,11 @@ from django.contrib import admin, messages
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group, Permission
+from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.db.models import Count
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import path
 from django.utils.translation import gettext_lazy as _
 
 from .forms import AdminUserCreationForm, UserChangeForm
@@ -80,6 +84,91 @@ class UserAdmin(MobileColumn, BaseUserAdmin):
         super().save_related(request, form, formsets, change)
         if kept:
             form.instance.groups.add(*kept)
+
+    # --- Accounts only the owner touches -----------------------------------------------
+
+    @staticmethod
+    def _owners_business(request, obj):
+        """The owner, the site admins and the staff are the system owner's to change, lock or remove."""
+        if obj is None or request.user.is_superuser:
+            return False
+        return obj.is_superuser or obj.groups.filter(name__in=OWNER_ONLY_GROUPS).exists()
+
+    def has_change_permission(self, request, obj=None):
+        return super().has_change_permission(request, obj) and not self._owners_business(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        return super().has_delete_permission(request, obj) and not self._owners_business(request, obj)
+
+    # --- Deleting ------------------------------------------------------------------------
+    # A person's paid orders are the site's financial record and are never deleted, so neither is
+    # the person: they are made inactive instead (they can't log in, their history stays). Orders
+    # that never took money (failed, abandoned, cancelled before paying) are nothing to keep, and
+    # go with the person.
+
+    @staticmethod
+    def _unpaid_orders(users):
+        from commerce.models import Order
+
+        return Order.objects.filter(user__in=users).exclude(status=Order.Status.PAID).exclude(items__receipt__isnull=False)
+
+    def get_deleted_objects(self, objs, request):
+        from django.urls import reverse
+        from django.utils.html import format_html
+        from django.utils.text import capfirst
+
+        from commerce.models import Order
+
+        deleted, counts, perms_needed, protected = super().get_deleted_objects(objs, request)
+        unpaid = list(self._unpaid_orders(objs))
+        if not unpaid:
+            return deleted, counts, perms_needed, protected
+        # These go with the person rather than stopping the deletion
+        order_pages = reverse("admin:commerce_order_changelist")
+        unpaid_pages = {reverse("admin:commerce_order_change", args=[order.pk]) for order in unpaid}
+        protected = [item for item in protected if not any(page in str(item) for page in unpaid_pages)]
+        if not any(order_pages in str(item) for item in protected):
+            perms_needed.discard(str(Order._meta.verbose_name))
+        label = capfirst(Order._meta.verbose_name)
+        deleted.extend(
+            format_html('{}: <a href="{}">{}</a>', label, reverse("admin:commerce_order_change", args=[order.pk]), order)
+            for order in unpaid
+        )
+        counts[str(Order._meta.verbose_name_plural)] = len(unpaid)
+        return deleted, counts, perms_needed, protected
+
+    def delete_model(self, request, obj):
+        with transaction.atomic():
+            self._unpaid_orders([obj]).delete()
+            super().delete_model(request, obj)
+
+    def delete_queryset(self, request, queryset):
+        with transaction.atomic():
+            self._unpaid_orders(queryset).delete()
+            super().delete_queryset(request, queryset)
+
+    def get_urls(self):
+        return [
+            path("<int:pk>/deactivate/", self.admin_site.admin_view(self.deactivate_view), name="accounts_user_deactivate"),
+            *super().get_urls(),
+        ]
+
+    def deactivate_view(self, request, pk):
+        """What the delete page offers when a person can't be deleted: lock the account, keep the history."""
+        user = get_object_or_404(User, pk=pk)
+        if request.method != "POST" or not self.has_change_permission(request, user):
+            raise PermissionDenied
+        User.objects.filter(pk=user.pk).update(is_active=False)
+        self.message_user(request, f"حساب «{user}» غیرفعال شد؛ دیگر نمی‌تواند وارد شود و سابقه‌اش حفظ شد.",
+                          messages.SUCCESS)
+        return redirect("admin:accounts_user_change", user.pk)
+
+    def render_delete_form(self, request, context):
+        obj = context.get("object")
+        context["can_deactivate"] = bool(
+            obj is not None and obj.is_active and obj.pk != request.user.pk and self.has_change_permission(request, obj)
+        )
+        return super().render_delete_form(request, context)
 
     @admin.display(description=_("نقش‌ها"))
     def roles(self, obj):

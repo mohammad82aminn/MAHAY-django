@@ -1,0 +1,25 @@
+{% extends "admin/delete_confirmation.html" %}
+{% comment %}
+When a person can't be deleted, say why in plain words — Django's own message blames the visitor's
+permissions, which even the system owner would read — and offer the right move: lock the account.
+{% endcomment %}
+
+{% block content %}
+{% if perms_lacking or protected %}
+  <div class="module" style="padding: 1rem 1.2rem; margin-bottom: 1.5rem; border-inline-start: 4px solid #d9534f;">
+    <p><strong>این کاربر سابقه‌ای دارد که نباید پاک شود</strong> — مثلاً سفارش پرداخت‌شده، سهم یا تسویه‌ی مالی،
+      یا درخواست و گزارشی که ثبت کرده است. این‌ها سوابق سایت‌اند و با حذف کاربر از بین می‌روند.</p>
+    <p>به‌جای حذف، حساب را <strong>غیرفعال</strong> کنید: دیگر نمی‌تواند وارد شود و سابقه‌اش حفظ می‌شود.</p>
+    {% if can_deactivate %}
+      <form method="post" action="{% url 'admin:accounts_user_deactivate' object.pk %}">
+        {% csrf_token %}
+        <input type="submit" value="غیرفعال کردن «{{ object }}»" style="background: #d9534f;">
+      </form>
+    {% elif not object.is_active %}
+      <p class="help">این حساب همین حالا غیرفعال است.</p>
+    {% endif %}
+    <p class="help" style="margin-top: .8rem;">مواردی که مانع حذف هستند:</p>
+  </div>
+{% endif %}
+{{ block.super }}
+{% endblock %}

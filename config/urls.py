@@ -21,6 +21,11 @@ from django.urls import include, path
 
 from products.views import HomeView
 
+# The panel's own name, instead of Django's «مدیریت Django»
+admin.site.site_header = "پنل مدیریت MAHAY"
+admin.site.site_title = "پنل MAHAY"
+admin.site.index_title = "پیشخوان"
+
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),
     path("products/", include("products.urls")),

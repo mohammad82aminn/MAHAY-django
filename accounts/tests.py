@@ -361,11 +361,22 @@ class SiteAdminMembershipTests(TestCase):
         self.post_groups(self.second_admin, self.person, [self.site_admins, self.domain.experts_group])
         self.assertNotIn(self.site_admins, self.person.groups.all())
 
-    def test_a_second_admin_editing_an_admin_keeps_their_full_access(self):
+    def test_a_second_admin_cannot_change_another_admin_at_all(self):
         other_admin = User.objects.create_user("09120000002", "S3cure-pass!")
         other_admin.groups.add(self.site_admins)
-        self.post_groups(self.second_admin, other_admin, [self.domain.managers_group])
-        self.assertCountEqual(other_admin.groups.all(), [self.site_admins, self.domain.managers_group])
+        response = self.post_groups(self.second_admin, other_admin, [self.domain.managers_group])
+        self.assertEqual(response.status_code, 403)  # the owner's people are the owner's to change
+        self.assertCountEqual(other_admin.groups.all(), [self.site_admins])
+
+    def test_editing_a_person_keeps_groups_the_form_did_not_offer(self):
+        """The finance group isn't in a second admin's form; saving a person must not drop it."""
+        from accounts.roles import FINANCE_GROUP
+
+        finance = Group.objects.get(name=FINANCE_GROUP)
+        self.person.groups.add(finance)
+        self.client.force_login(self.owner)  # the owner may; a second admin can't open this page at all
+        self.post_groups(self.owner, self.person, [finance, self.domain.managers_group])
+        self.assertCountEqual(self.person.groups.all(), [finance, self.domain.managers_group])
 
     def test_the_owner_decides(self):
         self.post_groups(self.owner, self.person, [self.site_admins])

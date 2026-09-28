@@ -67,7 +67,8 @@ class TechAdminTests(TestCase):
         admin = User.objects.create_user("09120000000", PASSWORD)
         admin.groups.add(Group.objects.get(name=SITE_ADMINS_GROUP))
         self.client.force_login(admin)
-        response = self.client.get(reverse("admin:accounts_user_change", args=[self.tech.pk]))
+        plain = User.objects.create_user("09129999999", PASSWORD)
+        response = self.client.get(reverse("admin:accounts_user_change", args=[plain.pk]))
         offered = response.context["adminform"].form.fields["groups"].queryset
         for name in (TECH_ADMINS_GROUP, OFFICE_GROUP):
             self.assertNotIn(Group.objects.get(name=name), offered)
