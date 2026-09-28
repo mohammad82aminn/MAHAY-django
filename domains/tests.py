@@ -303,6 +303,10 @@ class AdminFormCompletenessTests(TestCase):
 
         missing = []
         for model, model_admin in admin.site._registry.items():
+            if model._meta.proxy:
+                # A proxy is another view of a model whose own admin is checked here — e.g. the
+                # office's read-only staff directory, which must not show the password field
+                continue
             declared = model_admin.fields
             if not declared and model_admin.fieldsets:
                 declared = sum([list(options["fields"]) for _name, options in model_admin.fieldsets], [])

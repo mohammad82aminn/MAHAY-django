@@ -262,6 +262,10 @@ class Referral(models.Model):
     # When the work reached the expert and when its price was last given: what the 48-hour
     # reminders count from (see inbox.reminders)
     assigned_at = models.DateTimeField(_("زمان سپردن به کارشناس"), null=True, blank=True, editable=False)
+    assigned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, editable=False,
+        related_name="+", verbose_name=_("سپارنده به کارشناس"),
+    )
     quoted_at = models.DateTimeField(_("زمان ثبت قیمت"), null=True, blank=True, editable=False)
     duration_text = models.CharField(_("مدت زمان تقریبی"), max_length=100, blank=True, help_text=_("مثلاً ۳ هفته"))
     done_work = models.TextField(_("کارهای انجام‌شده"), blank=True)

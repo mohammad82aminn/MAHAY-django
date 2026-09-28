@@ -1,0 +1,58 @@
+{% extends "admin/base_site.html" %}
+{% load store %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+  .perf-periods { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
+  .perf-periods a { padding: .35rem .9rem; border-radius: 999px; text-decoration: none; border: 1px solid var(--hairline-color); }
+  .perf-periods a.on { background: var(--selected-bg, #e0e0e0); font-weight: 700; }
+  .perf-periods .spacer { flex: 1; }
+  .perf-note { color: var(--body-quiet-color); margin: 0 0 1rem; }
+  .perf-wrap { overflow-x: auto; }
+  .perf-table { border-collapse: collapse; min-width: 100%; }
+  .perf-table th, .perf-table td { padding: .5rem .6rem; border-bottom: 1px solid var(--hairline-color); text-align: right; white-space: nowrap; }
+  .perf-table th { font-size: .8rem; white-space: normal; vertical-align: bottom; }
+  .perf-table td.num { text-align: center; }
+  .perf-table td.zero { color: var(--body-quiet-color); }
+  .perf-table td.alert { color: #d9534f; font-weight: 700; }
+  .perf-role { color: var(--body-quiet-color); font-size: .8rem; }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs"><a href="{% url 'admin:index' %}">خانه</a> &rsaquo; {{ title }}</div>
+{% endblock %}
+
+{% block content %}
+<p class="perf-note">
+  فقط عدد است، نه نمره: پشت هر عدد کاری با اندازه و دشواری خودش است. ستون‌های «الان» به بازه بستگی ندارند.
+</p>
+
+<nav class="perf-periods">
+  {% for key, label in periods %}
+    <a href="?period={{ key }}" class="{% if key == period %}on{% endif %}">{{ label }}</a>
+  {% endfor %}
+  <span class="spacer"></span>
+  <a href="?period={{ period }}&export=1">خروجی Excel</a>
+</nav>
+
+<div class="perf-wrap">
+  <table class="perf-table">
+    <thead>
+      <tr><th>نام</th>{% for column in columns %}<th>{{ column }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+        <tr>
+          <td>{{ row.person.get_full_name|default:row.person.mobile_number }}<br><span class="perf-role">{{ row.role }}</span></td>
+          {% for value in row.values %}
+            <td class="num{% if not value %} zero{% elif forloop.last %} alert{% endif %}">{% if value %}{{ value|fa_num }}{% else %}—{% endif %}</td>
+          {% endfor %}
+        </tr>
+      {% empty %}
+        <tr><td colspan="{{ columns|length|add:1 }}" class="perf-note">هنوز کسی در کارکنان نیست.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

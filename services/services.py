@@ -180,8 +180,8 @@ def assign(referral, expert, actor):
     """Hand the work to an expert, and tell them at once."""
     from inbox import services as inbox
 
-    referral.assigned_at = timezone.now()
-    referral.save(update_fields=["assigned_at"])
+    referral.assigned_at, referral.assigned_by = timezone.now(), actor
+    referral.save(update_fields=["assigned_at", "assigned_by"])
 
     log(referral.request, actor, f"کار حوزه‌ی {referral.domain} به {expert.get_full_name() or expert} سپرده شد.")
     if expert != actor:
