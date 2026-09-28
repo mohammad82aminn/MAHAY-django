@@ -10,7 +10,7 @@ from django.views.decorators.http import require_POST
 from products.models import Product
 
 from . import progress as progress_service
-from .access import can_open
+from .access import can_open, can_open_item
 from .models import Attachment, Lesson, LessonProgress, ProductFile, Section
 
 # kind in the URL -> (model, file field). A Product is its own product, hence the getattr below.
@@ -37,8 +37,8 @@ def protected_file(request, kind, pk):
     if isinstance(model, str):
         model = apps.get_model(model)
     obj = get_object_or_404(model, pk=pk)
-    if not can_open(request.user, getattr(obj, "product", obj)):
-        raise Http404  # don't reveal that the file exists
+    if not can_open_item(request.user, obj):
+        raise Http404  # don't reveal that the file exists (or that a draft does)
     file = getattr(obj, field_name)
     if not file:
         raise Http404
@@ -109,7 +109,7 @@ def lesson_view(request, slug, pk):
 def save_progress(request, pk):
     """Called by the player every few seconds. Returns the new percent."""
     lesson = get_object_or_404(Lesson.objects.select_related("section__product"), pk=pk)
-    if not can_open(request.user, lesson.product):
+    if not can_open_item(request.user, lesson):
         raise Http404
 
     try:

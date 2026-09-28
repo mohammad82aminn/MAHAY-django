@@ -329,3 +329,56 @@ class CompanionFileTests(ContentTestCase):
 def tearDownModule():
     shutil.rmtree(TEMP_PROTECTED, ignore_errors=True)
     shutil.rmtree(TEMP_MEDIA, ignore_errors=True)
+
+class NotYetApprovedTests(ContentTestCase):
+    """A buyer gets what was approved; guessing the address of a draft opens nothing."""
+
+    def setUp(self):
+        super().setUp()
+        from commerce.models import Purchase
+
+        Purchase.objects.create(user=self.buyer, product=self.product)
+        self.draft_lesson = Lesson.objects.create(section=self.section, title="پیش‌نویس", video_file=video())
+        self.hidden_section = Section.objects.create(product=self.product, title="فصل منتظر")
+        self.lesson_in_hidden = Lesson.objects.create(section=self.hidden_section, title="درس", is_published=True,
+                                                      video_file=video())
+        self.live_lesson = self.lesson_with_video()
+        self.draft_attachment = Attachment.objects.create(
+            lesson=self.live_lesson, title="پیش‌نویس", file=SimpleUploadedFile("a.pdf", b"%PDF"),
+        )
+        self.draft_companion = ProductFile.objects.create(
+            product=self.product, title="پیش‌نویس", file=SimpleUploadedFile("b.pdf", b"%PDF"),
+        )
+
+    def url(self, kind, obj):
+        return reverse("content:protected_file", args=[kind, obj.pk])
+
+    def drafts(self):
+        return (("video", self.draft_lesson), ("video", self.lesson_in_hidden),
+                ("attachment", self.draft_attachment), ("product_file", self.draft_companion))
+
+    def test_the_buyer_gets_the_approved_but_not_the_waiting(self):
+        self.client.force_login(self.buyer)
+        self.assertEqual(self.client.get(self.url("video", self.live_lesson)).status_code, 200)
+        for kind, obj in self.drafts():
+            with self.subTest(item=f"{kind}:{obj}"):
+                self.assertEqual(self.client.get(self.url(kind, obj)).status_code, 404)
+
+    def test_the_reviewers_see_them_as_they_are(self):
+        for user in (self.manager, self.admin):
+            self.client.force_login(user)
+            for kind, obj in self.drafts():
+                with self.subTest(user=user.mobile_number, item=f"{kind}:{obj}"):
+                    self.assertEqual(self.client.get(self.url(kind, obj)).status_code, 200)
+
+    def test_a_removed_lesson_closes_again(self):
+        self.live_lesson.is_archived = True
+        self.live_lesson.save(update_fields=["is_archived"])
+        self.client.force_login(self.buyer)
+        self.assertEqual(self.client.get(self.url("video", self.live_lesson)).status_code, 404)
+
+    def test_no_progress_is_saved_on_a_draft(self):
+        self.client.force_login(self.buyer)
+        response = self.client.post(reverse("content:save_progress", args=[self.draft_lesson.pk]),
+                                    {"position": 10, "duration": 60})
+        self.assertEqual(response.status_code, 404)
