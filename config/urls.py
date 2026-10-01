@@ -18,6 +18,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django.views.decorators.cache import cache_control
 
 from products.views import HomeView
 
@@ -25,6 +26,12 @@ from products.views import HomeView
 admin.site.site_header = "پنل مدیریت MAHAY"
 admin.site.site_title = "پنل MAHAY"
 admin.site.index_title = "پیشخوان"
+
+# The translation catalog every list and form page loads before it can draw. Django rebuilds it
+# on each request and sends it uncached (≈200ms, render-blocking, on every click in the panel).
+# It is the same text for everyone, so the browser may keep it a day; admin_view still requires
+# a logged-in staff member, and «private» keeps it out of shared caches.
+admin.site.i18n_javascript = cache_control(private=True, max_age=60 * 60 * 24)(admin.site.i18n_javascript)
 
 urlpatterns = [
     path("", HomeView.as_view(), name="home"),

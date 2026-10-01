@@ -10,7 +10,25 @@ from django.contrib import admin
 
 
 def count_for(model, request):
-    """What this model has waiting for the visitor, or 0 when it reports nothing."""
+    """
+    What this model has waiting for the visitor, or 0 when it reports nothing.
+
+    Kept on the request: one panel page asks for the same count up to three times (the total in
+    the header, the section in the sidebar, the part itself), and each is a query.
+    """
+    cache = getattr(request, "_pending_counts", None)
+    if cache is None:
+        cache = {}
+        try:
+            request._pending_counts = cache
+        except AttributeError:
+            pass
+    if model not in cache:
+        cache[model] = _count(model, request)
+    return cache[model]
+
+
+def _count(model, request):
     model_admin = admin.site._registry.get(model)
     counter = getattr(model_admin, "pending_count", None)
     if counter is None or not model_admin.has_view_permission(request):

@@ -74,11 +74,29 @@ def role_label(user):
     return "، ".join(names) or "کاربر عادی"
 
 
+def group_names(user):
+    """
+    The names of the person's groups, which is what every role question here comes down to.
+
+    A panel page asks a dozen of them (the sidebar, each section's counter, each admin's access
+    checks), and each used to be its own query. For the visitor of an admin page the answer is
+    kept on their own user object for that one request (RoleCacheMiddleware marks it); any other
+    user object is asked afresh, so a membership changed in code is never read back stale.
+    """
+    cached = getattr(user, "_mahay_group_names", None)
+    if cached is not None:
+        return cached
+    names = frozenset(user.groups.values_list("name", flat=True)) if user.is_authenticated else frozenset()
+    if getattr(user, "_mahay_cache_groups", False):
+        user._mahay_group_names = names
+    return names
+
+
 def is_site_admin(user):
     """Superuser or member of a full-access group (works for any user object, even anonymous)."""
     if not user.is_authenticated:
         return False
-    return user.is_superuser or user.groups.filter(name__in=FULL_ACCESS_GROUPS).exists()
+    return user.is_superuser or not group_names(user).isdisjoint(FULL_ACCESS_GROUPS)
 
 
 def is_system_group(group):
@@ -116,7 +134,7 @@ def ensure_site_admins_group():
 
 
 def in_group(user, name):
-    return bool(user.is_authenticated and user.groups.filter(name=name).exists())
+    return bool(user.is_authenticated and name in group_names(user))
 
 
 def is_tech_admin(user):
@@ -137,7 +155,7 @@ def sees_everything(user):
 
 def is_finance_manager(user):
     """In the finance managers group. Site admins see the money too, through is_site_admin."""
-    return bool(user.is_authenticated and user.groups.filter(name=FINANCE_GROUP).exists())
+    return in_group(user, FINANCE_GROUP)
 
 
 def can_see_finance(user):
