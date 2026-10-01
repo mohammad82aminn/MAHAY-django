@@ -6,6 +6,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
+from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import CreateView, FormView, UpdateView
 
 from django.contrib.auth.forms import SetPasswordForm
@@ -17,6 +19,10 @@ from .models import User, VerificationCode
 
 PENDING_SESSION_KEY = "signup_mobile"  # the number waiting for its code
 
+# If one of these pages fails, the error report (log, email) shows these fields as ******** —
+# Django's own login and password-change pages already do the same
+SECRET_FIELDS = sensitive_post_parameters("password", "password1", "password2", "new_password1", "new_password2", "code")
+
 
 def claim_guest_requests(user):
     """Attach requests this person sent before they had an account (imported late: services
@@ -26,6 +32,7 @@ def claim_guest_requests(user):
     claim(user)
 
 
+@method_decorator(SECRET_FIELDS, name="dispatch")
 class SignUpView(CreateView):
     form_class = SignUpForm
     template_name = "accounts/signup.html"
@@ -70,6 +77,7 @@ def send_code(request, mobile_number):
         messages.info(request, f"حالت آزمایشی — کد شما: {code}")
 
 
+@method_decorator(SECRET_FIELDS, name="dispatch")
 class VerifyView(FormView):
     """Step 2 of sign-up: the code that was sent by SMS."""
 
@@ -184,6 +192,7 @@ class PasswordResetView(FormView):
         return super().form_valid(form)
 
 
+@method_decorator(SECRET_FIELDS, name="dispatch")
 class PasswordResetVerifyView(FormView):
     """Step two: the code that was sent."""
 
@@ -235,6 +244,7 @@ def resend_reset_code(request):
     return redirect("accounts:password_reset_verify")
 
 
+@method_decorator(SECRET_FIELDS, name="dispatch")
 class PasswordResetNewView(FormView):
     """Step three: the new password, for a number whose code was just entered."""
 

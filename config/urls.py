@@ -39,6 +39,12 @@ urlpatterns = [
     path("p/", include("pages.urls")),  # last: /p/<slug>/ must not shadow the other sections
 ]
 
+# What a visitor sees on an error while DEBUG is off: our own page, no details (see config/errors.py)
+handler400 = "config.errors.bad_request"
+handler403 = "config.errors.permission_denied"
+handler404 = "config.errors.page_not_found"
+handler500 = "config.errors.server_error"
+
 if settings.DEBUG:
     # Development only: let Django serve uploaded files
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

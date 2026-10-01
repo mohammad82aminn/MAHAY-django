@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from products.models import Product
@@ -23,7 +24,13 @@ def add_to_cart(request, slug):
     product = get_object_or_404(Product, slug=slug)
     level, text = ADD_MESSAGES[services.add_to_cart(request, product)]
     messages.add_message(request, level, text)
-    return redirect(request.POST.get("next") or "commerce:cart")
+    # Only back to a page of this site: «next» comes from the form, so it can be made to point anywhere
+    next_url = request.POST.get("next")
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure(),
+    ):
+        return redirect(next_url)
+    return redirect("commerce:cart")
 
 
 @require_POST

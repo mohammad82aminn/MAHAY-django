@@ -1,0 +1,32 @@
+{% load static %}
+{% comment %}
+  Shared layout of the error pages (400, 403, 404, 500, and a form refused by the CSRF check).
+  Standalone on purpose, not base.html: these pages are rendered without the request, so the
+  header's menus, cart and badges have nothing to read, and a 500 may be the database failing.
+  Never show anything about the request or the error here; that goes to the log.
+  Links are plain addresses, not {% url %}: nothing here may fail while a failure is being shown.
+{% endcomment %}
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>{% block title %}{% endblock %} | MAHAY</title>
+  <script>try { document.documentElement.dataset.theme = localStorage.getItem("theme") || "light"; } catch (e) {}</script>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+  <main class="site-main auth error-page">
+    <div class="card auth-card">
+      <header class="auth-head">
+        <a class="brand error-brand" href="/"><span class="brand-mark">M</span><span>MAHAY</span></a>
+        <p class="error-code">{% block code %}{% endblock %}</p>
+        <h1>{% block heading %}{% endblock %}</h1>
+      </header>
+      <div class="message-text">{% block text %}{% endblock %}</div>
+      <a class="btn btn-primary btn-block" href="/">بازگشت به صفحه اصلی</a>
+    </div>
+  </main>
+</body>
+</html>

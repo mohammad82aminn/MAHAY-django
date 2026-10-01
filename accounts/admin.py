@@ -156,7 +156,8 @@ class UserAdmin(MobileColumn, BaseUserAdmin):
     def deactivate_view(self, request, pk):
         """What the delete page offers when a person can't be deleted: lock the account, keep the history."""
         user = get_object_or_404(User, pk=pk)
-        if request.method != "POST" or not self.has_change_permission(request, user):
+        # Locking yourself out is refused here too, not only hidden on the delete page
+        if request.method != "POST" or user.pk == request.user.pk or not self.has_change_permission(request, user):
             raise PermissionDenied
         User.objects.filter(pk=user.pk).update(is_active=False)
         self.message_user(request, f"حساب «{user}» غیرفعال شد؛ دیگر نمی‌تواند وارد شود و سابقه‌اش حفظ شد.",

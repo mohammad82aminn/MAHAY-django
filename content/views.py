@@ -48,9 +48,15 @@ def protected_file(request, kind, pk):
 # --- Learning pages -------------------------------------------------------------
 
 def get_learnable_product(request, slug):
-    """The product, if this user may open its content. Otherwise: back to the product page."""
+    """
+    The product, if this user may open its content. Otherwise: back to the product page, when there
+    is one to go back to; a product that isn't in the store gets 404, like its own page, so this
+    address can't be used to find out which unpublished products exist.
+    """
     product = get_object_or_404(Product, slug=slug)
     if not can_open(request.user, product):
+        if not Product.objects.visible().filter(pk=product.pk).exists():
+            raise Http404
         return product, redirect(product.get_absolute_url())
     return product, None
 

@@ -66,6 +66,12 @@ class DeletingAPersonTests(TestCase):
         self.customer.refresh_from_db()
         self.assertTrue(self.customer.is_active)
 
+    def test_nobody_can_lock_themselves_out(self):
+        response = self.client.post(reverse("admin:accounts_user_deactivate", args=[self.owner.pk]))
+        self.assertEqual(response.status_code, 403)
+        self.owner.refresh_from_db()
+        self.assertTrue(self.owner.is_active)
+
     def test_a_second_admin_cannot_remove_or_lock_the_owner_s_people(self):
         second = User.objects.create_user("09120000001", PASSWORD)
         second.groups.add(Group.objects.get(name=SITE_ADMINS_GROUP))

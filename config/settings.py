@@ -171,6 +171,68 @@ ZARINPAL_MERCHANT_ID = config("ZARINPAL_MERCHANT_ID", default="00000000-0000-000
 
 EMAIL_BACKEND = config("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="MAHAY <noreply@mahay.local>")
+SERVER_EMAIL = DEFAULT_FROM_EMAIL  # sender of the error reports below (Django's default, root@localhost, is often refused)
+
+# Who gets an email with the details whenever the site fails (a 500), e.g. dev@mahay.ir,ops@mahay.ir.
+# Empty: no emails; the details are still in the error log.
+ADMINS = [(address, address) for address in config("ERROR_EMAILS", default="", cast=Csv())]
+
+
+# --- Logging --------------------------------------------------------------
+# A visitor never sees what went wrong (config/errors.py); this is where it goes instead.
+# Development (DEBUG on): everything prints in the terminal, as before, and nothing is written.
+# Production: failures go to errors.log and to ADMINS; refused forms (CSRF), forged Host headers
+# and other suspicious requests go to security.log. Each file is capped at 5MB, and the last five
+# are kept, so a flood of junk requests can't fill the disk.
+
+LOG_DIR = Path(config("LOG_DIR", default=str(BASE_DIR / "logs")))
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _log_file(name, level):
+    return {
+        "class": "logging.handlers.RotatingFileHandler",
+        "filename": LOG_DIR / name,
+        "maxBytes": 5 * 1024 * 1024,
+        "backupCount": 5,
+        "encoding": "utf-8",
+        "delay": True,  # opened on the first line written, not on every start
+        "level": level,
+        "filters": ["require_debug_false"],
+        "formatter": "plain",
+    }
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {
+        "require_debug_false": {"()": "django.utils.log.RequireDebugFalse"},
+        "require_debug_true": {"()": "django.utils.log.RequireDebugTrue"},
+    },
+    "formatters": {
+        "plain": {"format": "{asctime} {levelname} {name}: {message}", "style": "{"},
+        "django.server": {"()": "django.utils.log.ServerFormatter", "format": "[{server_time}] {message}", "style": "{"},
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler", "level": "INFO", "filters": ["require_debug_true"]},
+        "django.server": {"class": "logging.StreamHandler", "level": "INFO", "formatter": "django.server"},
+        "errors_file": _log_file("errors.log", "ERROR"),
+        "security_file": _log_file("security.log", "WARNING"),
+        # Text only: include_html would mail the whole debug page, settings and all
+        "mail_admins": {"class": "django.utils.log.AdminEmailHandler", "level": "ERROR",
+                        "filters": ["require_debug_false"], "include_html": False},
+    },
+    "loggers": {
+        "django": {"handlers": ["console", "errors_file", "mail_admins"], "level": "INFO", "propagate": False},
+        "django.server": {"handlers": ["django.server"], "level": "INFO", "propagate": False},
+        # Bots trying other host names are constant noise: kept in the file, never emailed
+        "django.security": {"handlers": ["console", "security_file"], "level": "WARNING", "propagate": False},
+    },
+    # Our own apps (e.g. accounts.sms): warnings and up. INFO is left out, so a development SMS
+    # with its code in it can never reach a log file.
+    "root": {"handlers": ["console", "errors_file", "mail_admins"], "level": "WARNING"},
+}
 
 
 LOGIN_URL = "accounts:login"

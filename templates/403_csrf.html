@@ -1,0 +1,13 @@
+{% extends "errors/layout.html" %}
+{% comment %}
+  Django's own name for this page: shown when a form is refused by the CSRF check. For a real
+  person that is nearly always a page left open while they logged in or out in another tab.
+{% endcomment %}
+
+{% block title %}فرم ارسال نشد{% endblock %}
+{% block code %}۴۰۳{% endblock %}
+{% block heading %}فرم ارسال نشد{% endblock %}
+{% block text %}
+  <p>اطلاعاتی که فرستادید ثبت نشد، چون این صفحه دیگر معتبر نیست. معمولاً وقتی پیش می‌آید که در زبانه‌ی دیگری وارد حساب شده یا از آن خارج شده‌اید.</p>
+  <p>به صفحه‌ی قبل برگردید، آن را دوباره بارگذاری کنید و فرم را از نو بفرستید. اگر باز هم این پیام را دیدید، کوکی‌های مرورگر را برای این سایت فعال کنید.</p>
+{% endblock %}

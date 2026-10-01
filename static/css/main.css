@@ -394,6 +394,12 @@ h2, h3, h4 { line-height: 1.6; }
 .auth-foot:empty { display: none; }
 .message-text { margin: 0 0 1.5rem; text-align: center; color: var(--muted); }
 
+/* Error pages (404, 403, 500, ...): the auth card, with the brand and the code above the heading */
+.error-page { flex: 1; }
+.error-brand { justify-content: center; margin-bottom: 1rem; }
+.auth-head .error-code { margin: 0; font-size: 3rem; font-weight: 900; line-height: 1.2; color: var(--primary); }
+.error-page .message-text p { margin: 0 0 .5rem; }
+
 /* ---------- Forms ---------- */
 
 .field { margin-bottom: 1.1rem; }

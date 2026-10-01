@@ -51,6 +51,13 @@ class CartTests(CommerceTestCase):
         self.assertContains(response, "از قبل در سبد خرید")
         self.assertEqual(self.cart_products(), [self.paid])
 
+    def test_after_adding_it_only_goes_back_to_a_page_of_this_site(self):
+        url = reverse("commerce:add_to_cart", args=[self.paid.slug])
+        self.assertRedirects(self.client.post(url, {"next": "/products/"}), "/products/", fetch_redirect_response=False)
+        for elsewhere in ("https://evil.example/", "//evil.example/"):
+            with self.subTest(next=elsewhere):
+                self.assertRedirects(self.client.post(url, {"next": elsewhere}), reverse("commerce:cart"))
+
     def test_unavailable_product_is_refused(self):
         draft = self.make("پیش‌نویس", "draft")
         draft.is_published = False

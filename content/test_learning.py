@@ -58,6 +58,16 @@ class AccessTests(LearningTestCase):
         self.client.force_login(self.buyer)
         self.assertContains(self.client.get(self.learn_url()), "دوره FPGA")
 
+    def test_a_product_outside_the_store_looks_missing_to_a_stranger(self):
+        # A redirect to its page would tell them the address belongs to an unpublished product
+        Product.objects.filter(pk=self.product.pk).update(is_published=False)
+        self.client.force_login(self.stranger)
+        self.assertEqual(self.client.get(self.learn_url()).status_code, 404)
+        self.assertEqual(self.client.get(self.lesson_url(self.lesson1)).status_code, 404)
+
+        self.client.force_login(self.buyer)  # what they bought stays theirs
+        self.assertEqual(self.client.get(self.learn_url()).status_code, 200)
+
     def test_domain_manager_can_review_the_content(self):
         manager = User.objects.create_user("09123333333", PASSWORD)
         manager.groups.add(self.domain.managers_group)
