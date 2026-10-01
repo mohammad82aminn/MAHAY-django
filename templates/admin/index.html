@@ -1,0 +1,74 @@
+{% extends "admin/base_site.html" %}
+{% load i18n store %}
+{% comment %}
+The dashboard: the sections live in the sidebar, as on every other page, and this column holds the
+heading strip and recent actions. The strip adds no query: pending_total and inbox_unread already
+come from the context processors every panel page runs.
+{% endcomment %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block nav-breadcrumbs %}{% endblock %}
+
+{% block content_title %}
+<section class="dash-hero">
+  <div>
+    <h1>{{ title }}</h1>
+    <p class="dash-hero-note">
+      {% if pending_total %}
+        <span class="pending-badge">{{ pending_total|fa_num }}</span>
+        مورد منتظر رسیدگی شماست؛ هر بخش عدد خودش را کنار نامش دارد.
+      {% else %}
+        موردی منتظر رسیدگی شما نیست.
+      {% endif %}
+    </p>
+  </div>
+  <div class="dash-hero-actions">
+    {% if user.is_staff %}
+      <a href="{% url 'admin:inbox_message_changelist' %}" class="button">
+        کارپوشه{% if inbox_unread %} <span class="admin-unread-badge">{{ inbox_unread|fa_num }}</span>{% endif %}
+      </a>
+    {% endif %}
+    {% if site_url %}<a href="{{ site_url }}" class="button button-ghost">{% translate 'View site' %}</a>{% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  {% if available_apps %}
+    <p class="dash-start">برای دیدن فهرست هر بخش، آن را از ستون کنار باز کنید.</p>
+  {% else %}
+    <p>{% translate 'You don’t have permission to view or edit anything.' %}</p>
+  {% endif %}
+
+  <div class="module" id="recent-actions-module">
+    <h2>{% translate 'Recent actions' %}</h2>
+    <h3>{% translate 'My actions' %}</h3>
+    {% load log %}
+    {% get_admin_log 10 as admin_log for_user user %}
+    {% if not admin_log %}
+      <p>{% translate 'None available' %}</p>
+    {% else %}
+      <ul class="actionlist">
+      {% for entry in admin_log %}
+        <li class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">
+          <span class="visually-hidden">{% if entry.is_addition %}{% translate 'Added:' %}{% elif entry.is_change %}{% translate 'Changed:' %}{% elif entry.is_deletion %}{% translate 'Deleted:' %}{% endif %}</span>
+          {% if entry.is_deletion or not entry.get_admin_url %}
+            {{ entry.object_repr }}
+          {% else %}
+            <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+          {% endif %}
+          <br>
+          {% if entry.content_type %}
+            <span class="mini quiet">{% filter capfirst %}{{ entry.content_type.name }}{% endfilter %}</span>
+          {% else %}
+            <span class="mini quiet">{% translate 'Unknown content' %}</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

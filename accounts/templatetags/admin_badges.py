@@ -23,3 +23,11 @@ def pending_count(context, app_label, object_name):
     except LookupError:
         return 0
     return count_for(model, request)
+
+
+@register.simple_tag(takes_context=True)
+def app_pending_total(context, app):
+    """Everything waiting in one section of the sidebar: the sum of its parts' counts."""
+    return sum(
+        pending_count(context, app["app_label"], model["object_name"]) for model in app["models"]
+    )

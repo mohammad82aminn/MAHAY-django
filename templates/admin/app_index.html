@@ -1,0 +1,63 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_badges %}
+{% comment %}
+One section of the panel, opened from its header in the sidebar: a tile for each of its parts.
+The counts are the same per-request cached ones the sidebar already asked for, so no extra query.
+{% endcomment %}
+
+{% block bodyclass %}{{ block.super }} app-index{% endblock %}
+
+{% if not is_popup %}
+{% block nav-breadcrumbs %}
+  <nav aria-label="{% translate 'Breadcrumbs' %}">
+    <div class="breadcrumbs">
+      <a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+      &rsaquo;
+      {% for app in app_list %}{{ app.name }}{% endfor %}
+    </div>
+  </nav>
+{% endblock %}
+{% endif %}
+
+{% block content_title %}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+{% for app in app_list %}
+  <section class="app-head app-{{ app.app_label }}">
+    <span class="app-head-icon" aria-hidden="true"></span>
+    <h1>{{ app.name }}</h1>
+  </section>
+
+  <div class="model-tiles app-{{ app.app_label }}">
+    {% for model in app.models %}
+      {% pending_count app.app_label model.object_name as waiting %}
+      <article class="model-tile{% if waiting %} has-waiting{% endif %}">
+        {% if model.admin_url %}
+          <a class="model-tile-main" href="{{ model.admin_url }}">
+            <span class="model-tile-icon" aria-hidden="true"></span>
+            <span class="model-tile-name">{{ model.name }}</span>
+            {% if waiting %}<span class="model-tile-waiting"><span class="pending-badge">{{ waiting }}</span> مورد منتظر رسیدگی است</span>{% endif %}
+          </a>
+        {% else %}
+          <div class="model-tile-main">
+            <span class="model-tile-icon" aria-hidden="true"></span>
+            <span class="model-tile-name">{{ model.name }}</span>
+          </div>
+        {% endif %}
+        <div class="model-tile-actions">
+          {% if model.admin_url %}
+            <a href="{{ model.admin_url }}" class="button button-ghost">{% if model.view_only %}{% translate 'View' %}{% else %}{% translate 'Change' %}{% endif %}</a>
+          {% endif %}
+          {% if model.add_url %}
+            <a href="{{ model.add_url }}" class="button">+ {% translate 'Add' %}</a>
+          {% endif %}
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+{% empty %}
+  <p>{% translate 'You don’t have permission to view or edit anything.' %}</p>
+{% endfor %}
+</div>
+{% endblock %}

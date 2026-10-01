@@ -1,10 +1,15 @@
 {% extends "admin/base.html" %}
-{% load i18n user_roles %}
+{% load i18n static user_roles %}
 
 {% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
 
 {% block branding %}
-<div id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a></div>
+<div id="site-name">
+  <a href="{% url 'admin:index' %}" class="brand">
+    <span class="brand-mark" aria-hidden="true">M</span>
+    <span class="brand-text">{{ site_header|default:_('Django administration') }}</span>
+  </a>
+</div>
 {% if user.is_anonymous %}
   {% include "admin/color_theme_toggle.html" %}
 {% endif %}
@@ -12,38 +17,55 @@
 
 {% block nav-global %}{% endblock %}
 
+{% comment %}
+The stock header joins its links with " / " text; these two blocks are written out in full so the
+links can sit as separate buttons. Same links as Django's, plus کارپوشه.
+{% endcomment %}
 {% block welcome-msg %}
-  خوش آمدید،
-  <strong>{% firstof user.get_full_name user.get_short_name user.get_username %}</strong>
-  <span class="user-role-chip">{% user_role user %}</span>
+  <span class="user-card">
+    <span class="user-avatar" aria-hidden="true">{% firstof user.first_name|first user.get_username|first %}</span>
+    <span class="user-meta">
+      <strong>{% firstof user.get_full_name user.get_short_name user.get_username %}</strong>
+      <span class="user-role-chip">{% user_role user %}</span>
+    </span>
+  </span>
 {% endblock %}
 
 {% block userlinks %}
-  {% if user.is_staff %}
-    <a href="{% url 'admin:inbox_message_changelist' %}">
-      کارپوشه{% if inbox_unread %} <span class="admin-unread-badge">{{ inbox_unread }}</span>{% endif %}
-    </a> /
-  {% endif %}
-  {{ block.super }}
+  <span class="user-links">
+    {% if user.is_staff %}
+      <a href="{% url 'admin:inbox_message_changelist' %}" class="tool-link">
+        کارپوشه{% if inbox_unread %} <span class="admin-unread-badge">{{ inbox_unread }}</span>{% endif %}
+      </a>
+    {% endif %}
+    {% if site_url %}
+      <a href="{{ site_url }}" class="tool-link">{% translate 'View site' %}</a>
+    {% endif %}
+    {% if user.has_usable_password %}
+      <a href="{% url 'admin:password_change' %}" class="tool-link">{% translate 'Change password' %}</a>
+    {% endif %}
+    <form id="logout-form" method="post" action="{% url 'admin:logout' %}">
+      {% csrf_token %}
+      <button type="submit" class="tool-link">{% translate 'Log out' %}</button>
+    </form>
+    {% include "admin/color_theme_toggle.html" %}
+  </span>
 {% endblock %}
 
-{% block extrastyle %}{{ block.super }}
-<style>
-  .admin-unread-badge {
-    display: inline-block; min-width: 1.15rem; padding: 0 .3rem;
-    background: #d9534f; color: #fff; border-radius: 999px;
-    font-size: .72rem; font-weight: 700; line-height: 1.15rem; text-align: center;
-  }
-  .pending-badge {
-    display: inline-block; min-width: 1.15rem; padding: 0 .35rem; margin-inline-start: .4rem;
-    background: #d9534f; color: #fff !important; border-radius: 999px;
-    font-size: .72rem; font-weight: 700; line-height: 1.15rem; text-align: center;
-    text-decoration: none;
-  }
-  .user-role-chip {
-    display: inline-block; padding: .1rem .55rem; margin-inline-start: .4rem;
-    border: 1px solid var(--hairline-color); border-radius: 999px;
-    font-size: .75rem; opacity: .9;
-  }
-</style>
+{% comment %}
+Loaded here rather than in extrastyle: this block comes after Django's rtl.css and responsive
+stylesheets, so the panel's own look wins without !important.
+{% endcomment %}
+{% block responsive %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="preload" href="{% static 'fonts/Vazirmatn.woff2' %}" as="font" type="font/woff2" crossorigin>
+{% if not is_popup and is_nav_sidebar_enabled %}<script src="{% static 'js/admin_nav.js' %}" defer></script>
+{% comment %}
+Fetch a list a moment before it is clicked: when the pointer rests on a sidebar item or a section
+tile. Only these links, because they are all lists; an object's own page can change something
+when it is merely opened (an office report is marked read), and must never be fetched unasked.
+{% endcomment %}
+<script type="speculationrules">
+{"prefetch": [{"where": {"selector_matches": "#nav-sidebar a.nav-model-link, a.model-tile-main, .model-tile-actions a.button-ghost"}, "eagerness": "moderate"}]}
+</script>{% endif %}
 {% endblock %}

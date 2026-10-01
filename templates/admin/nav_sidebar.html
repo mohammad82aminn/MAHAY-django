@@ -1,0 +1,52 @@
+{% load i18n admin_badges %}
+{% comment %}
+The panel's sidebar: each section folds open to show its parts, with the red count of waiting work
+beside a section and beside each of its parts. Opening one section closes the others (same name),
+and js/admin_nav.js also opens that section's page in the middle column (data-url), and runs the
+quick filter above.
+{% endcomment %}
+<button class="sticky toggle-nav-sidebar" id="toggle-nav-sidebar" aria-label="{% translate 'Toggle navigation' %}"></button>
+<nav class="sticky" id="nav-sidebar" aria-label="{% translate 'Sidebar' %}">
+  <input type="search" id="nav-filter"
+         placeholder="{% translate 'Start typing to filter…' %}"
+         aria-label="{% translate 'Filter navigation items' %}">
+  {% for app in available_apps %}
+    {% with here=app.app_url %}
+    {% app_pending_total app as app_waiting %}
+    <details class="nav-app app-{{ app.app_label }}{% if here in request.path|urlencode %} current-app{% endif %}"
+             name="nav-apps" data-url="{{ here }}"{% if here in request.path|urlencode %} open{% endif %}>
+      <summary>
+        <span class="nav-app-icon" aria-hidden="true"></span>
+        <span class="nav-app-name">{{ app.name }}</span>
+        {% if app_waiting %}<span class="pending-badge" title="{{ app_waiting }} مورد منتظر رسیدگی است">{{ app_waiting }}</span>{% endif %}
+        <span class="nav-app-chevron" aria-hidden="true"></span>
+      </summary>
+      <ul>
+        {% for model in app.models %}
+          {% pending_count app.app_label model.object_name as waiting %}
+          <li class="nav-model{% if model.admin_url and model.admin_url in request.path|urlencode %} current-model{% endif %}">
+            {% if model.admin_url %}
+              <a href="{{ model.admin_url }}" class="nav-model-link"{% if model.admin_url in request.path|urlencode %} aria-current="page"{% endif %}>
+                <span>{{ model.name }}</span>
+                {% if waiting %}<span class="pending-badge" title="{{ waiting }} مورد منتظر رسیدگی است">{{ waiting }}</span>{% endif %}
+              </a>
+            {% else %}
+              <span class="nav-model-link">{{ model.name }}</span>
+            {% endif %}
+            {% if model.add_url %}
+              <a href="{{ model.add_url }}" class="nav-add" title="{% translate 'Add' %}"><span class="visually-hidden">{% translate 'Add' %} {{ model.name }}</span></a>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </details>
+    {% endwith %}
+  {% endfor %}
+</nav>
+{% comment %}
+Right here, before the first paint. Django's nav_sidebar.js (deferred) opens the sidebar only once
+the page has drawn, so every page used to appear full width and then jump sideways; this sets the
+same state from the same saved choice first. The sidebar's scroll position is put back too, so it
+doesn't open at the top and then jump.
+{% endcomment %}
+<script>try{var m=document.getElementById('main');if(m)m.classList.toggle('shifted',localStorage.getItem('django.admin.navSidebarIsOpen')!=='false');var n=document.getElementById('nav-sidebar'),y=sessionStorage.getItem('mahay.admin.navScroll');if(n&&y!==null)n.scrollTop=+y;}catch(e){}</script>
