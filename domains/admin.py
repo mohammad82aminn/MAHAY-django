@@ -5,6 +5,7 @@ from accounts.roles import sees_everything
 
 from .access import member_domains
 from .models import Domain
+from .widgets import MoneyInput
 
 
 @admin.register(Domain)
@@ -15,6 +16,12 @@ class DomainAdmin(admin.ModelAdmin):
     readonly_fields = ("managers_group", "experts_group", "managers", "experts", "created_at")
     fields = ("name", "slug", "description", "is_active", "order", "consulting_rate",
               "managers_group", "managers", "experts_group", "experts", "created_at")
+
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        # in the form and in the list's editable column alike
+        if db_field.name == "consulting_rate":
+            kwargs["widget"] = MoneyInput()
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
 
     def get_queryset(self, request):
         # Domain managers and experts only see their own domains; site admins see all

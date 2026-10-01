@@ -325,3 +325,42 @@ class AdminFormCompletenessTests(TestCase):
                         missing.append(f"{model._meta.label}.{field.name}")
 
         self.assertEqual(missing, [], f"این فیلدها در پنل دیده نمی‌شوند: {missing}")
+
+
+class MoneyInputTests(TestCase):
+    """The consulting rate is typed with digit grouping; only the plain number is stored."""
+
+    def form(self, rate):
+        from django.contrib import admin
+
+        from .widgets import MoneyInput
+
+        model_admin = admin.site._registry[Domain]
+        request = type("Request", (), {"user": None})()
+        form_class = model_admin.get_form(request, fields=["consulting_rate"])
+        self.assertIsInstance(form_class.base_fields["consulting_rate"].widget, MoneyInput)
+        return form_class(data={"consulting_rate": rate})
+
+    def test_grouped_and_persian_digits_are_read_as_a_plain_number(self):
+        for typed in ("150,000", "۱۵۰٬۰۰۰", " 150 000 ", "150000"):
+            with self.subTest(typed=typed):
+                form = self.form(typed)
+                self.assertTrue(form.is_valid(), form.errors)
+                self.assertEqual(form.cleaned_data["consulting_rate"], 150000)
+
+    def test_anything_else_is_still_rejected(self):
+        for typed in ("150.5", "abc", "-1000"):
+            with self.subTest(typed=typed):
+                self.assertFalse(self.form(typed).is_valid())
+
+    def test_empty_means_the_site_default(self):
+        form = self.form("")
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertIsNone(form.cleaned_data["consulting_rate"])
+
+    def test_the_stored_number_is_shown_grouped(self):
+        from .widgets import MoneyInput
+
+        html = MoneyInput().render("consulting_rate", 1250000, {"id": "id_consulting_rate"})
+        self.assertIn('value="1,250,000"', html)
+        self.assertIn('data-for="id_consulting_rate"', html)
