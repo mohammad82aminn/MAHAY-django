@@ -534,6 +534,8 @@ h2, h3, h4 { line-height: 1.6; }
 .cart-summary h2 { margin: 0 0 .5rem; font-size: 1.1rem; }
 .cart-summary .btn { margin-top: 1rem; }
 .cart-note { margin: .75rem 0 0; font-size: .85rem; text-align: center; }
+.terms-check { display: flex; align-items: flex-start; gap: .5rem; margin-top: 1rem; font-size: .88rem; line-height: 1.8; cursor: pointer; }
+.terms-check input { flex: none; width: 1.05rem; height: 1.05rem; margin: .3rem 0 0; accent-color: var(--primary); cursor: pointer; }
 
 /* Order result page */
 .order-card { max-width: 480px; text-align: center; }

@@ -41,6 +41,16 @@
         {# Login is checked by the view: an anonymous visitor is sent to the login page and comes back here #}
         <form method="post" action="{% url 'commerce:checkout' %}">
           {% csrf_token %}
+          {% if terms_pages %}
+            {# Also checked by the view: «required» is only the browser's convenience #}
+            <label class="terms-check">
+              <input type="checkbox" name="accept_terms" required>
+              <span>
+                {% for page in terms_pages %}«<a href="{{ page.get_absolute_url }}" target="_blank" rel="noopener">{{ page.title }}</a>»{% if not forloop.last %} و {% endif %}{% endfor %}
+                را خوانده‌ام و می‌پذیرم.
+              </span>
+            </label>
+          {% endif %}
           <button type="submit" class="btn btn-primary btn-block">
             {% if total %}پرداخت و ثبت سفارش{% else %}ثبت سفارش رایگان{% endif %}
           </button>

@@ -6,6 +6,7 @@ from django.urls import reverse
 from accounts.models import User
 from content.access import can_open
 from domains.models import Domain
+from pages.models import Page
 from products.models import Product
 
 from . import gateway
@@ -31,8 +32,9 @@ class CommerceTestCase(TestCase):
     def add(self, product, follow=False):
         return self.client.post(reverse("commerce:add_to_cart", args=[product.slug]), follow=follow)
 
-    def checkout(self, follow=False):
-        return self.client.post(reverse("commerce:checkout"), follow=follow)
+    def checkout(self, follow=False, accept_terms=True):
+        data = {"accept_terms": "on"} if accept_terms else {}
+        return self.client.post(reverse("commerce:checkout"), data, follow=follow)
 
     def cart_products(self):
         response = self.client.get(reverse("commerce:cart"))
@@ -104,6 +106,41 @@ class CheckoutTests(CommerceTestCase):
 
         self.client.login(username="09121111111", password=PASSWORD)
         self.assertEqual(self.cart_products(), [self.paid])  # nothing lost
+
+    def test_logging_in_from_checkout_comes_back_to_the_cart(self):
+        # Not to the checkout address: the login page returns with a GET, which it would refuse
+        self.add(self.paid)
+        login_url = self.checkout()["Location"]
+        self.assertEqual(login_url, f"{reverse('accounts:login')}?next={reverse('commerce:cart')}")
+
+        login_page = self.client.get(login_url)
+        response = self.client.post(login_url, {
+            "username": "09121111111", "password": PASSWORD, "next": login_page.context["next"],
+        })
+        self.assertRedirects(response, reverse("commerce:cart"))
+
+    def test_paying_needs_the_terms_accepted(self):
+        self.client.force_login(self.user)
+        self.add(self.paid)
+        terms = Page.objects.get(slug="terms")
+        self.assertContains(self.client.get(reverse("commerce:cart")), terms.get_absolute_url())
+
+        response = self.checkout(follow=True, accept_terms=False)
+        self.assertContains(response, "تیک پذیرش")
+        self.assertFalse(Order.objects.exists())
+        self.assertEqual(self.cart_products(), [self.paid])
+
+    def test_no_box_while_there_are_no_terms_to_read(self):
+        Page.objects.filter(slug__in=["terms", "refund"]).update(is_published=False)
+        self.client.force_login(self.user)
+        self.add(self.free)
+        self.assertNotContains(self.client.get(reverse("commerce:cart")), 'name="accept_terms"')
+        self.checkout(accept_terms=False)
+        self.assertTrue(Order.objects.exists())
+
+    def test_a_visitor_sees_no_box_until_logged_in(self):
+        self.add(self.paid)
+        self.assertNotContains(self.client.get(reverse("commerce:cart")), 'name="accept_terms"')
 
     def test_free_order_needs_no_gateway(self):
         self.client.force_login(self.user)

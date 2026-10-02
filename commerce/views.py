@@ -1,11 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import redirect_to_login
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
+from pages.models import Page
 from products.models import Product
 from content import progress
 from . import gateway, services
@@ -17,6 +19,17 @@ ADD_MESSAGES = {
     "already_owned": (messages.INFO, "شما این محصول را دارید؛ از «خریدهای من» ببینید."),
     "unavailable": (messages.ERROR, "این محصول در حال حاضر قابل خرید نیست."),
 }
+
+# The pages a buyer agrees to before paying (edited in the admin, under «صفحه‌ها»)
+TERMS_PAGES = ("terms", "refund")
+
+
+def purchase_terms():
+    """
+    The published pages among TERMS_PAGES. Agreeing is asked for only while there is something to
+    read: a box pointing at a page that has been taken down would be a promise about nothing.
+    """
+    return list(Page.objects.filter(slug__in=TERMS_PAGES, is_published=True))
 
 
 @require_POST
@@ -49,13 +62,23 @@ def cart_view(request):
         "products": products,
         "total": sum(product.final_price for product in products),
         "owned_ids": services.owned_product_ids(request.user),
+        # A visitor sees no box: they log in first, and come back to this page to tick it
+        "terms_pages": purchase_terms() if products and request.user.is_authenticated else [],
     })
 
 
-@login_required
 @require_POST
 def checkout(request):
     """Login is only required here: browsing and filling the cart work without an account."""
+    if not request.user.is_authenticated:
+        # Back to the cart after logging in, not to this address: the login page returns with a
+        # GET, which this POST-only view would refuse with a blank error page
+        return redirect_to_login(reverse("commerce:cart"))
+
+    if request.POST.get("accept_terms") != "on" and purchase_terms():
+        messages.error(request, "برای ثبت سفارش، قوانین را بخوانید و تیک پذیرش آن را بزنید.")
+        return redirect("commerce:cart")
+
     cart = services.get_cart(request)
     order = services.create_order(request.user, cart) if cart else None
     if order is None:
