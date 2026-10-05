@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load store %}
+{% load i18n store %}
 {% comment %}
   A lesson anyone may watch before buying (content.views.sample_lesson). No progress is saved and
   no attachment is listed: those are the buyers'.
@@ -10,9 +10,9 @@
 {% block content %}
 <section class="container section">
   <nav class="breadcrumb">
-    <a href="{{ product.get_absolute_url }}">{{ product.title }}</a> › {{ lesson.section.title }}
+    <a href="{{ product.get_absolute_url }}" dir="auto">{{ product.title }}</a> › <span dir="auto">{{ lesson.section.title }}</span>
   </nav>
-  <h1 class="lesson-heading">{{ lesson.title }} <span class="badge badge-sample">رایگان ببینید</span></h1>
+  <h1 class="lesson-heading" dir="auto">{{ lesson.title }} <span class="badge badge-sample">{% translate "رایگان ببینید" %}</span></h1>
 
   {% if lesson.video_file %}
     <video class="player" controls preload="metadata" src="{% url 'content:protected_file' 'video' lesson.pk %}"></video>
@@ -28,32 +28,32 @@
 
   {% if lesson.body %}
     <div class="card block">
-      <h2>توضیحات این درس</h2>
-      <div class="prose">{{ lesson.body|linebreaks }}</div>
+      <h2>{% translate "توضیحات این درس" %}</h2>
+      <div class="prose" dir="auto">{{ lesson.body|linebreaks }}</div>
     </div>
   {% endif %}
 
   <div class="card block sample-buy">
     <div>
-      <h2>این درس نمونه‌ای از {{ product.get_product_type_display }} است</h2>
-      <p class="muted">برای دیدن همه‌ی درس‌ها و دریافت فایل‌ها، {{ product.get_product_type_display }} را بخرید.</p>
+      <h2>{% blocktranslate with type=product.get_product_type_display|lower %}این درس نمونه‌ای از {{ type }} است{% endblocktranslate %}</h2>
+      <p class="muted">{% blocktranslate with type=product.get_product_type_display|lower %}برای دیدن همه‌ی درس‌ها و دریافت فایل‌ها، {{ type }} را بخرید.{% endblocktranslate %}</p>
     </div>
     <div class="sample-buy-action">
       <strong>{{ product.final_price|toman }}</strong>
       <form method="post" action="{% url 'commerce:add_to_cart' product.slug %}">
         {% csrf_token %}
-        <button type="submit" class="btn btn-primary">افزودن به سبد خرید</button>
+        <button type="submit" class="btn btn-primary">{% translate "افزودن به سبد خرید" %}</button>
       </form>
     </div>
   </div>
 
   <nav class="lesson-nav">
     {% if previous_sample %}
-      <a class="btn btn-ghost" href="{% url 'content:sample' product.slug previous_sample.pk %}">درس رایگان قبلی ›</a>
+      <a class="btn btn-ghost" href="{% url 'content:sample' product.slug previous_sample.pk %}">{% translate "درس رایگان قبلی ›" %}</a>
     {% else %}<span></span>{% endif %}
-    <a href="{{ product.get_absolute_url }}">همه‌ی سرفصل‌ها</a>
+    <a href="{{ product.get_absolute_url }}">{% translate "همه‌ی سرفصل‌ها" %}</a>
     {% if next_sample %}
-      <a class="btn btn-primary" href="{% url 'content:sample' product.slug next_sample.pk %}">‹ درس رایگان بعدی</a>
+      <a class="btn btn-primary" href="{% url 'content:sample' product.slug next_sample.pk %}">{% translate "‹ درس رایگان بعدی" %}</a>
     {% else %}<span></span>{% endif %}
   </nav>
 </section>

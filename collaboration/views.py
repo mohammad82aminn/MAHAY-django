@@ -8,6 +8,7 @@ applicant asked to have; the site only records where things stand.
 import os
 
 from django.contrib import messages
+from django.utils.translation import gettext as _
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -31,7 +32,7 @@ def apply(request):
 
     existing = services.open_request(request.user)
     if existing is not None and not existing.is_editable:
-        messages.info(request, "درخواست شما در حال بررسی است و تا پایان آن قابل ویرایش نیست.")
+        messages.info(request, _("درخواست شما در حال بررسی است و تا پایان آن قابل ویرایش نیست."))
         return redirect("services:my_requests")
 
     if request.method == "POST":
@@ -43,7 +44,7 @@ def apply(request):
             form.save_m2m()
             for uploaded in form.cleaned_data.get("files") or ():
                 application.files.create(file=uploaded)
-            messages.success(request, "درخواست همکاری شما ثبت شد. نتیجه را در «درخواست‌های من» می‌بینید.")
+            messages.success(request, _("درخواست همکاری شما ثبت شد. نتیجه را در «درخواست‌های من» می‌بینید."))
             return redirect("services:my_requests")
     else:
         form = CollaborationForm(instance=existing)

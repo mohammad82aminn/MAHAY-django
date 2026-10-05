@@ -1,4 +1,4 @@
-{% load store %}
+{% load i18n store %}
 <a class="product-card" href="{{ product.get_absolute_url }}">
   <div class="product-card-cover">
     {% if product.cover %}
@@ -6,26 +6,26 @@
     {% endif %}
     <span class="badge badge-type">{{ product.get_product_type_display }}</span>
     {% if owned %}
-      <span class="badge badge-owned">خریداری‌شده</span>
+      <span class="badge badge-owned">{% translate "خریداری‌شده" %}</span>
     {% elif product.discount_percent %}
-      <span class="badge badge-discount">{{ product.discount_percent|fa_num }}٪ تخفیف</span>
+      <span class="badge badge-discount">{% blocktranslate with percent=product.discount_percent|num %}{{ percent }}٪ تخفیف{% endblocktranslate %}</span>
     {% endif %}
   </div>
   <div class="product-card-body">
-    <span class="product-card-domain">{{ product.primary_domain }}</span>
-    <h3>{{ product.title }}</h3>
-    {% if product.summary %}<p class="muted">{{ product.summary }}</p>{% endif %}
+    <span class="product-card-domain" dir="auto">{{ product.primary_domain }}</span>
+    <h3 dir="auto">{{ product.title }}</h3>
+    {% if product.summary %}<p class="muted" dir="auto">{{ product.summary }}</p>{% endif %}
     {% with names=product.instructor_names %}
     {% if names or product.total_seconds %}
       <div class="product-card-meta">
         {% if names %}
-          <span title="مدرس">
+          <span title="{% translate 'مدرس' %}">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
             {{ names }}
           </span>
         {% endif %}
         {% if product.total_seconds %}
-          <span title="مدت کل">
+          <span title="{% translate 'مدت کل' %}">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
             {{ product.total_seconds|duration }}
           </span>
@@ -35,7 +35,7 @@
     {% endwith %}
     <div class="price">
       {% if owned %}
-        <strong class="price-free">مشاهده محتوا</strong>
+        <strong class="price-free">{% translate "مشاهده محتوا" %}</strong>
       {% else %}
         {% if product.sale_price is not None %}<del>{{ product.price|toman }}</del>{% endif %}
         <strong class="{% if product.is_free %}price-free{% endif %}">{{ product.final_price|toman }}</strong>

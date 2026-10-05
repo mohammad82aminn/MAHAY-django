@@ -1,12 +1,12 @@
-{% load store %}
+{% load i18n store %}
 {% if is_paginated %}
-  <nav class="pagination" aria-label="صفحه‌بندی">
+  <nav class="pagination" aria-label="{% translate 'صفحه‌بندی' %}">
     {% if page_obj.has_previous %}
-      <a class="btn btn-ghost btn-sm" href="?{{ filters_query }}{% if filters_query %}&{% endif %}page={{ page_obj.previous_page_number }}">قبلی</a>
+      <a class="btn btn-ghost btn-sm" href="?{{ filters_query }}{% if filters_query %}&{% endif %}page={{ page_obj.previous_page_number }}">{% translate "قبلی" %}</a>
     {% endif %}
-    <span class="muted">صفحه {{ page_obj.number|fa_num }} از {{ page_obj.paginator.num_pages|fa_num }}</span>
+    <span class="muted">{% blocktranslate with number=page_obj.number|num total=page_obj.paginator.num_pages|num %}صفحه {{ number }} از {{ total }}{% endblocktranslate %}</span>
     {% if page_obj.has_next %}
-      <a class="btn btn-ghost btn-sm" href="?{{ filters_query }}{% if filters_query %}&{% endif %}page={{ page_obj.next_page_number }}">بعدی</a>
+      <a class="btn btn-ghost btn-sm" href="?{{ filters_query }}{% if filters_query %}&{% endif %}page={{ page_obj.next_page_number }}">{% translate "بعدی" %}</a>
     {% endif %}
   </nav>
 {% endif %}

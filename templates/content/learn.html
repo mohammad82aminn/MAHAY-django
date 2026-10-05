@@ -1,40 +1,40 @@
 {% extends "base.html" %}
-{% load store learning %}
+{% load i18n store learning %}
 
 {% block title %}{{ product.title }}{% endblock %}
 
 {% block content %}
 <section class="container section">
   <nav class="breadcrumb">
-    <a href="{% url 'commerce:library' %}">خریدهای من</a> › <a href="{{ product.get_absolute_url }}">صفحه‌ی محصول</a>
+    <a href="{% url 'commerce:library' %}">{% translate "خریدهای من" %}</a> › <a href="{{ product.get_absolute_url }}">{% translate "صفحه‌ی محصول" %}</a>
   </nav>
 
   <div class="learn-head card">
     <div>
-      <h1>{{ product.title }}</h1>
+      <h1 dir="auto">{{ product.title }}</h1>
       <p class="muted">{{ product.get_product_type_display }} · {{ product.primary_domain }}</p>
     </div>
     <div class="learn-progress">
-      <div class="progress-ring" style="--percent: {{ percent }}"><span>{{ percent|fa_num }}٪</span></div>
-      <span class="muted">{{ completed|fa_num }} از {{ total|fa_num }} درس</span>
+      <div class="progress-ring" style="--percent: {{ percent }}"><span>{% blocktranslate with percent=percent|num %}{{ percent }}٪{% endblocktranslate %}</span></div>
+      <span class="muted">{% blocktranslate with done=completed|num total=total|num %}{{ done }} از {{ total }} درس{% endblocktranslate %}</span>
     </div>
     {% if next_lesson %}
       <a class="btn btn-primary" href="{% url 'content:lesson' product.slug next_lesson.pk %}">
-        {% if completed %}ادامه‌ی یادگیری{% else %}شروع یادگیری{% endif %}
+        {% if completed %}{% translate "ادامه‌ی یادگیری" %}{% else %}{% translate "شروع یادگیری" %}{% endif %}
       </a>
     {% endif %}
   </div>
 
   {% if product.thesis %}
     <div class="card block">
-      <h2>پایان‌نامه</h2>
-      <a class="btn btn-ghost" href="{% url 'content:protected_file' 'thesis' product.pk %}">📄 دانلود پایان‌نامه</a>
+      <h2>{% translate "پایان‌نامه" %}</h2>
+      <a class="btn btn-ghost" href="{% url 'content:protected_file' 'thesis' product.pk %}">📄 {% translate "دانلود پایان‌نامه" %}</a>
     </div>
   {% endif %}
 
   {% if companion_files %}
     <div class="card block">
-      <h2>فایل‌های همراه</h2>
+      <h2>{% translate "فایل‌های همراه" %}</h2>
       <ul class="file-list">
         {% for companion in companion_files %}
           <li><a href="{% url 'content:protected_file' 'product_file' companion.pk %}">⬇ {{ companion.title }}</a></li>
@@ -45,13 +45,13 @@
 
   {% if sections %}
     <div class="card block">
-      <h2>سرفصل‌ها</h2>
+      <h2>{% translate "سرفصل‌ها" %}</h2>
       <div class="outline">
         {% for section in sections %}
           <details {% if forloop.first %}open{% endif %}>
             <summary>
-              <span>{{ section.title }}</span>
-              <span class="muted">{{ section.visible_lessons|length|fa_num }} درس</span>
+              <span dir="auto">{{ section.title }}</span>
+              {% with count=section.visible_lessons|length %}<span class="muted">{% blocktranslate count count=count with number=count|num %}{{ number }} درس{% plural %}{{ number }} درس{% endblocktranslate %}</span>{% endwith %}
             </summary>
             <ul class="lesson-list">
               {% for lesson in section.visible_lessons %}
@@ -61,9 +61,9 @@
                       <span class="lesson-mark {% if row.is_completed %}is-done{% endif %}">
                         {% if row.is_completed %}✓{% else %}▶{% endif %}
                       </span>
-                      <span class="lesson-title">{{ lesson.title }}</span>
+                      <span class="lesson-title" dir="auto">{{ lesson.title }}</span>
                       {% if row.percent and not row.is_completed %}
-                        <span class="lesson-percent">{{ row.percent|fa_num }}٪ دیده‌شده</span>
+                        <span class="lesson-percent">{% blocktranslate with percent=row.percent|num %}{{ percent }}٪ دیده‌شده{% endblocktranslate %}</span>
                       {% endif %}
                       {% if lesson.duration_seconds %}
                         <span class="muted">{{ lesson.duration_seconds|duration }}</span>
@@ -81,7 +81,7 @@
       </div>
     </div>
   {% else %}
-    <p class="empty">محتوای این محصول به‌زودی اضافه می‌شود.</p>
+    <p class="empty">{% translate "محتوای این محصول به‌زودی اضافه می‌شود." %}</p>
   {% endif %}
 </section>
 {% endblock %}

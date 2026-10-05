@@ -1,5 +1,10 @@
 // MAHAY — small UI helpers (no libraries needed)
 
+// The words this script writes on the page come from the page itself (data-text-* on <body>, in
+// the page's language). A page without them (the admin panel) is Persian.
+const uiText = (name, persian) => document.body?.dataset[`text${name}`] || persian;
+const isRtl = () => document.documentElement.dir !== "ltr";
+
 document.addEventListener("DOMContentLoaded", () => {
   // 1) Show / hide password button for every password field
   document.querySelectorAll('input[type="password"]').forEach((input) => {
@@ -11,11 +16,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const toggle = document.createElement("button");
     toggle.type = "button";
     toggle.className = "password-toggle";
-    toggle.textContent = "نمایش";
+    toggle.textContent = uiText("Show", "نمایش");
     toggle.addEventListener("click", () => {
       const isHidden = input.type === "password";
       input.type = isHidden ? "text" : "password";
-      toggle.textContent = isHidden ? "پنهان" : "نمایش";
+      toggle.textContent = isHidden ? uiText("Hide", "پنهان") : uiText("Show", "نمایش");
     });
     wrap.appendChild(toggle);
   });
@@ -60,12 +65,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const box = document.createElement("div");
   box.className = "lightbox";
   box.hidden = true;
+  // The arrows point the way the page reads: «previous» is at the start of the line (right in Persian)
   box.innerHTML = `
-    <button type="button" class="lightbox-close" aria-label="بستن">&times;</button>
-    <button type="button" class="lightbox-prev" aria-label="قبلی">&rsaquo;</button>
+    <button type="button" class="lightbox-close">&times;</button>
+    <button type="button" class="lightbox-prev">${isRtl() ? "&rsaquo;" : "&lsaquo;"}</button>
     <img alt="">
     <p></p>
-    <button type="button" class="lightbox-next" aria-label="بعدی">&lsaquo;</button>`;
+    <button type="button" class="lightbox-next">${isRtl() ? "&lsaquo;" : "&rsaquo;"}</button>`;
+  box.querySelector(".lightbox-close").setAttribute("aria-label", uiText("Close", "بستن"));
+  box.querySelector(".lightbox-prev").setAttribute("aria-label", uiText("Previous", "قبلی"));
+  box.querySelector(".lightbox-next").setAttribute("aria-label", uiText("Next", "بعدی"));
   document.body.appendChild(box);
   const image = box.querySelector("img");
   const caption = box.querySelector("p");
@@ -86,8 +95,11 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("keydown", (event) => {
     if (box.hidden) return;
     if (event.key === "Escape") close();
-    if (event.key === "ArrowRight") show(index - 1);  // RTL: right = previous
-    if (event.key === "ArrowLeft") show(index + 1);
+    // The arrow key toward the start of the line goes back: right in Persian, left in English
+    const back = isRtl() ? "ArrowRight" : "ArrowLeft";
+    const forward = isRtl() ? "ArrowLeft" : "ArrowRight";
+    if (event.key === back) show(index - 1);
+    if (event.key === forward) show(index + 1);
   });
 });
 
@@ -118,7 +130,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
       button.disabled = true;
-      button.textContent = `${label} (${left.toLocaleString("fa-IR")} ثانیه)`;
+      const seconds = left.toLocaleString(document.documentElement.lang === "en" ? "en-US" : "fa-IR");
+      button.textContent = `${label} (${seconds} ${uiText("Seconds", "ثانیه")})`;
       left -= 1;
       setTimeout(tick, 1000);
     };

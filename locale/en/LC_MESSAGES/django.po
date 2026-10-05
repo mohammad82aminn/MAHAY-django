@@ -1,0 +1,3467 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-05 16:39+0330\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: .\accounts\admin.py:31 .\accounts\forms.py:56 .\accounts\models.py:20 .\accounts\models.py:44 .\accounts\models.py:58 .\services\models.py:91
+msgid "شماره موبایل"
+msgstr "Mobile number"
+
+#: .\accounts\admin.py:50
+msgid "اطلاعات شخصی"
+msgstr ""
+
+#: .\accounts\admin.py:52
+msgid "نقش‌ها و دسترسی"
+msgstr ""
+
+#: .\accounts\admin.py:53
+msgid "تاریخ‌ها"
+msgstr ""
+
+#: .\accounts\admin.py:174 .\office\admin.py:63
+msgid "نقش‌ها"
+msgstr ""
+
+#: .\accounts\admin.py:249
+msgid "اعمال دسترسی‌های پیش‌فرض گروه‌های حوزه"
+msgstr ""
+
+#: .\accounts\admin.py:314 .\approvals\models.py:33 .\approvals\models.py:94 .\support\models.py:32 .\templates\products\detail.html:129 .\templates\products\list.html:16
+msgid "نوع"
+msgstr "Type"
+
+#: .\accounts\admin.py:326
+msgid "تعداد اعضا"
+msgstr ""
+
+#: .\accounts\admin.py:330
+msgid "دسترسی‌ها"
+msgstr ""
+
+#: .\accounts\forms.py:38 .\templates\collaboration\apply.html:37
+msgid "اختیاری"
+msgstr "Optional"
+
+#: .\accounts\forms.py:67 .\accounts\models.py:29 .\templates\accounts\password_reset_verify.html:5
+msgid "کد تأیید"
+msgstr "Verification code"
+
+#: .\accounts\forms.py:78
+msgid "کد تأیید فقط عدد است."
+msgstr "The verification code is digits only."
+
+#: .\accounts\forms.py:86
+msgid "شماره‌ی این حساب تأیید نشده است. دوباره ثبت‌نام کنید تا کد تأیید برایتان ارسال شود."
+msgstr "This account's number hasn't been verified. Sign up again and a verification code will be sent to you."
+
+#: .\accounts\forms.py:87
+#, python-format
+msgid "تلاش‌های ناموفق زیادی انجام شده است. %(minutes)s دقیقه دیگر دوباره تلاش کنید."
+msgstr "Too many failed attempts. Try again in %(minutes)s minutes."
+
+#: .\accounts\heard_from.py:15 .\services\models.py:71 .\services\models.py:406
+msgid "اینستاگرام"
+msgstr "Instagram"
+
+#: .\accounts\heard_from.py:16 .\collaboration\models.py:32 .\services\models.py:62 .\services\models.py:70 .\services\models.py:405
+msgid "تلگرام"
+msgstr "Telegram"
+
+#: .\accounts\heard_from.py:17
+msgid "آپارات"
+msgstr "Aparat"
+
+#: .\accounts\heard_from.py:18 .\collaboration\models.py:34 .\services\models.py:64 .\services\models.py:72 .\services\models.py:408
+msgid "ایتا"
+msgstr "Eitaa"
+
+#: .\accounts\heard_from.py:19 .\collaboration\models.py:35 .\services\models.py:65 .\services\models.py:73 .\services\models.py:409
+msgid "روبیکا"
+msgstr "Rubika"
+
+#: .\accounts\heard_from.py:20
+msgid "جستجو در گوگل"
+msgstr "Google search"
+
+#: .\accounts\heard_from.py:21
+msgid "معرفی دوستان و آشنایان"
+msgstr "Friends or acquaintances"
+
+#: .\accounts\heard_from.py:22
+msgid "استاد یا دانشگاه"
+msgstr "A professor or university"
+
+#: .\accounts\heard_from.py:23 .\finance\models.py:140 .\services\models.py:59 .\services\models.py:75 .\services\models.py:318
+msgid "سایر"
+msgstr "Other"
+
+#: .\accounts\heard_from.py:29
+msgid "نحوه‌ی آشنایی"
+msgstr "How you heard of us"
+
+#: .\accounts\heard_from.py:33
+msgid "نحوه‌ی آشنایی (سایر)"
+msgstr "How you heard of us (other)"
+
+#: .\accounts\heard_from.py:42
+msgid "از کجا با ما آشنا شدید؟"
+msgstr "How did you hear about us?"
+
+#: .\accounts\heard_from.py:46
+msgid "یکی از گزینه‌ها را انتخاب کنید."
+msgstr "Please choose one of the options."
+
+#: .\accounts\heard_from.py:49
+msgid "از کجا؟"
+msgstr "Where?"
+
+#: .\accounts\heard_from.py:50
+msgid "لطفاً بنویسید از کجا"
+msgstr "Please tell us where"
+
+#: .\accounts\heard_from.py:56
+msgid "بنویسید از کجا با ما آشنا شدید."
+msgstr "Tell us where you heard about us."
+
+#: .\accounts\models.py:17
+msgid "تأیید شماره در ثبت‌نام"
+msgstr ""
+
+#: .\accounts\models.py:18
+msgid "بازیابی رمز عبور"
+msgstr ""
+
+#: .\accounts\models.py:21
+msgid "کاربرد"
+msgstr ""
+
+#: .\accounts\models.py:22
+msgid "کد (هش‌شده)"
+msgstr ""
+
+#: .\accounts\models.py:23
+msgid "تلاش‌های ناموفق"
+msgstr ""
+
+#: .\accounts\models.py:24 .\approvals\models.py:52 .\inbox\models.py:41 .\inbox\models.py:126 .\office\models.py:31 .\pages\models.py:43
+msgid "زمان ارسال"
+msgstr ""
+
+#: .\accounts\models.py:25
+msgid "زمان انقضا"
+msgstr ""
+
+#: .\accounts\models.py:26
+msgid "زمان استفاده"
+msgstr ""
+
+#: .\accounts\models.py:30
+msgid "کدهای تأیید"
+msgstr ""
+
+#: .\accounts\models.py:45 .\services\models.py:134
+msgid "آی‌پی"
+msgstr ""
+
+#: .\accounts\models.py:46 .\approvals\models.py:109 .\services\models.py:368 .\services\models.py:390 .\support\models.py:80
+msgid "زمان"
+msgstr ""
+
+#: .\accounts\models.py:49
+msgid "تلاش ناموفق ورود"
+msgstr ""
+
+#: .\accounts\models.py:50
+msgid "تلاش‌های ناموفق ورود"
+msgstr ""
+
+#: .\accounts\models.py:60
+msgid "کاربری با این شماره موبایل وجود دارد."
+msgstr "There is already an account with this mobile number."
+
+#: .\accounts\models.py:62 .\office\admin.py:59 .\pages\models.py:38
+msgid "نام"
+msgstr "First name"
+
+#: .\accounts\models.py:63
+msgid "نام خانوادگی"
+msgstr "Last name"
+
+#: .\accounts\models.py:65 .\collaboration\admin.py:75 .\pages\models.py:40 .\services\models.py:92 .\services\models.py:411
+msgid "ایمیل"
+msgstr "Email"
+
+#: .\accounts\models.py:69
+msgid "کاربری با این ایمیل وجود دارد."
+msgstr "There is already an account with this email."
+
+#: .\accounts\models.py:72 .\domains\models.py:26 .\services\models.py:417
+msgid "فعال"
+msgstr ""
+
+#: .\accounts\models.py:73
+msgid "کاربر غیرفعال نمی‌تواند وارد شود. ثبت‌نام‌های تأییدنشده غیرفعال می‌مانند."
+msgstr ""
+
+#: .\accounts\models.py:76
+msgid "شماره تأیید شده"
+msgstr ""
+
+#: .\accounts\models.py:76
+msgid "با کد پیامکی تأیید شده است."
+msgstr ""
+
+#: .\accounts\models.py:80
+msgid "آیدی ارتباطی"
+msgstr ""
+
+#: .\accounts\models.py:81
+msgid "مثلاً @ali در تلگرام. برای معرفی کارشناس به مشتری استفاده می‌شود."
+msgstr ""
+
+#: .\accounts\models.py:84
+msgid "دسترسی پنل مدیریت"
+msgstr ""
+
+#: .\accounts\models.py:85
+msgid "تاریخ عضویت"
+msgstr ""
+
+#: .\accounts\models.py:95 .\commerce\models.py:19 .\commerce\models.py:158 .\content\models.py:194
+msgid "کاربر"
+msgstr ""
+
+#: .\accounts\models.py:96
+msgid "کاربران"
+msgstr ""
+
+#: .\accounts\models.py:102
+msgid "فرمت شماره موبایل نامعتبر است."
+msgstr "The mobile number's format is not valid."
+
+#: .\accounts\otp.py:57
+#, python-format
+msgid "برای ارسال کد جدید %(seconds)s ثانیه صبر کنید."
+msgstr "Wait %(seconds)s seconds before asking for a new code."
+
+#: .\accounts\otp.py:59
+msgid "تعداد درخواست‌های شما زیاد است. یک ساعت دیگر تلاش کنید."
+msgstr "You've asked too many times. Try again in an hour."
+
+#: .\accounts\sms.py:46
+#, python-format
+msgid "سرویس پیامک «%(name)s» هنوز تنظیم نشده است."
+msgstr "The SMS service “%(name)s” is not set up yet."
+
+#: .\accounts\validators.py:34
+msgid "شماره موبایل معتبر نیست. نمونه صحیح: 09121234567"
+msgstr "This mobile number is not valid. A valid one looks like 09121234567"
+
+#: .\accounts\views.py:56
+#, python-format
+msgid "%(name)s عزیز، به MAHAY خوش آمدید!"
+msgstr "Welcome to MAHAY, %(name)s!"
+
+#: .\accounts\views.py:77
+msgid "کد تأیید پیامک شد."
+msgstr "The verification code was sent by SMS."
+
+#: .\accounts\views.py:79 .\accounts\views.py:193 .\accounts\views.py:245
+#, python-format
+msgid "حالت آزمایشی — کد شما: %(code)s"
+msgstr "Test mode — your code: %(code)s"
+
+#: .\accounts\views.py:104 .\accounts\views.py:223
+msgid "کد تأیید نادرست یا منقضی شده است."
+msgstr "The verification code is wrong or has expired."
+
+#: .\accounts\views.py:117
+#, python-format
+msgid "%(name)s عزیز، شماره‌ی شما تأیید شد. به MAHAY خوش آمدید!"
+msgstr "Your number is verified, %(name)s. Welcome to MAHAY!"
+
+#: .\accounts\views.py:140
+msgid "اطلاعات شما ذخیره شد."
+msgstr "Your details were saved."
+
+#: .\accounts\views.py:149
+msgid "رمز عبور شما تغییر کرد."
+msgstr "Your password was changed."
+
+#: .\accounts\views.py:243
+msgid "کد تأیید دوباره فرستاده شد."
+msgstr "The verification code was sent again."
+
+#: .\accounts\views.py:274
+msgid "رمز عبور شما تغییر کرد. اکنون وارد شوید."
+msgstr "Your password was changed. You can log in now."
+
+#: .\approvals\admin_base.py:103 .\approvals\models.py:113
+msgid "سابقه‌ی بررسی"
+msgstr ""
+
+#: .\approvals\admin_base.py:106 .\collaboration\admin.py:43
+msgid "سابقه"
+msgstr ""
+
+#: .\approvals\models.py:20
+msgid "انتشار"
+msgstr ""
+
+#: .\approvals\models.py:21 .\templates\services\my_requests.html:23
+msgid "ویرایش"
+msgstr "Edit"
+
+#: .\approvals\models.py:22 .\products\models.py:106
+msgid "حذف از فروشگاه"
+msgstr ""
+
+#: .\approvals\models.py:25
+msgid "در انتظار بررسی"
+msgstr ""
+
+#: .\approvals\models.py:26
+msgid "تأیید شده"
+msgstr ""
+
+#: .\approvals\models.py:27
+msgid "رد شده"
+msgstr ""
+
+#: .\approvals\models.py:30
+msgid "منتظر مدیر حوزه"
+msgstr ""
+
+#: .\approvals\models.py:31
+msgid "منتظر مدیر کل"
+msgstr ""
+
+#: .\approvals\models.py:34 .\approvals\models.py:95
+msgid "شناسه"
+msgstr ""
+
+#: .\approvals\models.py:36 .\commerce\models.py:137 .\office\models.py:27 .\pages\models.py:12 .\products\models.py:57 .\support\models.py:34
+msgid "عنوان"
+msgstr ""
+
+#: .\approvals\models.py:39 .\domains\models.py:44 .\finance\models.py:49 .\finance\models.py:211 .\products\admin.py:50 .\services\models.py:248 .\templates\products\detail.html:130 .\templates\products\list.html:22
+msgid "حوزه"
+msgstr "Field"
+
+#: .\approvals\models.py:42 .\services\models.py:78
+msgid "نوع درخواست"
+msgstr ""
+
+#: .\approvals\models.py:43 .\collaboration\models.py:85 .\commerce\models.py:80 .\finance\admin.py:108 .\products\admin.py:55 .\services\models.py:79 .\services\models.py:255 .\services\models.py:331 .\support\admin.py:95 .\support\models.py:46 .\templates\commerce\order_list.html:12
+msgid "وضعیت"
+msgstr "Status"
+
+#: .\approvals\models.py:44 .\services\admin.py:184
+msgid "مرحله"
+msgstr ""
+
+#: .\approvals\models.py:45
+msgid "زمان رسیدن به این مرحله"
+msgstr ""
+
+#: .\approvals\models.py:46 .\approvals\models.py:108
+msgid "تغییرات"
+msgstr ""
+
+#: .\approvals\models.py:50
+msgid "ارسال‌کننده"
+msgstr ""
+
+#: .\approvals\models.py:55 .\collaboration\models.py:89 .\finance\models.py:178
+msgid "بررسی‌کننده"
+msgstr ""
+
+#: .\approvals\models.py:57 .\collaboration\models.py:91 .\finance\models.py:175
+msgid "زمان بررسی"
+msgstr ""
+
+#: .\approvals\models.py:58
+msgid "توضیح مدیر"
+msgstr ""
+
+#: .\approvals\models.py:58
+msgid "مثلاً دلیل رد درخواست"
+msgstr ""
+
+#: .\approvals\models.py:61 .\approvals\models.py:99
+msgid "درخواست تأیید"
+msgstr ""
+
+#: .\approvals\models.py:62
+msgid "درخواست‌های تأیید"
+msgstr ""
+
+#: .\approvals\models.py:88
+msgid "ارسال برای بررسی"
+msgstr ""
+
+#: .\approvals\models.py:89
+msgid "اصلاح توسط مدیر حوزه"
+msgstr ""
+
+#: .\approvals\models.py:90
+msgid "تأیید مدیر حوزه و ارسال برای مدیر کل"
+msgstr ""
+
+#: .\approvals\models.py:91
+msgid "تأیید نهایی"
+msgstr ""
+
+#: .\approvals\models.py:92
+msgid "رد"
+msgstr ""
+
+#: .\approvals\models.py:101 .\services\models.py:389
+msgid "رویداد"
+msgstr ""
+
+#: .\approvals\models.py:104 .\services\models.py:387
+msgid "انجام‌دهنده"
+msgstr ""
+
+#: .\approvals\models.py:106 .\finance\models.py:244 .\office\admin.py:120 .\services\models.py:336
+msgid "توضیح"
+msgstr ""
+
+#: .\approvals\models.py:112
+msgid "رویداد بررسی"
+msgstr ""
+
+#: .\collaboration\admin.py:21 .\collaboration\models.py:143 .\content\models.py:150 .\content\models.py:175 .\inbox\models.py:100 .\office\models.py:53 .\support\models.py:96 .\support\models.py:106
+msgid "فایل"
+msgstr ""
+
+#: .\collaboration\admin.py:42
+msgid "معرفی"
+msgstr ""
+
+#: .\collaboration\admin.py:44 .\finance\admin.py:66 .\finance\admin.py:163
+msgid "بررسی"
+msgstr ""
+
+#: .\collaboration\admin.py:65 .\collaboration\models.py:49
+msgid "متقاضی"
+msgstr ""
+
+#: .\collaboration\admin.py:69 .\pages\admin.py:31
+msgid "راه تماس"
+msgstr ""
+
+#: .\collaboration\admin.py:74 .\office\admin.py:67
+msgid "موبایل"
+msgstr ""
+
+#: .\collaboration\admin.py:80 .\collaboration\models.py:72 .\domains\models.py:45 .\services\admin.py:198 .\services\forms.py:34 .\services\models.py:103
+msgid "حوزه‌ها"
+msgstr "Fields"
+
+#: .\collaboration\forms.py:38
+msgid "چه نوع همکاری‌ای؟"
+msgstr "What kind of work?"
+
+#: .\collaboration\forms.py:40 .\collaboration\models.py:67
+msgid "ساخت دوره آموزشی"
+msgstr "Making a course"
+
+#: .\collaboration\forms.py:41 .\collaboration\models.py:68
+msgid "انجام پروژه"
+msgstr "Doing projects"
+
+#: .\collaboration\forms.py:42 .\collaboration\models.py:69
+msgid "مشاوره"
+msgstr "Consulting"
+
+#: .\collaboration\forms.py:44
+msgid "می‌توانید چند مورد را انتخاب کنید."
+msgstr "You can choose more than one."
+
+#: .\collaboration\forms.py:45
+msgid "دست‌کم یک نوع همکاری را انتخاب کنید."
+msgstr "Choose at least one kind of work."
+
+#: .\collaboration\forms.py:49
+msgid "رزومه و نمونه‌کار"
+msgstr "CV and samples of your work"
+
+#: .\collaboration\forms.py:51
+msgid "اختیاری. می‌توانید چند فایل بفرستید."
+msgstr "Optional. You can send several files."
+
+#: .\collaboration\forms.py:99
+msgid "کمی بیشتر بنویسید تا بتوانیم درست قضاوت کنیم."
+msgstr "Please write a little more so we can judge properly."
+
+#: .\collaboration\forms.py:106
+#, python-format
+msgid "حداکثر %(limit)d فایل می‌توانید بفرستید."
+msgstr "You can send at most %(limit)d files."
+
+#: .\collaboration\forms.py:114 .\services\forms.py:86
+msgid "آیدی خود را در این بستر بنویسید."
+msgstr "Write your ID on this platform."
+
+#: .\collaboration\models.py:26 .\services\models.py:37 .\support\models.py:27
+msgid "جدید"
+msgstr "New"
+
+#: .\collaboration\models.py:27 .\services\models.py:38 .\services\models.py:239
+msgid "در حال بررسی"
+msgstr "Under review"
+
+#: .\collaboration\models.py:28
+msgid "پذیرفته شد"
+msgstr "Accepted"
+
+#: .\collaboration\models.py:29 .\services\models.py:43 .\support\models.py:30
+msgid "رد شد"
+msgstr "Declined"
+
+#: .\collaboration\models.py:33 .\services\models.py:63 .\services\models.py:407
+msgid "واتساپ"
+msgstr "WhatsApp"
+
+#: .\collaboration\models.py:36 .\services\models.py:66 .\services\models.py:74 .\services\models.py:410
+msgid "تماس تلفنی"
+msgstr "Phone call"
+
+#: .\collaboration\models.py:39
+msgid "دیپلم"
+msgstr "High school diploma"
+
+#: .\collaboration\models.py:40
+msgid "کاردانی"
+msgstr "Associate degree"
+
+#: .\collaboration\models.py:41
+msgid "کارشناسی"
+msgstr "Bachelor's degree"
+
+#: .\collaboration\models.py:42
+msgid "کارشناسی ارشد"
+msgstr "Master's degree"
+
+#: .\collaboration\models.py:43
+msgid "دکتری"
+msgstr "PhD"
+
+#: .\collaboration\models.py:53 .\services\models.py:421
+msgid "راه ارتباطی"
+msgstr "Way to reach you"
+
+#: .\collaboration\models.py:55
+msgid "آیدی در آن بستر"
+msgstr "Your ID there"
+
+#: .\collaboration\models.py:56 .\services\models.py:96
+msgid "اگر تماس تلفنی را انتخاب کرده‌اید، لازم نیست."
+msgstr "Not needed if you chose a phone call."
+
+#: .\collaboration\models.py:62
+msgid "چه کمکی می‌توانید بکنید"
+msgstr "How you can help"
+
+#: .\collaboration\models.py:63
+msgid "کوتاه بنویسید: در چه کاری خوب هستید و دوست دارید چه کاری انجام دهید."
+msgstr "In short: what you are good at, and what you would like to do."
+
+#: .\collaboration\models.py:74 .\services\models.py:105
+msgid "حوزه‌ی دیگر"
+msgstr "Another field"
+
+#: .\collaboration\models.py:76
+msgid "مدرک تحصیلی"
+msgstr "Degree"
+
+#: .\collaboration\models.py:77
+msgid "رشته‌ی تحصیلی"
+msgstr "Field of study"
+
+#: .\collaboration\models.py:78
+msgid "سابقه‌ی کار"
+msgstr "Work experience"
+
+#: .\collaboration\models.py:79
+msgid "مهارت‌ها"
+msgstr "Skills"
+
+#: .\collaboration\models.py:81
+msgid "لینک‌ها"
+msgstr "Links"
+
+#: .\collaboration\models.py:82
+msgid "گیت‌هاب، لینکدین، نمونه‌کار — هر کدام در یک خط."
+msgstr "GitHub, LinkedIn, portfolio — one per line."
+
+#: .\collaboration\models.py:86 .\services\models.py:130
+msgid "یادداشت مدیر"
+msgstr ""
+
+#: .\collaboration\models.py:86
+msgid "متقاضی این را نمی‌بیند."
+msgstr ""
+
+#: .\collaboration\models.py:93 .\finance\models.py:184 .\finance\models.py:249 .\services\models.py:136 .\support\models.py:55
+msgid "زمان ثبت"
+msgstr ""
+
+#: .\collaboration\models.py:94 .\commerce\models.py:22 .\content\models.py:25 .\pages\models.py:21 .\products\models.py:114 .\services\models.py:137 .\services\models.py:291 .\support\models.py:56
+msgid "آخرین تغییر"
+msgstr ""
+
+#: .\collaboration\models.py:97
+msgid "درخواست همکاری"
+msgstr ""
+
+#: .\collaboration\models.py:98
+msgid "درخواست‌های همکاری"
+msgstr ""
+
+#: .\collaboration\models.py:140 .\finance\models.py:109 .\finance\models.py:157 .\services\models.py:245 .\services\models.py:326 .\services\models.py:361 .\services\models.py:383 .\support\models.py:74 .\support\models.py:94
+msgid "درخواست"
+msgstr ""
+
+#: .\collaboration\models.py:146 .\inbox\models.py:103 .\office\models.py:56 .\support\models.py:103
+msgid "زمان بارگذاری"
+msgstr ""
+
+#: .\collaboration\models.py:149
+msgid "فایل درخواست همکاری"
+msgstr ""
+
+#: .\collaboration\models.py:150
+msgid "فایل‌های درخواست همکاری"
+msgstr ""
+
+#: .\collaboration\validators.py:18
+msgid "این نوع فایل پذیرفته نمی‌شود. رزومه را به صورت PDF یا Word بفرستید."
+msgstr "This type of file is not accepted. Send your CV as a PDF or Word file."
+
+#: .\collaboration\validators.py:25
+#, python-format
+msgid "حجم هر فایل نباید بیشتر از %(limit)d مگابایت باشد."
+msgstr "Each file must be at most %(limit)d MB."
+
+#: .\collaboration\views.py:35
+msgid "درخواست شما در حال بررسی است و تا پایان آن قابل ویرایش نیست."
+msgstr "Your application is being reviewed and can't be edited until the review is over."
+
+#: .\collaboration\views.py:47
+msgid "درخواست همکاری شما ثبت شد. نتیجه را در «درخواست‌های من» می‌بینید."
+msgstr "Your application was received. You will see the outcome under “My requests”."
+
+#: .\commerce\admin.py:34 .\commerce\admin.py:49 .\finance\admin.py:60 .\finance\admin.py:153 .\finance\admin.py:283 .\templates\commerce\order_list.html:12
+msgid "مبلغ"
+msgstr "Amount"
+
+#: .\commerce\admin.py:67 .\templates\commerce\cart.html:38
+msgid "تعداد"
+msgstr "Items"
+
+#: .\commerce\gateway.py:43
+msgid "ارتباط با درگاه پرداخت برقرار نشد. چند لحظه بعد دوباره تلاش کنید."
+msgstr "Couldn't reach the payment gateway. Try again in a moment."
+
+#: .\commerce\gateway.py:50
+msgid "درگاه پرداخت درخواست را نپذیرفت."
+msgstr "The payment gateway refused the request."
+
+#: .\commerce\gateway.py:68
+msgid "درگاه پرداخت کد پیگیری نداد."
+msgstr "The payment gateway did not return a tracking code."
+
+#: .\commerce\models.py:21 .\content\models.py:24 .\domains\models.py:41 .\products\models.py:113
+msgid "تاریخ ایجاد"
+msgstr ""
+
+#: .\commerce\models.py:25 .\templates\base.html:43 .\templates\base.html:74 .\templates\commerce\cart.html:4 .\templates\commerce\cart.html:8 .\templates\products\detail.html:154
+msgid "سبد خرید"
+msgstr "Cart"
+
+#: .\commerce\models.py:26
+msgid "سبدهای خرید"
+msgstr ""
+
+#: .\commerce\models.py:48
+msgid "سبد"
+msgstr ""
+
+#: .\commerce\models.py:49 .\commerce\models.py:136 .\commerce\models.py:160 .\content\models.py:39 .\content\models.py:172 .\finance\models.py:86 .\finance\models.py:153 .\products\models.py:122 .\products\models.py:191
+msgid "محصول"
+msgstr ""
+
+#: .\commerce\models.py:50
+msgid "زمان افزودن"
+msgstr ""
+
+#: .\commerce\models.py:53
+msgid "آیتم سبد"
+msgstr ""
+
+#: .\commerce\models.py:54
+msgid "آیتم‌های سبد"
+msgstr ""
+
+#: .\commerce\models.py:71 .\services\models.py:321
+msgid "در انتظار پرداخت"
+msgstr "Awaiting payment"
+
+#: .\commerce\models.py:72 .\services\models.py:322
+msgid "پرداخت شده"
+msgstr "Paid"
+
+#: .\commerce\models.py:73 .\services\models.py:323
+msgid "ناموفق"
+msgstr "Failed"
+
+#: .\commerce\models.py:74
+msgid "لغو شده"
+msgstr "Canceled"
+
+#: .\commerce\models.py:76
+msgid "شماره سفارش"
+msgstr ""
+
+#: .\commerce\models.py:78
+msgid "خریدار"
+msgstr ""
+
+#: .\commerce\models.py:81
+msgid "مبلغ کل (تومان)"
+msgstr ""
+
+#: .\commerce\models.py:84 .\services\models.py:339
+msgid "کد پیگیری درگاه"
+msgstr ""
+
+#: .\commerce\models.py:85 .\templates\commerce\order_detail.html:21
+msgid "شماره تراکنش"
+msgstr "Transaction number"
+
+#: .\commerce\models.py:86 .\finance\models.py:172 .\services\models.py:340
+msgid "شماره کارت"
+msgstr ""
+
+#: .\commerce\models.py:87 .\services\models.py:341
+msgid "پیام درگاه"
+msgstr ""
+
+#: .\commerce\models.py:89
+msgid "تاریخ ثبت"
+msgstr ""
+
+#: .\commerce\models.py:90 .\services\models.py:334
+msgid "زمان پرداخت"
+msgstr ""
+
+#: .\commerce\models.py:93 .\commerce\models.py:135 .\commerce\models.py:162
+msgid "سفارش"
+msgstr ""
+
+#: .\commerce\models.py:94 .\templates\accounts\profile.html:13 .\templates\base.html:72
+msgid "سفارش‌ها"
+msgstr "Orders"
+
+#: .\commerce\models.py:138 .\finance\models.py:169 .\finance\models.py:219 .\finance\models.py:241 .\services\models.py:328
+msgid "مبلغ (تومان)"
+msgstr ""
+
+#: .\commerce\models.py:141 .\finance\models.py:145
+msgid "آیتم سفارش"
+msgstr ""
+
+#: .\commerce\models.py:142
+msgid "آیتم‌های سفارش"
+msgstr ""
+
+#: .\commerce\models.py:164
+msgid "مبلغ پرداختی (تومان)"
+msgstr ""
+
+#: .\commerce\models.py:165
+msgid "تاریخ خرید"
+msgstr ""
+
+#: .\commerce\models.py:168
+msgid "خرید کاربر"
+msgstr ""
+
+#: .\commerce\models.py:169
+msgid "خریدهای کاربران"
+msgstr ""
+
+#: .\commerce\models.py:180
+msgid "خرید پولی باید به یک سفارش وصل باشد."
+msgstr ""
+
+#: .\commerce\views.py:21
+msgid "به سبد خرید اضافه شد."
+msgstr "Added to your cart."
+
+#: .\commerce\views.py:22
+msgid "این محصول از قبل در سبد خرید شما است."
+msgstr "This item is already in your cart."
+
+#: .\commerce\views.py:23
+msgid "شما این محصول را دارید؛ از «خریدهای من» ببینید."
+msgstr "You already own this. Find it under “My purchases”."
+
+#: .\commerce\views.py:24
+msgid "این محصول در حال حاضر قابل خرید نیست."
+msgstr "This item can't be bought right now."
+
+#: .\commerce\views.py:29
+msgid "پرداخت توسط کاربر لغو شد."
+msgstr "The payment was canceled by the buyer."
+
+#: .\commerce\views.py:30
+msgid "سفارش رایگان"
+msgstr "Free order"
+
+#: .\commerce\views.py:47 .\products\templatetags\store.py:65
+msgid " و "
+msgstr " and "
+
+#: .\commerce\views.py:71
+msgid "از سبد خرید حذف شد."
+msgstr "Removed from your cart."
+
+#: .\commerce\views.py:96
+msgid "برای ثبت سفارش، قوانین را بخوانید و تیک پذیرش آن را بزنید."
+msgstr "To place the order, read the terms and tick the box to accept them."
+
+#: .\commerce\views.py:102 .\templates\commerce\cart.html:62
+msgid "سبد خرید شما خالی است."
+msgstr "Your cart is empty."
+
+#: .\commerce\views.py:108
+msgid "محصولات رایگان به حساب شما اضافه شد."
+msgstr "The free items were added to your account."
+
+#: .\commerce\views.py:132
+msgid "سفارش این پرداخت پیدا نشد."
+msgstr "The order for this payment wasn't found."
+
+#: .\commerce\views.py:142
+msgid "پرداخت لغو شد. سبد خرید شما محفوظ است."
+msgstr "The payment was canceled. Your cart is still there."
+
+#: .\commerce\views.py:151 .\services\views.py:174
+#, python-format
+msgid "پرداخت تأیید نشد: %(error)s"
+msgstr "The payment was not confirmed: %(error)s"
+
+#: .\commerce\views.py:164
+msgid "پرداخت با موفقیت انجام شد."
+msgstr "Payment successful."
+
+#: .\content\admin.py:22 .\content\models.py:86
+msgid "درس‌ها"
+msgstr ""
+
+#: .\content\admin.py:54
+msgid "ویدیو"
+msgstr ""
+
+#: .\content\admin.py:60
+msgid "پیش‌نمایش ویدیو"
+msgstr ""
+
+#: .\content\admin.py:67
+msgid "مدت درس"
+msgstr ""
+
+#: .\content\admin.py:75 .\content\models.py:154
+msgid "فایل‌های ضمیمه"
+msgstr ""
+
+#: .\content\admin.py:97 .\content\admin.py:117 .\office\admin.py:174 .\support\admin.py:67
+msgid "دانلود"
+msgstr ""
+
+#: .\content\admin.py:139 .\finance\models.py:218
+msgid "درصد"
+msgstr ""
+
+#: .\content\models.py:15 .\pages\models.py:18 .\products\models.py:104
+msgid "منتشر شده"
+msgstr ""
+
+#: .\content\models.py:16
+msgid "حذف شده"
+msgstr ""
+
+#: .\content\models.py:17 .\services\models.py:418
+msgid "ترتیب"
+msgstr ""
+
+#: .\content\models.py:17
+msgid "عدد کوچک‌تر، بالاتر نمایش داده می‌شود"
+msgstr ""
+
+#: .\content\models.py:22 .\products\models.py:111
+msgid "سازنده"
+msgstr ""
+
+#: .\content\models.py:41
+msgid "عنوان بخش"
+msgstr ""
+
+#: .\content\models.py:44
+msgid "بخش (فصل)"
+msgstr ""
+
+#: .\content\models.py:45
+msgid "بخش‌ها (فصل‌ها)"
+msgstr ""
+
+#: .\content\models.py:57
+msgid "بخش"
+msgstr ""
+
+#: .\content\models.py:58
+msgid "عنوان درس"
+msgstr ""
+
+#: .\content\models.py:61
+msgid "قابل مشاهده بدون خرید"
+msgstr ""
+
+#: .\content\models.py:62
+msgid "ویدیو و متن این درس برای همه باز است، بدون خرید و بدون ورود به حساب؛ فایل‌های ضمیمه‌ی درس همچنان فقط برای خریداران است. مثلاً دو سه درس اول هر فصل، تا بازدیدکننده نمونه‌ی کار را ببیند."
+msgstr ""
+
+#: .\content\models.py:65
+msgid "متن توضیحی"
+msgstr ""
+
+#: .\content\models.py:67
+msgid "فایل ویدیو"
+msgstr ""
+
+#: .\content\models.py:68
+msgid "فقط ویدیوی MP4 پذیرفته می‌شود."
+msgstr ""
+
+#: .\content\models.py:69
+msgid "فقط MP4. مدت ویدیو خودکار از روی فایل خوانده می‌شود. فقط خریداران می‌توانند ببینند، مگر درس «قابل مشاهده بدون خرید» باشد."
+msgstr ""
+
+#: .\content\models.py:73
+msgid "لینک ویدیو در آپارات"
+msgstr ""
+
+#: .\content\models.py:74
+msgid "ویدیوی آپارات برای همه قابل مشاهده است؛ پس فقط برای محصولات رایگان، یا درسی که «قابل مشاهده بدون خرید» است."
+msgstr ""
+
+#: .\content\models.py:78
+msgid "مدت ویدیوی آپارات (دقیقه)"
+msgstr ""
+
+#: .\content\models.py:79
+msgid "فقط برای لینک آپارات. مدت ویدیوی آپلودشده خودکار حساب می‌شود."
+msgstr ""
+
+#: .\content\models.py:82
+msgid "مدت (ثانیه)"
+msgstr ""
+
+#: .\content\models.py:85 .\content\models.py:148 .\content\models.py:196
+msgid "درس"
+msgstr ""
+
+#: .\content\models.py:111
+msgid "یا فایل ویدیو آپلود کنید یا لینک آپارات بدهید، نه هر دو."
+msgstr ""
+
+#: .\content\models.py:118
+msgid "مدت این ویدیو خوانده نشد؛ فایل MP4 سالم آپلود کنید."
+msgstr ""
+
+#: .\content\models.py:126
+msgid "این محصول پولی است و ویدیوی آپارات برای همه قابل مشاهده است؛ ویدیو را آپلود کنید، یا این درس را «قابل مشاهده بدون خرید» کنید."
+msgstr ""
+
+#: .\content\models.py:149 .\content\models.py:174
+msgid "عنوان فایل"
+msgstr ""
+
+#: .\content\models.py:153 .\services\models.py:116 .\services\models.py:279
+msgid "فایل ضمیمه"
+msgstr "Attachment"
+
+#: .\content\models.py:178
+msgid "فایل همراه"
+msgstr ""
+
+#: .\content\models.py:179 .\products\admin.py:101 .\templates\content\learn.html:37 .\templates\products\detail.html:87
+msgid "فایل‌های همراه"
+msgstr "Included files"
+
+#: .\content\models.py:197
+msgid "محل توقف (ثانیه)"
+msgstr ""
+
+#: .\content\models.py:198
+msgid "مدت ویدیو (ثانیه)"
+msgstr ""
+
+#: .\content\models.py:199
+msgid "تمام‌شده"
+msgstr ""
+
+#: .\content\models.py:200
+msgid "آخرین تماشا"
+msgstr ""
+
+#: .\content\models.py:203
+msgid "پیشرفت درس"
+msgstr ""
+
+#: .\content\models.py:204
+msgid "پیشرفت درس‌ها"
+msgstr ""
+
+#: .\content\validators.py:11
+msgid "فقط لینک آپارات پذیرفته می‌شود."
+msgstr "Only an Aparat link is accepted."
+
+#: .\domains\models.py:18
+msgid "نام حوزه"
+msgstr ""
+
+#: .\domains\models.py:20 .\pages\models.py:14 .\products\models.py:59
+msgid "نامک (انگلیسی)"
+msgstr ""
+
+#: .\domains\models.py:23
+msgid "بخش انگلیسی آدرس صفحه، مثلاً fpga یا ai"
+msgstr ""
+
+#: .\domains\models.py:25 .\services\models.py:107
+msgid "توضیحات"
+msgstr "Description"
+
+#: .\domains\models.py:26
+msgid "حوزه‌ی غیرفعال در سایت نمایش داده نمی‌شود."
+msgstr ""
+
+#: .\domains\models.py:28
+msgid "نرخ مشاوره‌ی هر ۱۵ دقیقه (تومان)"
+msgstr ""
+
+#: .\domains\models.py:29
+msgid "خالی یعنی نرخ پیش‌فرض سایت."
+msgstr ""
+
+#: .\domains\models.py:31
+msgid "ترتیب نمایش"
+msgstr ""
+
+#: .\domains\models.py:34
+msgid "گروه مدیران"
+msgstr ""
+
+#: .\domains\models.py:38
+msgid "گروه کارشناسان"
+msgstr ""
+
+#: .\finance\admin.py:70
+msgid "بررسی‌نشده"
+msgstr ""
+
+#: .\finance\admin.py:70
+msgid "بررسی‌شده"
+msgstr ""
+
+#: .\finance\admin.py:81 .\finance\admin.py:157
+msgid "سهم‌بندی"
+msgstr ""
+
+#: .\finance\admin.py:85
+msgid "سهم‌بندی‌شده"
+msgstr ""
+
+#: .\finance\admin.py:85
+msgid "سهم‌بندی‌نشده"
+msgstr ""
+
+#: .\finance\admin.py:85
+msgid "باطل‌شده"
+msgstr ""
+
+#: .\finance\admin.py:107 .\finance\admin.py:145 .\finance\models.py:164
+msgid "پرداخت‌کننده"
+msgstr ""
+
+#: .\finance\admin.py:136
+msgid "بابت چه"
+msgstr ""
+
+#: .\finance\admin.py:149 .\finance\models.py:167
+msgid "موبایل پرداخت‌کننده"
+msgstr ""
+
+#: .\finance\admin.py:167
+msgid "علامت «بررسی شد»"
+msgstr ""
+
+#: .\finance\admin.py:172
+msgid "سهم‌بندی دوباره با درصدهای فعلی"
+msgstr ""
+
+#: .\finance\admin.py:180
+msgid "خروجی Excel (CSV)"
+msgstr ""
+
+#: .\finance\admin.py:209
+msgid "فروش دوره یا پروژه‌ی آماده"
+msgstr ""
+
+#: .\finance\admin.py:211
+msgid "باقی‌مانده‌ی هر فروش سهم مجموعه است. تا همه‌ی درصدها پر نشده، فروش‌ها سهم‌بندی نمی‌شوند."
+msgstr ""
+
+#: .\finance\admin.py:213 .\finance\models.py:134
+msgid "سفارش پروژه یا مشاوره"
+msgstr ""
+
+#: .\finance\admin.py:215
+msgid "باقی‌مانده‌ی هر پرداخت سهم مجموعه است."
+msgstr ""
+
+#: .\finance\admin.py:279
+msgid "به"
+msgstr ""
+
+#: .\finance\admin.py:326 .\finance\models.py:276
+msgid "گزارش‌های مالی"
+msgstr ""
+
+#: .\finance\admin.py:359 .\finance\models.py:284 .\finance\models.py:285
+msgid "صورت‌حساب من"
+msgstr ""
+
+#: .\finance\models.py:38 .\finance\models.py:77
+msgid "جمع درصدها از ۱۰۰ بیشتر شده است؛ باقی‌مانده سهم مجموعه است."
+msgstr ""
+
+#: .\finance\models.py:51
+msgid "فروش: سهم مدرس ٪"
+msgstr ""
+
+#: .\finance\models.py:52
+msgid "فروش: سهم مدیر حوزه ٪"
+msgstr ""
+
+#: .\finance\models.py:53
+msgid "فروش: سهم صندوق حوزه ٪"
+msgstr ""
+
+#: .\finance\models.py:54
+msgid "سفارش: سهم کارشناس ٪"
+msgstr ""
+
+#: .\finance\models.py:55
+msgid "سفارش: سهم مدیر حوزه ٪"
+msgstr ""
+
+#: .\finance\models.py:56
+msgid "سفارش: سهم صندوق حوزه ٪"
+msgstr ""
+
+#: .\finance\models.py:59
+msgid "درصدهای حوزه"
+msgstr ""
+
+#: .\finance\models.py:60
+msgid "درصدهای حوزه‌ها"
+msgstr ""
+
+#: .\finance\models.py:88
+msgid "سهم مدرس ٪"
+msgstr ""
+
+#: .\finance\models.py:89 .\finance\models.py:112
+msgid "سهم مدیر حوزه ٪"
+msgstr ""
+
+#: .\finance\models.py:90 .\finance\models.py:113
+msgid "سهم صندوق حوزه ٪"
+msgstr ""
+
+#: .\finance\models.py:93
+msgid "درصد استثنای محصول"
+msgstr ""
+
+#: .\finance\models.py:94
+msgid "درصدهای استثنای محصولات"
+msgstr ""
+
+#: .\finance\models.py:111
+msgid "سهم کارشناس ٪"
+msgstr ""
+
+#: .\finance\models.py:116
+msgid "درصد استثنای سفارش"
+msgstr ""
+
+#: .\finance\models.py:117
+msgid "درصدهای استثنای سفارش‌ها"
+msgstr ""
+
+#: .\finance\models.py:133
+msgid "فروش دوره یا پروژه"
+msgstr ""
+
+#: .\finance\models.py:137 .\services\models.py:315
+msgid "درگاه پرداخت"
+msgstr ""
+
+#: .\finance\models.py:138 .\services\models.py:316
+msgid "کارت به کارت"
+msgstr ""
+
+#: .\finance\models.py:139 .\services\models.py:317
+msgid "نقدی"
+msgstr ""
+
+#: .\finance\models.py:142
+msgid "منشأ"
+msgstr ""
+
+#: .\finance\models.py:149
+msgid "پرداخت سفارش"
+msgstr ""
+
+#: .\finance\models.py:159
+msgid "بابت"
+msgstr ""
+
+#: .\finance\models.py:166
+msgid "نام پرداخت‌کننده"
+msgstr ""
+
+#: .\finance\models.py:170 .\services\models.py:329
+msgid "روش پرداخت"
+msgstr ""
+
+#: .\finance\models.py:171 .\services\models.py:335
+msgid "شماره پیگیری"
+msgstr ""
+
+#: .\finance\models.py:173
+msgid "زمان دریافت"
+msgstr ""
+
+#: .\finance\models.py:180
+msgid "زمان سهم‌بندی"
+msgstr ""
+
+#: .\finance\models.py:181
+msgid "دلیل سهم‌بندی‌نشدن"
+msgstr ""
+
+#: .\finance\models.py:182
+msgid "زمان ابطال"
+msgstr ""
+
+#: .\finance\models.py:183
+msgid "دلیل ابطال"
+msgstr ""
+
+#: .\finance\models.py:187 .\finance\models.py:209
+msgid "دریافت"
+msgstr ""
+
+#: .\finance\models.py:188
+msgid "دفتر دریافت‌ها"
+msgstr ""
+
+#: .\finance\models.py:203 .\templates\partials\product_card.html:22 .\templates\products\detail.html:131
+msgid "مدرس"
+msgstr "Instructor"
+
+#: .\finance\models.py:204 .\services\models.py:252
+msgid "کارشناس"
+msgstr ""
+
+#: .\finance\models.py:205
+msgid "مدیر حوزه"
+msgstr ""
+
+#: .\finance\models.py:206
+msgid "صندوق حوزه"
+msgstr ""
+
+#: .\finance\models.py:207
+msgid "مجموعه"
+msgstr ""
+
+#: .\finance\models.py:213
+msgid "نقش"
+msgstr ""
+
+#: .\finance\models.py:216
+msgid "شخص"
+msgstr ""
+
+#: .\finance\models.py:216
+msgid "برای صندوق حوزه و سهم مجموعه خالی است."
+msgstr ""
+
+#: .\finance\models.py:222
+msgid "سهم"
+msgstr ""
+
+#: .\finance\models.py:223
+msgid "سهم‌ها"
+msgstr ""
+
+#: .\finance\models.py:235
+msgid "به شخص"
+msgstr ""
+
+#: .\finance\models.py:239
+msgid "از صندوق حوزه"
+msgstr ""
+
+#: .\finance\models.py:242
+msgid "تاریخ واریز"
+msgstr ""
+
+#: .\finance\models.py:243
+msgid "شماره پیگیری بانک"
+msgstr ""
+
+#: .\finance\models.py:247 .\services\models.py:345
+msgid "ثبت‌کننده"
+msgstr ""
+
+#: .\finance\models.py:252
+msgid "تسویه"
+msgstr ""
+
+#: .\finance\models.py:253
+msgid "تسویه‌ها"
+msgstr ""
+
+#: .\finance\models.py:267
+msgid "یا شخص را انتخاب کنید یا صندوق حوزه را، نه هر دو."
+msgstr ""
+
+#: .\finance\models.py:275
+msgid "گزارش مالی"
+msgstr ""
+
+#: .\inbox\forms.py:38
+msgid "بدون نام"
+msgstr ""
+
+#: .\inbox\forms.py:42 .\inbox\models.py:34 .\pages\models.py:41
+msgid "موضوع"
+msgstr "Subject"
+
+#: .\inbox\forms.py:43 .\inbox\models.py:35 .\services\models.py:367
+msgid "متن پیام"
+msgstr ""
+
+#: .\inbox\forms.py:46
+msgid "افراد"
+msgstr ""
+
+#: .\inbox\forms.py:50
+msgid "گروه‌ها"
+msgstr ""
+
+#: .\inbox\forms.py:52
+msgid "همه‌ی اعضای گروه، همین حالا، پیام را می‌گیرند."
+msgstr ""
+
+#: .\inbox\forms.py:55
+msgid "همه‌ی افراد و گروه‌ها"
+msgstr ""
+
+#: .\inbox\forms.py:56
+msgid "برای اطلاعیه‌ای که به کل مجموعه مربوط است."
+msgstr ""
+
+#: .\inbox\forms.py:60 .\office\models.py:59
+msgid "پیوست"
+msgstr ""
+
+#: .\inbox\forms.py:86
+msgid "دست‌کم یک گیرنده انتخاب کنید."
+msgstr ""
+
+#: .\inbox\forms.py:96
+msgid "هیچ گیرنده‌ای پیدا نشد."
+msgstr ""
+
+#: .\inbox\models.py:29
+msgid "فرستنده"
+msgstr ""
+
+#: .\inbox\models.py:33
+msgid "از طرف سامانه"
+msgstr ""
+
+#: .\inbox\models.py:38
+msgid "در پاسخ به"
+msgstr ""
+
+#: .\inbox\models.py:40
+msgid "بایگانی فرستنده"
+msgstr ""
+
+#: .\inbox\models.py:44
+msgid "پیام کارپوشه"
+msgstr ""
+
+#: .\inbox\models.py:45
+msgid "پیام‌های کارپوشه"
+msgstr ""
+
+#: .\inbox\models.py:59 .\inbox\models.py:97 .\pages\models.py:42 .\services\admin.py:450 .\support\models.py:83
+msgid "پیام"
+msgstr "Message"
+
+#: .\inbox\models.py:63
+msgid "گیرنده"
+msgstr ""
+
+#: .\inbox\models.py:65 .\office\models.py:33
+msgid "زمان خواندن"
+msgstr ""
+
+#: .\inbox\models.py:66
+msgid "زمان بایگانی"
+msgstr ""
+
+#: .\inbox\models.py:69
+msgid "دریافت پیام"
+msgstr ""
+
+#: .\inbox\models.py:70
+msgid "دریافت‌های پیام"
+msgstr ""
+
+#: .\inbox\models.py:106
+msgid "پیوست پیام"
+msgstr ""
+
+#: .\inbox\models.py:107
+msgid "پیوست‌های پیام"
+msgstr ""
+
+#: .\inbox\models.py:125
+msgid "کلید"
+msgstr ""
+
+#: .\inbox\models.py:129
+msgid "یادآوری ارسال‌شده"
+msgstr ""
+
+#: .\inbox\models.py:130
+msgid "یادآوری‌های ارسال‌شده"
+msgstr ""
+
+#: .\inbox\validators.py:23 .\services\validators.py:22
+msgid "این نوع فایل پذیرفته نمی‌شود. سند، تصویر یا فایل فشرده بفرستید."
+msgstr "This type of file is not accepted. Send a document, an image or a compressed file."
+
+#: .\inbox\validators.py:30 .\services\validators.py:29
+#, python-format
+msgid "حجم فایل نباید بیشتر از %(limit)d مگابایت باشد."
+msgstr "The file must be at most %(limit)d MB."
+
+#: .\office\admin.py:89
+msgid "کار"
+msgstr ""
+
+#: .\office\admin.py:93 .\office\admin.py:114
+msgid "مورد"
+msgstr ""
+
+#: .\office\admin.py:98 .\templates\commerce\order_list.html:20
+msgid "جزئیات"
+msgstr "Details"
+
+#: .\office\admin.py:151 .\office\models.py:102 .\office\models.py:103
+msgid "گزارش عملکرد"
+msgstr ""
+
+#: .\office\admin.py:210 .\office\models.py:38
+msgid "پاسخ مدیر کل"
+msgstr ""
+
+#: .\office\admin.py:282
+msgid "بازه"
+msgstr ""
+
+#: .\office\admin.py:288
+msgid "خوانده شد"
+msgstr ""
+
+#: .\office\admin.py:292
+msgid "پاسخ داده شد"
+msgstr ""
+
+#: .\office\models.py:25 .\services\models.py:365 .\support\models.py:77
+msgid "نویسنده"
+msgstr ""
+
+#: .\office\models.py:28
+msgid "متن گزارش"
+msgstr ""
+
+#: .\office\models.py:29
+msgid "از تاریخ"
+msgstr ""
+
+#: .\office\models.py:30
+msgid "تا تاریخ"
+msgstr ""
+
+#: .\office\models.py:36
+msgid "خوانده‌شده توسط"
+msgstr ""
+
+#: .\office\models.py:39
+msgid "زمان پاسخ"
+msgstr ""
+
+#: .\office\models.py:42
+msgid "گزارش اداری"
+msgstr ""
+
+#: .\office\models.py:43
+msgid "گزارش‌های اداری"
+msgstr ""
+
+#: .\office\models.py:51
+msgid "گزارش"
+msgstr ""
+
+#: .\office\models.py:60
+msgid "پیوست‌ها"
+msgstr ""
+
+#: .\office\models.py:75
+msgid "کارمند"
+msgstr ""
+
+#: .\office\models.py:76
+msgid "فهرست کارکنان"
+msgstr ""
+
+#: .\office\models.py:84
+msgid "کار ثبت‌شده"
+msgstr ""
+
+#: .\office\models.py:85
+msgid "سابقه‌ی کارها"
+msgstr ""
+
+#: .\office\models.py:93
+msgid "رویداد بررسی محتوا"
+msgstr ""
+
+#: .\office\models.py:94
+msgid "روند بررسی محتوا"
+msgstr ""
+
+#: .\pages\forms.py:28
+msgid "برای پاسخ دادن، شماره تماس یا ایمیل خود را وارد کنید."
+msgstr "So we can reply, enter your phone number or email."
+
+#: .\pages\models.py:15
+msgid "بخش انگلیسی آدرس صفحه، مثلاً about یا terms"
+msgstr ""
+
+#: .\pages\models.py:17
+msgid "متن صفحه"
+msgstr ""
+
+#: .\pages\models.py:17
+msgid "هر خط خالی یک پاراگراف جدید می‌سازد."
+msgstr ""
+
+#: .\pages\models.py:19
+msgid "نمایش در فوتر"
+msgstr ""
+
+#: .\pages\models.py:20
+msgid "ترتیب در فوتر"
+msgstr ""
+
+#: .\pages\models.py:24
+msgid "صفحه"
+msgstr ""
+
+#: .\pages\models.py:25
+msgid "صفحه‌ها"
+msgstr ""
+
+#: .\pages\models.py:39
+msgid "شماره تماس"
+msgstr "Phone number"
+
+#: .\pages\models.py:44
+msgid "بررسی شد"
+msgstr ""
+
+#: .\pages\models.py:47
+msgid "پیام تماس"
+msgstr ""
+
+#: .\pages\models.py:48
+msgid "پیام‌های تماس"
+msgstr ""
+
+#: .\pages\views.py:32
+msgid "پیام شما ثبت شد. به‌زودی پاسخ می‌دهیم."
+msgstr "Your message was received. We will reply soon."
+
+#: .\products\admin.py:32
+msgid "حوزه‌ی اصلی را در حوزه‌های مرتبط انتخاب نکنید."
+msgstr ""
+
+#: .\products\admin.py:35
+msgid "محصول نمی‌تواند با خودش مرتبط باشد."
+msgstr ""
+
+#: .\products\admin.py:49
+msgid "تصاویر و ویدیوی معرفی"
+msgstr ""
+
+#: .\products\admin.py:51
+msgid "پایان‌نامه (فقط پروژه‌ها)"
+msgstr ""
+
+#: .\products\admin.py:52 .\products\admin.py:68 .\templates\products\list.html:28
+msgid "قیمت"
+msgstr "Price"
+
+#: .\products\admin.py:53 .\products\models.py:90 .\templates\products\detail.html:179
+msgid "محصولات مرتبط"
+msgstr "Related products"
+
+#: .\products\admin.py:54
+msgid "محتوا"
+msgstr ""
+
+#: .\products\admin.py:76
+msgid "پیش‌نمایش کاور"
+msgstr ""
+
+#: .\products\admin.py:82 .\products\models.py:197
+msgid "گالری تصاویر"
+msgstr ""
+
+#: .\products\admin.py:95 .\templates\content\learn.html:31 .\templates\products\detail.html:138
+msgid "دانلود پایان‌نامه"
+msgstr "Download the thesis"
+
+#: .\products\admin.py:118
+msgid "بخش‌ها و درس‌ها"
+msgstr ""
+
+#: .\products\admin.py:150
+msgid "پیش‌نمایش"
+msgstr ""
+
+#: .\products\models.py:53
+msgid "دوره آموزشی"
+msgstr "Course"
+
+#: .\products\models.py:54 .\services\admin.py:120 .\services\admin.py:138
+msgid "پروژه"
+msgstr "Project"
+
+#: .\products\models.py:56
+msgid "نوع محصول"
+msgstr ""
+
+#: .\products\models.py:60
+msgid "بخش انگلیسی آدرس صفحه، مثلاً fpga-basics"
+msgstr ""
+
+#: .\products\models.py:62
+msgid "خلاصه"
+msgstr ""
+
+#: .\products\models.py:62
+msgid "یک یا دو جمله برای کارت محصول"
+msgstr ""
+
+#: .\products\models.py:66
+msgid "مدرسان"
+msgstr ""
+
+#: .\products\models.py:68
+msgid "روی کارت و صفحه‌ی محصول نمایش داده می‌شوند. اگر چند نفرند، سهم مدرس بینشان مساوی تقسیم می‌شود."
+msgstr ""
+
+#: .\products\models.py:70
+msgid "توضیحات کامل"
+msgstr ""
+
+#: .\products\models.py:72
+msgid "تصویر کاور"
+msgstr ""
+
+#: .\products\models.py:73
+msgid "در لیست محصولات نمایش داده می‌شود و برای انتشار لازم است. اندازه‌ی پیشنهادی: ۱۲۸۰×۷۲۰ (افقی ۱۶:۹)."
+msgstr ""
+
+#: .\products\models.py:76
+msgid "ویدیوی معرفی (لینک آپارات)"
+msgstr ""
+
+#: .\products\models.py:77
+msgid "برای همه نمایش داده می‌شود؛ مثلاً مدرس توضیح می‌دهد در دوره چه چیزی آموزش داده می‌شود."
+msgstr ""
+
+#: .\products\models.py:81
+msgid "حوزه اصلی"
+msgstr ""
+
+#: .\products\models.py:82
+msgid "مدیران این حوزه مسئول محصول هستند."
+msgstr ""
+
+#: .\products\models.py:85
+msgid "حوزه‌های مرتبط"
+msgstr ""
+
+#: .\products\models.py:86
+msgid "محصول در این حوزه‌ها هم نمایش داده می‌شود."
+msgstr ""
+
+#: .\products\models.py:91
+msgid "در صفحه‌ی محصول لینکشان نمایش داده می‌شود؛ مثلاً دوره‌ی آموزشی همین پروژه. (دوطرفه)"
+msgstr ""
+
+#: .\products\models.py:95 .\services\models.py:47 .\templates\content\learn.html:30 .\templates\products\detail.html:134
+msgid "پایان‌نامه"
+msgstr "Thesis"
+
+#: .\products\models.py:96
+msgid "فقط برای پروژه‌ها. فقط خریداران می‌توانند دانلود کنند."
+msgstr ""
+
+#: .\products\models.py:99
+msgid "قیمت (تومان)"
+msgstr ""
+
+#: .\products\models.py:99
+msgid "صفر یعنی رایگان"
+msgstr ""
+
+#: .\products\models.py:101
+msgid "قیمت با تخفیف (تومان)"
+msgstr ""
+
+#: .\products\models.py:101
+msgid "خالی یعنی بدون تخفیف"
+msgstr ""
+
+#: .\products\models.py:106
+msgid "در فروشگاه نمایش داده نمی‌شود، ولی خریداران دسترسی دارند."
+msgstr ""
+
+#: .\products\models.py:123 .\templates\products\detail.html:15 .\templates\products\list.html:4
+msgid "محصولات"
+msgstr "Products"
+
+#: .\products\models.py:142
+msgid "پایان‌نامه فقط برای پروژه‌ها است."
+msgstr ""
+
+#: .\products\models.py:144
+msgid "برای انتشار محصول، تصویر کاور لازم است."
+msgstr ""
+
+#: .\products\models.py:147
+msgid "محصول رایگان تخفیف ندارد."
+msgstr ""
+
+#: .\products\models.py:149
+msgid "قیمت با تخفیف باید کمتر از قیمت اصلی باشد."
+msgstr ""
+
+#: .\products\models.py:153
+#, python-format
+msgid "این محصول درس‌هایی با لینک آپارات دارد که برای همه قابل مشاهده است. برای پولی کردن محصول، اول ویدیوی آن درس‌ها را آپلود کنید، یا آن‌ها را «قابل مشاهده بدون خرید» کنید: %(lessons)s"
+msgstr ""
+
+#: .\products\models.py:192
+msgid "تصویر"
+msgstr ""
+
+#: .\products\models.py:193
+msgid "توضیح کوتاه"
+msgstr ""
+
+#: .\products\models.py:196
+msgid "تصویر گالری"
+msgstr ""
+
+#: .\products\templatetags\store.py:43
+msgid "رایگان"
+msgstr "Free"
+
+#: .\products\templatetags\store.py:44 .\products\templatetags\store.py:50
+#, python-format
+msgid "%(amount)s تومان"
+msgstr "%(amount)s Toman"
+
+#: .\products\templatetags\store.py:62
+#, python-format
+msgid "%(count)s ساعت"
+msgid_plural "%(count)s ساعت"
+msgstr[0] "%(count)s hour"
+msgstr[1] "%(count)s hours"
+
+#: .\products\templatetags\store.py:64 .\services\models.py:27
+#, python-format
+msgid "%(count)s دقیقه"
+msgid_plural "%(count)s دقیقه"
+msgstr[0] "%(count)s minute"
+msgstr[1] "%(count)s minutes"
+
+#: .\products\views.py:15
+msgid "جدیدترین"
+msgstr "Newest"
+
+#: .\products\views.py:16
+msgid "ارزان‌ترین"
+msgstr "Cheapest"
+
+#: .\products\views.py:17
+msgid "گران‌ترین"
+msgstr "Most expensive"
+
+#: .\services\admin.py:33
+msgid "این حوزه مدیر دارد و انتخاب کارشناس با مدیر حوزه است؛ فقط حوزه را انتخاب کنید."
+msgstr ""
+
+#: .\services\admin.py:55
+msgid "آیدی کارشناس"
+msgstr ""
+
+#: .\services\admin.py:116 .\services\admin.py:137
+msgid "درخواست‌کننده"
+msgstr ""
+
+#: .\services\admin.py:124 .\services\admin.py:205
+msgid "مالی"
+msgstr ""
+
+#: .\services\admin.py:125
+msgid "یادداشت"
+msgstr ""
+
+#: .\services\admin.py:189
+msgid "الان چه باید بشود"
+msgstr ""
+
+#: .\services\admin.py:211
+msgid "خلاصه‌ی مالی"
+msgstr ""
+
+#: .\services\admin.py:224 .\services\admin.py:387
+msgid "وضعیت قیمت"
+msgstr ""
+
+#: .\services\admin.py:233 .\services\admin.py:396
+msgid "دانلود ضمیمه"
+msgstr ""
+
+#: .\services\admin.py:280
+msgid "تأیید قیمت کارشناس"
+msgstr ""
+
+#: .\services\admin.py:281
+msgid "با تأیید، قیمت برای مدیر کل فرستاده می‌شود تا مبلغ نهایی را تعیین کند."
+msgstr ""
+
+#: .\services\admin.py:310
+msgid "گزارش کارشناس"
+msgstr ""
+
+#: .\services\admin.py:314
+msgid "اطلاعات ارجاع"
+msgstr ""
+
+#: .\services\admin.py:371
+msgid "خلاصه‌ی درخواست"
+msgstr ""
+
+#: .\services\forms.py:31
+msgid "عنوان پروژه یا موضوع مشاوره"
+msgstr "Project title or consultation topic"
+
+#: .\services\forms.py:35
+msgid "می‌توانید چند حوزه را انتخاب کنید."
+msgstr "You can choose more than one field."
+
+#: .\services\forms.py:45
+msgid "هر چه کامل‌تر بنویسید، سریع‌تر و دقیق‌تر راهنمایی می‌شوید: هدف کار، امکانات موجود، محدودیت‌ها و کارهایی که تا حالا انجام داده‌اید."
+msgstr "The more you tell us, the faster and better we can help: the goal, what you have to work with, the constraints, and what you have done so far."
+
+#: .\services\forms.py:57
+msgid "موضوع مشاوره"
+msgstr "Consultation topic"
+
+#: .\services\forms.py:59
+msgid "یک حوزه — همان که سؤالتان به آن مربوط است."
+msgstr "One field — the one your question is about."
+
+#: .\services\forms.py:61
+msgid "موضوع را روشن بنویسید: چه چیزی می‌خواهید بدانید و تا حالا چه کرده‌اید."
+msgstr "Describe the topic clearly: what you want to know, and what you have done so far."
+
+#: .\services\forms.py:70
+msgid "توضیحات را کامل‌تر بنویسید تا بتوانیم درست راهنمایی کنیم."
+msgstr "Please describe it more fully so we can guide you properly."
+
+#: .\services\forms.py:78
+msgid "حوزه را انتخاب کنید یا حوزه‌ی خود را در کادر بعدی بنویسید."
+msgstr "Choose a field, or write yours in the next box."
+
+#: .\services\forms.py:82
+msgid "برای مشاوره فقط یک حوزه را انتخاب کنید."
+msgstr "For a consultation, choose only one field."
+
+#: .\services\models.py:33 .\services\views.py:23 .\templates\base.html:128 .\templates\base.html:160 .\templates\home.html:78 .\templates\products\detail.html:171 .\templates\services\my_requests.html:73
+msgid "سفارش پروژه"
+msgstr "Order a project"
+
+#: .\services\models.py:34 .\services\views.py:37 .\templates\base.html:129 .\templates\base.html:161 .\templates\home.html:86 .\templates\products\detail.html:172 .\templates\services\my_requests.html:74
+msgid "مشاوره تخصصی"
+msgstr "Expert consulting"
+
+#: .\services\models.py:39 .\services\models.py:238
+msgid "ارجاع شده"
+msgstr "Referred"
+
+#: .\services\models.py:40 .\services\models.py:240 .\services\services.py:71 .\support\models.py:28
+msgid "در حال انجام"
+msgstr "In progress"
+
+#: .\services\models.py:41 .\services\models.py:241 .\support\models.py:29
+msgid "انجام شد"
+msgstr "Completed"
+
+#: .\services\models.py:42
+msgid "لغو شد"
+msgstr "Canceled"
+
+#: .\services\models.py:46
+msgid "درسی / دانشگاهی"
+msgstr "Coursework / university"
+
+#: .\services\models.py:48
+msgid "تحقیقاتی"
+msgstr "Research"
+
+#: .\services\models.py:49
+msgid "صنعتی"
+msgstr "Industrial"
+
+#: .\services\models.py:50
+msgid "استارتاپی"
+msgstr "Startup"
+
+#: .\services\models.py:51
+msgid "شخصی"
+msgstr "Personal"
+
+#: .\services\models.py:54
+msgid "انجام کامل کار"
+msgstr "The whole job"
+
+#: .\services\models.py:55
+msgid "کمک در بخشی از کار"
+msgstr "Help with part of it"
+
+#: .\services\models.py:56
+msgid "رفع اشکال کار موجود"
+msgstr "Fixing existing work"
+
+#: .\services\models.py:57
+msgid "بررسی و ارزیابی"
+msgstr "Review and assessment"
+
+#: .\services\models.py:58
+msgid "آموزش اختصاصی"
+msgstr "One-to-one teaching"
+
+#: .\services\models.py:69
+msgid "فرم سایت"
+msgstr ""
+
+#: .\services\models.py:77
+msgid "کد پیگیری"
+msgstr "Tracking code"
+
+#: .\services\models.py:81
+msgid "منبع"
+msgstr ""
+
+#: .\services\models.py:82
+msgid "اگر درخواست را خودتان از روی پیام کاربر ثبت می‌کنید، منبع را مشخص کنید."
+msgstr ""
+
+#: .\services\models.py:88
+msgid "کاربر سایت"
+msgstr ""
+
+#: .\services\models.py:90
+msgid "نام و نام خانوادگی"
+msgstr "Full name"
+
+#: .\services\models.py:93
+msgid "راه ارتباطی ترجیحی"
+msgstr "Preferred way to reach you"
+
+#: .\services\models.py:95
+msgid "آیدی یا شماره در آن بستر"
+msgstr "Your ID or number there"
+
+#: .\services\models.py:106
+msgid "عنوان پروژه"
+msgstr ""
+
+#: .\services\models.py:108
+msgid "سطح پروژه"
+msgstr "Project level"
+
+#: .\services\models.py:109
+msgid "چه چیزی از ما می‌خواهید"
+msgstr "What you need from us"
+
+#: .\services\models.py:110
+msgid "زمان تحویل موردنظر"
+msgstr "Wanted delivery date"
+
+#: .\services\models.py:112
+msgid "مدت مشاوره (دقیقه)"
+msgstr "Consultation length (minutes)"
+
+#: .\services\models.py:113
+msgid "فقط برای مشاوره. کارشناس می‌تواند بعد از فهمیدن موضوع اصلاحش کند."
+msgstr "For consultations only. The expert may change it once they understand the topic."
+
+#: .\services\models.py:118
+msgid "شرح پروژه، عکس یا هر سندی که کمک می‌کند. فقط مدیران و کارشناس مربوطه آن را می‌بینند."
+msgstr "A project brief, a photo or any document that helps. Only the managers and the expert assigned see it."
+
+#: .\services\models.py:123
+msgid "مبلغ توافق‌شده (تومان)"
+msgstr ""
+
+#: .\services\models.py:123
+msgid "خالی یعنی هنوز توافقی نشده است."
+msgstr ""
+
+#: .\services\models.py:126
+msgid "درصد پیش‌پرداخت"
+msgstr ""
+
+#: .\services\models.py:128
+msgid "خالی یعنی همان درصد پیش‌فرض سایت. مشاوره همیشه کامل پرداخت می‌شود."
+msgstr ""
+
+#: .\services\models.py:140
+msgid "درخواست خدمات"
+msgstr ""
+
+#: .\services\models.py:141
+msgid "درخواست‌های خدمات"
+msgstr ""
+
+#: .\services\models.py:218
+msgid "مبلغ تعیین نشده"
+msgstr "Amount not set yet"
+
+#: .\services\models.py:221
+msgid "پرداخت نشده"
+msgstr "Not paid"
+
+#: .\services\models.py:223
+msgid "تسویه شده"
+msgstr "Paid in full"
+
+#: .\services\models.py:224
+msgid "پرداخت جزئی"
+msgstr "Partly paid"
+
+#: .\services\models.py:242
+msgid "امکان‌پذیر نیست"
+msgstr ""
+
+#: .\services\models.py:253
+msgid "یکی از کارشناسان یا مدیران همین حوزه، به انتخاب مدیر حوزه. خالی یعنی هنوز انتخاب نشده است."
+msgstr ""
+
+#: .\services\models.py:258
+msgid "قیمت پیشنهادی این بخش (تومان)"
+msgstr ""
+
+#: .\services\models.py:263
+msgid "تأییدکننده‌ی قیمت"
+msgstr ""
+
+#: .\services\models.py:265
+msgid "زمان تأیید قیمت"
+msgstr ""
+
+#: .\services\models.py:268
+msgid "زمان سپردن به کارشناس"
+msgstr ""
+
+#: .\services\models.py:271
+msgid "سپارنده به کارشناس"
+msgstr ""
+
+#: .\services\models.py:273
+msgid "زمان ثبت قیمت"
+msgstr ""
+
+#: .\services\models.py:274
+msgid "مدت زمان تقریبی"
+msgstr ""
+
+#: .\services\models.py:274
+msgid "مثلاً ۳ هفته"
+msgstr ""
+
+#: .\services\models.py:275
+msgid "کارهای انجام‌شده"
+msgstr ""
+
+#: .\services\models.py:276
+msgid "کارهای باقی‌مانده"
+msgstr ""
+
+#: .\services\models.py:277
+msgid "ارزیابی امکان‌پذیری"
+msgstr ""
+
+#: .\services\models.py:283
+msgid "زمان معرفی به مشتری"
+msgstr ""
+
+#: .\services\models.py:284
+msgid "وقتی آیدی کارشناس را به مشتری دادید، اینجا ثبت می‌شود."
+msgstr ""
+
+#: .\services\models.py:288
+msgid "ارجاع‌دهنده"
+msgstr ""
+
+#: .\services\models.py:290
+msgid "زمان ارجاع"
+msgstr ""
+
+#: .\services\models.py:294
+msgid "ارجاع به حوزه"
+msgstr ""
+
+#: .\services\models.py:295
+msgid "ارجاع‌ها"
+msgstr ""
+
+#: .\services\models.py:332
+msgid "پرداخت‌هایی که خودتان ثبت می‌کنید یعنی پول رسیده است."
+msgstr ""
+
+#: .\services\models.py:336
+msgid "مثلاً پیش‌پرداخت"
+msgstr ""
+
+#: .\services\models.py:349
+msgid "پرداخت درخواست"
+msgstr ""
+
+#: .\services\models.py:350
+msgid "پرداخت‌های درخواست"
+msgstr ""
+
+#: .\services\models.py:371
+msgid "پیام پرونده"
+msgstr ""
+
+#: .\services\models.py:372
+msgid "پیام‌های پرونده"
+msgstr ""
+
+#: .\services\models.py:393
+msgid "رویداد پرونده"
+msgstr ""
+
+#: .\services\models.py:394
+msgid "سابقه‌ی پرونده"
+msgstr ""
+
+#: .\services\models.py:413
+msgid "بستر"
+msgstr ""
+
+#: .\services\models.py:414
+msgid "عنوان نمایشی"
+msgstr ""
+
+#: .\services\models.py:414
+msgid "مثلاً پشتیبانی MAHAY"
+msgstr ""
+
+#: .\services\models.py:415
+msgid "آیدی یا شماره"
+msgstr ""
+
+#: .\services\models.py:415
+msgid "مثلاً @mahay_support یا 09121234567"
+msgstr ""
+
+#: .\services\models.py:416
+msgid "لینک"
+msgstr ""
+
+#: .\services\models.py:416
+msgid "اگر خالی باشد، برای بسترهای شناخته‌شده خودکار ساخته می‌شود."
+msgstr ""
+
+#: .\services\models.py:422 .\templates\services\partials\channels.html:3
+msgid "راه‌های ارتباطی"
+msgstr "Ways to reach us"
+
+#: .\services\models.py:453 .\services\models.py:454
+msgid "آمار نحوه‌ی آشنایی"
+msgstr ""
+
+#: .\services\payments.py:47
+msgid "در حال حاضر مبلغی برای پرداخت وجود ندارد."
+msgstr "There is nothing to pay at the moment."
+
+#: .\services\services.py:64
+msgid "منتظر بررسی و ارجاع"
+msgstr "Waiting to be reviewed"
+
+#: .\services\services.py:65 .\services\services.py:66
+msgid "منتظر انتخاب کارشناس"
+msgstr "Waiting for an expert to be chosen"
+
+#: .\services\services.py:67
+msgid "منتظر قیمت حوزه‌ها"
+msgstr "Waiting for quotes"
+
+#: .\services\services.py:68
+msgid "منتظر تأیید قیمت"
+msgstr "Waiting for the quote to be approved"
+
+#: .\services\services.py:69
+msgid "منتظر تعیین مبلغ کل"
+msgstr "Waiting for the total to be set"
+
+#: .\services\services.py:70
+msgid "منتظر پیش‌پرداخت"
+msgstr "Waiting for the prepayment"
+
+#: .\services\services.py:72
+msgid "منتظر تسویه"
+msgstr "Waiting for the final payment"
+
+#: .\services\services.py:73
+msgid "تمام شد"
+msgstr "Done"
+
+#: .\services\services.py:74
+msgid "بسته شد"
+msgstr "Closed"
+
+#: .\services\views.py:24
+msgid "پروژه‌ی خود را به تیم تخصصی MAHAY بسپارید."
+msgstr "Hand your project to MAHAY's expert team."
+
+#: .\services\views.py:26
+msgid "پروژه‌های درسی، پایان‌نامه، صنعتی و استارتاپی را در حوزه‌های تخصصی خود انجام می‌دهیم."
+msgstr "We take on coursework, thesis, industrial and startup projects in our fields of expertise."
+
+#: .\services\views.py:27
+msgid "کار می‌تواند انجام کامل پروژه، کمک در بخشی از آن، یا رفع اشکال کاری باشد که شروع کرده‌اید."
+msgstr "The work can be the whole project, help with part of it, or fixing something you have already started."
+
+#: .\services\views.py:30
+msgid "فرم زیر را پر کنید تا درخواست شما ثبت شود و کد پیگیری بگیرید."
+msgstr "Fill in the form below to send your request and get a tracking code."
+
+#: .\services\views.py:31 .\services\views.py:45
+msgid "از یکی از راه‌های ارتباطی با ما تماس بگیرید و کد پیگیری را بگویید."
+msgstr "Contact us through one of our channels and give us the tracking code."
+
+#: .\services\views.py:32
+msgid "پروژه بررسی می‌شود و زمان و هزینه‌ی آن به شما اعلام می‌گردد."
+msgstr "We look at the project and tell you how long it will take and what it will cost."
+
+#: .\services\views.py:33
+msgid "در صورت توافق، کار به کارشناس حوزه‌ی مربوطه سپرده می‌شود و مستقیم با او در ارتباط خواهید بود."
+msgstr "Once we agree, the work goes to an expert in that field, and you'll be in touch with them directly."
+
+#: .\services\views.py:38 .\templates\home.html:87
+msgid "قبل از شروع یا در میانه‌ی کار، با کارشناس همان حوزه مشورت کنید."
+msgstr "Before you start or partway through, talk it over with an expert in that field."
+
+#: .\services\views.py:40
+msgid "انتخاب مسیر درست، بررسی امکان‌پذیری، انتخاب ابزار و سخت‌افزار، و رفع ابهام‌های فنی."
+msgstr "Choosing the right approach, checking feasibility, picking tools and hardware, and clearing up technical questions."
+
+#: .\services\views.py:41
+msgid "مشاوره با کارشناس همان حوزه انجام می‌شود و هزینه‌ی آن پس از بررسی موضوع اعلام می‌گردد."
+msgstr "You talk with an expert in that field; the cost is given once we have looked at the topic."
+
+#: .\services\views.py:44
+msgid "فرم زیر را پر کنید تا موضوع مشاوره ثبت شود و کد پیگیری بگیرید."
+msgstr "Fill in the form below to send your topic and get a tracking code."
+
+#: .\services\views.py:46
+msgid "موضوع بررسی و هزینه‌ی مشاوره اعلام می‌شود."
+msgstr "We look at the topic and tell you what the consultation costs."
+
+#: .\services\views.py:47
+msgid "در صورت توافق، به کارشناس همان حوزه معرفی می‌شوید."
+msgstr "Once we agree, we put you in touch with an expert in that field."
+
+#: .\services\views.py:73
+msgid "درخواست‌های شما زیاد است. یک ساعت دیگر تلاش کنید."
+msgstr "You've sent too many requests. Try again in an hour."
+
+#: .\services\views.py:158
+msgid "پرداخت مورد نظر پیدا نشد."
+msgstr "That payment wasn't found."
+
+#: .\services\views.py:162
+msgid "این پرداخت قبلاً ثبت شده است."
+msgstr "This payment has already been recorded."
+
+#: .\services\views.py:167
+msgid "پرداخت لغو شد."
+msgstr "The payment was canceled."
+
+#: .\services\views.py:178
+#, python-format
+msgid "پرداخت %(amount)s با موفقیت انجام شد."
+msgstr "Your payment of %(amount)s was successful."
+
+#: .\support\models.py:18
+msgid "خطا"
+msgstr ""
+
+#: .\support\models.py:19
+msgid "قابلیت جدید"
+msgstr ""
+
+#: .\support\models.py:20
+msgid "سؤال"
+msgstr ""
+
+#: .\support\models.py:23
+msgid "عادی"
+msgstr ""
+
+#: .\support\models.py:24
+msgid "فوری"
+msgstr ""
+
+#: .\support\models.py:33
+msgid "فوریت"
+msgstr ""
+
+#: .\support\models.py:36
+msgid "شرح"
+msgstr ""
+
+#: .\support\models.py:36
+msgid "چه کردید، چه انتظار داشتید و چه دیدید. برای قابلیت جدید: چه چیزی و چرا."
+msgstr ""
+
+#: .\support\models.py:39
+msgid "آدرس صفحه"
+msgstr ""
+
+#: .\support\models.py:39
+msgid "اختیاری: صفحه‌ای که مشکل در آن دیده شد."
+msgstr ""
+
+#: .\support\models.py:44
+msgid "درخواست‌دهنده"
+msgstr ""
+
+#: .\support\models.py:49
+msgid "مسئول"
+msgstr ""
+
+#: .\support\models.py:49
+msgid "یکی از مدیران فنی."
+msgstr ""
+
+#: .\support\models.py:52
+msgid "توضیح وضعیت"
+msgstr ""
+
+#: .\support\models.py:52
+msgid "مثلاً چه چیزی انجام شد یا چرا رد شد؛ درخواست‌دهنده می‌بیند."
+msgstr ""
+
+#: .\support\models.py:54
+msgid "زمان تغییر وضعیت"
+msgstr ""
+
+#: .\support\models.py:59
+msgid "درخواست فنی"
+msgstr ""
+
+#: .\support\models.py:60
+msgid "درخواست‌های فنی"
+msgstr ""
+
+#: .\support\models.py:79
+msgid "متن"
+msgstr ""
+
+#: .\support\models.py:84
+msgid "گفتگو"
+msgstr ""
+
+#: .\support\models.py:101
+msgid "بارگذاری‌کننده"
+msgstr ""
+
+#: .\support\models.py:107
+msgid "فایل‌ها و تصویرها"
+msgstr ""
+
+#: .\templates\400.html:4 .\templates\400.html:6
+msgid "درخواست نامعتبر"
+msgstr "Bad request"
+
+#: .\templates\400.html:8
+msgid "سایت نتوانست این درخواست را بخواند. صفحه را دوباره باز کنید یا از صفحه‌ی اصلی ادامه دهید."
+msgstr "The site couldn't read this request. Open the page again, or carry on from the home page."
+
+#: .\templates\403.html:4 .\templates\403.html:6
+msgid "دسترسی ممکن نیست"
+msgstr "Access denied"
+
+#: .\templates\403.html:8
+msgid "حساب کاربری شما اجازه‌ی دیدن این صفحه را ندارد. اگر با حساب دیگری کار می‌کنید، از این حساب خارج شوید و با همان حساب وارد شوید."
+msgstr "Your account isn't allowed to see this page. If you use another account, log out of this one and log in with that one."
+
+#: .\templates\403_csrf.html:8 .\templates\403_csrf.html:10
+msgid "فرم ارسال نشد"
+msgstr "The form was not sent"
+
+#: .\templates\403_csrf.html:12
+msgid "اطلاعاتی که فرستادید ثبت نشد، چون این صفحه دیگر معتبر نیست. معمولاً وقتی پیش می‌آید که در زبانه‌ی دیگری وارد حساب شده یا از آن خارج شده‌اید."
+msgstr "What you sent wasn't saved, because this page is no longer valid. This usually happens after logging in or out in another tab."
+
+#: .\templates\403_csrf.html:13
+msgid "به صفحه‌ی قبل برگردید، آن را دوباره بارگذاری کنید و فرم را از نو بفرستید. اگر باز هم این پیام را دیدید، کوکی‌های مرورگر را برای این سایت فعال کنید."
+msgstr "Go back to the previous page, reload it and send the form again. If you still see this message, allow cookies for this site in your browser."
+
+#: .\templates\404.html:4 .\templates\404.html:6
+msgid "صفحه پیدا نشد"
+msgstr "Page not found"
+
+#: .\templates\404.html:8
+msgid "صفحه‌ای که دنبالش هستید وجود ندارد یا جابه‌جا شده است. اگر آدرس را خودتان نوشته‌اید، یک بار دیگر آن را بررسی کنید."
+msgstr "The page you're looking for doesn't exist or has moved. If you typed the address yourself, check it once more."
+
+#: .\templates\500.html:4
+msgid "خطای سرور"
+msgstr "Server error"
+
+#: .\templates\500.html:6
+msgid "مشکلی پیش آمد"
+msgstr "Something went wrong"
+
+#: .\templates\500.html:8
+msgid "این خطا از طرف ماست، نه شما. خطا ثبت شد و بررسی می‌شود؛ چند دقیقه‌ی دیگر دوباره امتحان کنید."
+msgstr "This error is on our side, not yours. It has been logged and will be looked into; try again in a few minutes."
+
+#: .\templates\accounts\auth_layout.html:30
+msgid "ثبت"
+msgstr "Submit"
+
+#: .\templates\accounts\login.html:4 .\templates\accounts\login.html:7 .\templates\base.html:87 .\templates\products\detail.html:152
+msgid "ورود"
+msgstr "Log in"
+
+#: .\templates\accounts\login.html:5
+msgid "خوش برگشتید"
+msgstr "Welcome back"
+
+#: .\templates\accounts\login.html:6
+msgid "با شماره موبایل و رمز عبور وارد شوید"
+msgstr "Log in with your mobile number and password"
+
+#: .\templates\accounts\login.html:12
+msgid "رمز عبور را فراموش کرده‌اید؟"
+msgstr "Forgot your password?"
+
+#: .\templates\accounts\login.html:16
+msgid "حساب ندارید؟"
+msgstr "Don't have an account?"
+
+#: .\templates\accounts\login.html:16
+msgid "ثبت‌نام کنید"
+msgstr "Sign up"
+
+#: .\templates\accounts\message.html:11
+msgid "ورود به حساب"
+msgstr "Log in to your account"
+
+#: .\templates\accounts\message.html:13 .\templates\errors\layout.html:30 .\templates\services\submitted.html:27
+msgid "بازگشت به صفحه اصلی"
+msgstr "Back to the home page"
+
+#: .\templates\accounts\password_change.html:4 .\templates\accounts\password_change.html:5 .\templates\accounts\profile.html:15
+msgid "تغییر رمز عبور"
+msgstr "Change password"
+
+#: .\templates\accounts\password_change.html:6
+msgid "برای امنیت، رمز فعلی را هم وارد کنید"
+msgstr "For security, enter your current password too"
+
+#: .\templates\accounts\password_change.html:7
+msgid "تغییر رمز"
+msgstr "Change password"
+
+#: .\templates\accounts\password_change.html:10
+msgid "بازگشت به پروفایل"
+msgstr "Back to your profile"
+
+#: .\templates\accounts\password_reset.html:4 .\templates\accounts\password_reset.html:5
+msgid "فراموشی رمز عبور"
+msgstr "Forgotten password"
+
+#: .\templates\accounts\password_reset.html:6
+msgid "شماره موبایل حسابتان را وارد کنید تا کد تأیید برایتان فرستاده شود"
+msgstr "Enter your account's mobile number and we'll send you a verification code"
+
+#: .\templates\accounts\password_reset.html:7
+msgid "ارسال کد"
+msgstr "Send code"
+
+#: .\templates\accounts\password_reset.html:10 .\templates\accounts\password_reset_new.html:10
+msgid "بازگشت به ورود"
+msgstr "Back to log in"
+
+#: .\templates\accounts\password_reset_new.html:4 .\templates\accounts\password_reset_new.html:5
+msgid "رمز عبور جدید"
+msgstr "New password"
+
+#: .\templates\accounts\password_reset_new.html:6
+msgid "رمز تازه‌ای برای حسابتان انتخاب کنید"
+msgstr "Choose a new password for your account"
+
+#: .\templates\accounts\password_reset_new.html:7
+msgid "ثبت رمز جدید"
+msgstr "Save the new password"
+
+#: .\templates\accounts\password_reset_verify.html:4 .\templates\accounts\verify.html:4 .\templates\accounts\verify.html:5
+msgid "تأیید شماره موبایل"
+msgstr "Verify your mobile number"
+
+#: .\templates\accounts\password_reset_verify.html:7
+#, python-format
+msgid "اگر حسابی با شماره‌ی <bdi dir=\"ltr\">%(mobile_display)s</bdi> وجود داشته باشد، کد ۶ رقمی برایش فرستاده شده است"
+msgstr "If there is an account with the number <bdi dir=\"ltr\">%(mobile_display)s</bdi>, a 6-digit code has been sent to it"
+
+#: .\templates\accounts\password_reset_verify.html:12
+msgid "تأیید کد"
+msgstr "Verify code"
+
+#: .\templates\accounts\password_reset_verify.html:18 .\templates\accounts\verify.html:15
+msgid "ارسال دوباره‌ی کد"
+msgstr "Send the code again"
+
+#: .\templates\accounts\password_reset_verify.html:20 .\templates\accounts\verify.html:17
+msgid "شماره اشتباه است؟"
+msgstr "Wrong number?"
+
+#: .\templates\accounts\password_reset_verify.html:20 .\templates\accounts\verify.html:17
+msgid "اصلاح شماره"
+msgstr "Change it"
+
+#: .\templates\accounts\profile.html:4 .\templates\base.html:67 .\templates\base.html:70
+msgid "پروفایل"
+msgstr "Profile"
+
+#: .\templates\accounts\profile.html:5 .\templates\services\form.html:46
+msgid "حساب کاربری"
+msgstr "Account"
+
+#: .\templates\accounts\profile.html:7
+msgid "شماره موبایل:"
+msgstr "Mobile number:"
+
+#: .\templates\accounts\profile.html:9
+msgid "ذخیره تغییرات"
+msgstr "Save changes"
+
+#: .\templates\accounts\profile.html:12 .\templates\base.html:71 .\templates\commerce\library.html:4 .\templates\commerce\library.html:9 .\templates\content\learn.html:9
+msgid "خریدهای من"
+msgstr "My purchases"
+
+#: .\templates\accounts\profile.html:14 .\templates\base.html:73 .\templates\services\my_requests.html:4 .\templates\services\my_requests.html:8 .\templates\services\submitted.html:25
+msgid "درخواست‌های من"
+msgstr "My requests"
+
+#: .\templates\accounts\signup.html:4 .\templates\accounts\signup.html:7 .\templates\base.html:88
+msgid "ثبت‌نام"
+msgstr "Sign up"
+
+#: .\templates\accounts\signup.html:5
+msgid "ساخت حساب کاربری"
+msgstr "Create an account"
+
+#: .\templates\accounts\signup.html:6
+msgid "با شماره موبایل خود ثبت‌نام کنید؛ یک کد تأیید برایتان پیامک می‌شود"
+msgstr "Sign up with your mobile number; we'll text you a verification code"
+
+#: .\templates\accounts\signup.html:10
+msgid "حساب دارید؟"
+msgstr "Already have an account?"
+
+#: .\templates\accounts\signup.html:10
+msgid "وارد شوید"
+msgstr "Log in"
+
+#: .\templates\accounts\verify.html:7
+#, python-format
+msgid "کد ۶ رقمی ارسال‌شده به <bdi dir=\"ltr\">%(mobile_display)s</bdi> را وارد کنید"
+msgstr "Enter the 6-digit code sent to <bdi dir=\"ltr\">%(mobile_display)s</bdi>"
+
+#: .\templates\accounts\verify.html:9
+msgid "تأیید و ورود"
+msgstr "Verify and log in"
+
+#: .\templates\admin\app_index.html:12
+msgid "Breadcrumbs"
+msgstr ""
+
+#: .\templates\admin\app_index.html:14
+msgid "Home"
+msgstr ""
+
+#: .\templates\admin\app_index.html:50 .\templates\admin\app_list.html:45
+msgid "View"
+msgstr ""
+
+#: .\templates\admin\app_index.html:50 .\templates\admin\app_list.html:47
+msgid "Change"
+msgstr ""
+
+#: .\templates\admin\app_index.html:53 .\templates\admin\app_list.html:38 .\templates\admin\nav_sidebar.html:37
+msgid "Add"
+msgstr ""
+
+#: .\templates\admin\app_index.html:60 .\templates\admin\app_list.html:59 .\templates\admin\index.html:42
+msgid "You don’t have permission to view or edit anything."
+msgstr ""
+
+#: .\templates\admin\app_list.html:12
+#, python-format
+msgid "Models in the %(name)s application"
+msgstr ""
+
+#: .\templates\admin\app_list.html:16
+msgid "Model name"
+msgstr ""
+
+#: .\templates\admin\app_list.html:17
+msgid "Add link"
+msgstr ""
+
+#: .\templates\admin\app_list.html:18
+msgid "Change or view list link"
+msgstr ""
+
+#: .\templates\admin\base_site.html:4
+msgid "Django site admin"
+msgstr ""
+
+#: .\templates\admin\base_site.html:10
+msgid "Django administration"
+msgstr ""
+
+#: .\templates\admin\base_site.html:42 .\templates\admin\index.html:32
+msgid "View site"
+msgstr ""
+
+#: .\templates\admin\base_site.html:45
+msgid "Change password"
+msgstr ""
+
+#: .\templates\admin\base_site.html:49
+msgid "Log out"
+msgstr ""
+
+#: .\templates\admin\index.html:46
+msgid "Recent actions"
+msgstr ""
+
+#: .\templates\admin\index.html:47
+msgid "My actions"
+msgstr ""
+
+#: .\templates\admin\index.html:51
+msgid "None available"
+msgstr ""
+
+#: .\templates\admin\index.html:56
+msgid "Added:"
+msgstr ""
+
+#: .\templates\admin\index.html:56
+msgid "Changed:"
+msgstr ""
+
+#: .\templates\admin\index.html:56
+msgid "Deleted:"
+msgstr ""
+
+#: .\templates\admin\index.html:66
+msgid "Unknown content"
+msgstr ""
+
+#: .\templates\admin\nav_sidebar.html:8
+msgid "Toggle navigation"
+msgstr ""
+
+#: .\templates\admin\nav_sidebar.html:9
+msgid "Sidebar"
+msgstr ""
+
+#: .\templates\admin\nav_sidebar.html:11
+msgid "Start typing to filter…"
+msgstr ""
+
+#: .\templates\admin\nav_sidebar.html:12
+msgid "Filter navigation items"
+msgstr ""
+
+#: .\templates\base.html:21
+msgid "نمایش"
+msgstr "Show"
+
+#: .\templates\base.html:21
+msgid "پنهان"
+msgstr "Hide"
+
+#: .\templates\base.html:22 .\templates\base.html:139
+msgid "بستن"
+msgstr "Close"
+
+#: .\templates\base.html:22 .\templates\partials\pagination.html:5
+msgid "قبلی"
+msgstr "Previous"
+
+#: .\templates\base.html:23 .\templates\partials\pagination.html:9
+msgid "بعدی"
+msgstr "Next"
+
+#: .\templates\base.html:23
+msgid "ثانیه"
+msgstr "s"
+
+#: .\templates\base.html:32
+msgid "جستجو در دوره‌ها و پروژه‌ها..."
+msgstr "Search courses and projects..."
+
+#: .\templates\base.html:32 .\templates\base.html:33 .\templates\home.html:13 .\templates\home.html:14 .\templates\products\list.html:15
+msgid "جستجو"
+msgstr "Search"
+
+#: .\templates\base.html:47
+msgid "تغییر تم روشن و تیره"
+msgstr "Switch between light and dark theme"
+
+#: .\templates\base.html:56
+msgid "کارپوشه"
+msgstr "Inbox"
+
+#: .\templates\base.html:60
+msgid "پنل مدیریت"
+msgstr "Admin panel"
+
+#: .\templates\base.html:77 .\templates\collaboration\apply.html:4 .\templates\collaboration\apply.html:9 .\templates\services\my_requests.html:13
+msgid "همکاری با مجموعه"
+msgstr "Work with us"
+
+#: .\templates\base.html:84
+msgid "خروج"
+msgstr "Log out"
+
+#: .\templates\base.html:94
+msgid "بخش‌های سایت"
+msgstr "Site sections"
+
+#: .\templates\base.html:97 .\templates\home.html:3
+msgid "خانه"
+msgstr "Home"
+
+#: .\templates\base.html:108 .\templates\base.html:158
+msgid "دوره‌های آموزشی"
+msgstr "Courses"
+
+#: .\templates\base.html:110
+msgid "همه‌ی دوره‌ها"
+msgstr "All courses"
+
+#: .\templates\base.html:118 .\templates\base.html:159
+msgid "پروژه‌ها"
+msgstr "Projects"
+
+#: .\templates\base.html:120
+msgid "همه‌ی پروژه‌ها"
+msgstr "All projects"
+
+#: .\templates\base.html:153
+msgid "آموزش تخصصی و پروژه‌محور؛ دوره‌های آموزشی و پروژه‌های واقعی در حوزه‌های مختلف."
+msgstr "Specialist, project-based learning: courses and real projects across many fields."
+
+#: .\templates\base.html:156
+msgid "بخش‌ها"
+msgstr "Sections"
+
+#: .\templates\base.html:166
+msgid "راهنما"
+msgstr "Help"
+
+#: .\templates\base.html:171 .\templates\pages\contact.html:4 .\templates\pages\contact.html:9
+msgid "تماس با ما"
+msgstr "Contact us"
+
+#: .\templates\base.html:176
+msgid "تمامی حقوق محفوظ است."
+msgstr "All rights reserved."
+
+#: .\templates\collaboration\apply.html:10
+msgid "اگر در حوزه‌ای تخصص دارید و دوست دارید با MAHAY کار کنید، این فرم را پر کنید."
+msgstr "If you're an expert in a field and would like to work with MAHAY, fill in this form."
+
+#: .\templates\collaboration\apply.html:18
+msgid "درخواست شما ثبت شده است. تا وقتی بررسی شروع نشده می‌توانید اصلاحش کنید."
+msgstr "Your application has been received. You can change it until the review starts."
+
+#: .\templates\collaboration\apply.html:31
+msgid "چه کاری از شما برمی‌آید"
+msgstr "What you can do"
+
+#: .\templates\collaboration\apply.html:37
+msgid "سابقه و تخصص"
+msgstr "Background and expertise"
+
+#: .\templates\collaboration\apply.html:45
+msgid "چطور با شما تماس بگیریم"
+msgstr "How we can reach you"
+
+#: .\templates\collaboration\apply.html:52
+msgid "ذخیره‌ی تغییرات"
+msgstr "Save changes"
+
+#: .\templates\collaboration\apply.html:52 .\templates\services\form.html:27 .\templates\services\form.html:37
+msgid "ثبت درخواست"
+msgstr "Send request"
+
+#: .\templates\collaboration\apply.html:60
+msgid "چطور پیش می‌رود"
+msgstr "How it works"
+
+#: .\templates\collaboration\apply.html:62
+msgid "این فرم را پر می‌کنید."
+msgstr "You fill in this form."
+
+#: .\templates\collaboration\apply.html:63
+msgid "درخواست شما برای مدیران مجموعه فرستاده می‌شود."
+msgstr "Your application goes to our managers."
+
+#: .\templates\collaboration\apply.html:64
+msgid "اگر مناسب بود، از همان راه ارتباطی که نوشته‌اید با شما تماس می‌گیریم."
+msgstr "If it's a fit, we get in touch the way you asked us to."
+
+#: .\templates\collaboration\apply.html:65
+msgid "وضعیت درخواست را همیشه در «درخواست‌های من» می‌بینید."
+msgstr "You can always see where your application stands under “My requests”."
+
+#: .\templates\collaboration\apply.html:69
+msgid "نکته"
+msgstr "Note"
+
+#: .\templates\collaboration\apply.html:71
+msgid "نام و شماره‌ی شما از حساب کاربری‌تان برداشته می‌شود و لازم نیست دوباره بنویسید. جز نوع همکاری، معرفی کوتاه و راه ارتباطی، بقیه‌ی فیلدها اختیاری‌اند."
+msgstr "Your name and number are taken from your account, so you don't need to write them again. Apart from the kind of work, a short introduction and a way to reach you, every field is optional."
+
+#: .\templates\commerce\cart.html:29
+msgid "حذف"
+msgstr "Remove"
+
+#: .\templates\commerce\cart.html:36
+msgid "جمع سفارش"
+msgstr "Order summary"
+
+#: .\templates\commerce\cart.html:39
+msgid "مبلغ قابل پرداخت"
+msgstr "Amount to pay"
+
+#: .\templates\commerce\cart.html:49
+#, python-format
+msgid "%(terms_links)s را خوانده‌ام و می‌پذیرم."
+msgstr "I have read and accept %(terms_links)s."
+
+#: .\templates\commerce\cart.html:53
+msgid "پرداخت و ثبت سفارش"
+msgstr "Pay and place the order"
+
+#: .\templates\commerce\cart.html:53
+msgid "ثبت سفارش رایگان"
+msgstr "Place the free order"
+
+#: .\templates\commerce\cart.html:57
+msgid "برای ثبت سفارش باید وارد حساب خود شوید."
+msgstr "You need to log in to place an order."
+
+#: .\templates\commerce\cart.html:62 .\templates\commerce\library.html:38
+msgid "مشاهده محصولات"
+msgstr "Browse products"
+
+#: .\templates\commerce\library.html:10
+msgid "سفارش‌ها ←"
+msgstr "Orders →"
+
+#: .\templates\commerce\library.html:26 .\templates\content\learn.html:19
+#, python-format
+msgid "%(done)s از %(total)s درس"
+msgstr "%(done)s of %(total)s lessons"
+
+#: .\templates\commerce\library.html:27 .\templates\content\learn.html:18
+#, python-format
+msgid "%(percent)s٪"
+msgstr "%(percent)s%%"
+
+#: .\templates\commerce\library.html:31
+msgid "مرور دوباره"
+msgstr "Review again"
+
+#: .\templates\commerce\library.html:31 .\templates\content\learn.html:23
+msgid "ادامه‌ی یادگیری"
+msgstr "Continue learning"
+
+#: .\templates\commerce\library.html:31 .\templates\content\learn.html:23
+msgid "شروع یادگیری"
+msgstr "Start learning"
+
+#: .\templates\commerce\library.html:38
+msgid "هنوز محصولی نخریده‌اید."
+msgstr "You haven't bought anything yet."
+
+#: .\templates\commerce\order_detail.html:4
+#, python-format
+msgid "سفارش %(number)s"
+msgstr "Order %(number)s"
+
+#: .\templates\commerce\order_detail.html:13
+msgid "شماره سفارش:"
+msgstr "Order number:"
+
+#: .\templates\commerce\order_detail.html:14
+msgid "تاریخ:"
+msgstr "Date:"
+
+#: .\templates\commerce\order_detail.html:20
+msgid "مبلغ کل"
+msgstr "Total"
+
+#: .\templates\commerce\order_detail.html:22
+msgid "کارت"
+msgstr "Card"
+
+#: .\templates\commerce\order_detail.html:26
+msgid "مشاهده خریدهای من"
+msgstr "See my purchases"
+
+#: .\templates\commerce\order_detail.html:29
+msgid "بازگشت به سبد خرید"
+msgstr "Back to the cart"
+
+#: .\templates\commerce\order_detail.html:31
+msgid "همه‌ی سفارش‌ها"
+msgstr "All orders"
+
+#: .\templates\commerce\order_list.html:4 .\templates\commerce\order_list.html:8
+msgid "سفارش‌های من"
+msgstr "My orders"
+
+#: .\templates\commerce\order_list.html:12
+msgid "شماره"
+msgstr "Number"
+
+#: .\templates\commerce\order_list.html:12
+msgid "تاریخ"
+msgstr "Date"
+
+#: .\templates\commerce\order_list.html:27
+msgid "هنوز سفارشی ثبت نکرده‌اید."
+msgstr "You haven't placed any orders yet."
+
+#: .\templates\content\learn.html:9
+msgid "صفحه‌ی محصول"
+msgstr "Product page"
+
+#: .\templates\content\learn.html:48 .\templates\products\detail.html:54
+msgid "سرفصل‌ها"
+msgstr "Syllabus"
+
+#: .\templates\content\learn.html:54 .\templates\products\detail.html:60
+#, python-format
+msgid "%(number)s درس"
+msgid_plural "%(number)s درس"
+msgstr[0] "%(number)s lesson"
+msgstr[1] "%(number)s lessons"
+
+#: .\templates\content\learn.html:66
+#, python-format
+msgid "%(percent)s٪ دیده‌شده"
+msgstr "%(percent)s%% watched"
+
+#: .\templates\content\learn.html:84
+msgid "محتوای این محصول به‌زودی اضافه می‌شود."
+msgstr "The content of this product is coming soon."
+
+#: .\templates\content\lesson.html:37 .\templates\content\sample.html:31
+msgid "توضیحات این درس"
+msgstr "About this lesson"
+
+#: .\templates\content\lesson.html:44
+msgid "فایل‌های این درس"
+msgstr "Files for this lesson"
+
+#: .\templates\content\lesson.html:55
+msgid "درس قبلی ›"
+msgstr "‹ Previous lesson"
+
+#: .\templates\content\lesson.html:57
+msgid "فهرست درس‌ها"
+msgstr "All lessons"
+
+#: .\templates\content\lesson.html:59
+msgid "‹ درس بعدی"
+msgstr "Next lesson ›"
+
+#: .\templates\content\sample.html:15 .\templates\products\detail.html:69
+msgid "رایگان ببینید"
+msgstr "Watch free"
+
+#: .\templates\content\sample.html:38
+#, python-format
+msgid "این درس نمونه‌ای از %(type)s است"
+msgstr "This lesson is a sample of the %(type)s"
+
+#: .\templates\content\sample.html:39
+#, python-format
+msgid "برای دیدن همه‌ی درس‌ها و دریافت فایل‌ها، %(type)s را بخرید."
+msgstr "Buy the %(type)s to see every lesson and get the files."
+
+#: .\templates\content\sample.html:45 .\templates\products\detail.html:124
+msgid "افزودن به سبد خرید"
+msgstr "Add to cart"
+
+#: .\templates\content\sample.html:52
+msgid "درس رایگان قبلی ›"
+msgstr "‹ Previous free lesson"
+
+#: .\templates\content\sample.html:54
+msgid "همه‌ی سرفصل‌ها"
+msgstr "Full syllabus"
+
+#: .\templates\content\sample.html:56
+msgid "‹ درس رایگان بعدی"
+msgstr "Next free lesson ›"
+
+#: .\templates\home.html:9
+msgid "آموزش تخصصی و پروژه‌محور"
+msgstr "Specialist, project-based learning"
+
+#: .\templates\home.html:10
+msgid "یاد بگیر، بساز،"
+msgstr "Learn, build,"
+
+#: .\templates\home.html:10
+msgid "رشد کن"
+msgstr "grow"
+
+#: .\templates\home.html:11
+msgid "دوره‌های آموزشی کاربردی و پروژه‌های واقعی در حوزه‌های تخصصی؛ از مبانی تا حرفه‌ای."
+msgstr "Practical courses and real projects in specialist fields, from the basics to a professional level."
+
+#: .\templates\home.html:13
+msgid "چه چیزی می‌خواهید یاد بگیرید؟"
+msgstr "What do you want to learn?"
+
+#: .\templates\home.html:18
+msgctxt "under a count"
+msgid "دوره‌ی آموزشی"
+msgstr "Courses"
+
+#: .\templates\home.html:19
+msgctxt "under a count"
+msgid "پروژه"
+msgstr "Projects"
+
+#: .\templates\home.html:20
+msgctxt "under a count"
+msgid "حوزه‌ی تخصصی"
+msgstr "Fields"
+
+#: .\templates\home.html:26
+msgid "آموزش و پروژه"
+msgstr "Learning and projects"
+
+#: .\templates\home.html:33
+msgid "حوزه‌های آموزشی"
+msgstr "Fields of study"
+
+#: .\templates\home.html:38
+#, python-format
+msgid "%(number)s محصول"
+msgid_plural "%(number)s محصول"
+msgstr[0] "%(number)s product"
+msgstr[1] "%(number)s products"
+
+#: .\templates\home.html:48
+msgid "جدیدترین دوره‌ها"
+msgstr "Latest courses"
+
+#: .\templates\home.html:49 .\templates\home.html:61
+msgid "مشاهده همه ←"
+msgstr "View all →"
+
+#: .\templates\home.html:60
+msgid "جدیدترین پروژه‌ها"
+msgstr "Latest projects"
+
+#: .\templates\home.html:70
+msgid "به‌زودی دوره‌ها و پروژه‌ها اینجا قرار می‌گیرند."
+msgstr "Courses and projects are coming here soon."
+
+#: .\templates\home.html:74
+msgid "خدمات تخصصی"
+msgstr "Expert services"
+
+#: .\templates\home.html:79
+msgid "پروژه‌ی درسی، پایان‌نامه، صنعتی یا استارتاپی خود را به تیم تخصصی ما بسپارید."
+msgstr "Hand your coursework, thesis, industrial or startup project to our expert team."
+
+#: .\templates\home.html:80 .\templates\home.html:88
+msgid "ثبت درخواست ←"
+msgstr "Send a request →"
+
+#: .\templates\home.html:97
+msgid "یادگیری پروژه‌محور"
+msgstr "Project-based learning"
+
+#: .\templates\home.html:97
+msgid "آموزش همراه با پروژه‌های واقعی"
+msgstr "Learning alongside real projects"
+
+#: .\templates\home.html:98
+msgid "دسترسی همیشگی"
+msgstr "Lifetime access"
+
+#: .\templates\home.html:98
+msgid "بعد از خرید، محتوا همیشه در دسترس است"
+msgstr "Once bought, the content is always there for you"
+
+#: .\templates\home.html:99
+msgid "فایل‌ها و جزوه‌ها"
+msgstr "Files and handouts"
+
+#: .\templates\home.html:99
+msgid "منابع کامل همراه هر دوره و پروژه"
+msgstr "Full resources with every course and project"
+
+#: .\templates\home.html:100
+msgid "متخصصان هر حوزه"
+msgstr "Experts in every field"
+
+#: .\templates\home.html:100
+msgid "محتوای هر حوزه زیر نظر مدیر همان حوزه"
+msgstr "Each field's content is overseen by that field's manager"
+
+#: .\templates\pages\contact.html:10
+msgid "پیام خود را بنویسید؛ در اولین فرصت پاسخ می‌دهیم."
+msgstr "Write your message and we'll reply as soon as we can."
+
+#: .\templates\pages\contact.html:20
+msgid "ارسال پیام"
+msgstr "Send message"
+
+#: .\templates\pages\contact.html:27
+msgid "ساعت پاسخ‌گویی"
+msgstr "When we answer"
+
+#: .\templates\pages\contact.html:29
+msgid "روزها"
+msgstr "Days"
+
+#: .\templates\pages\contact.html:29
+msgid "شنبه تا پنجشنبه"
+msgstr "Saturday to Thursday"
+
+#: .\templates\pages\contact.html:30
+msgid "ساعت"
+msgstr "Hours"
+
+#: .\templates\pages\contact.html:30
+msgid "۹ تا ۱۷"
+msgstr "9:00 to 17:00"
+
+#: .\templates\pages\contact.html:33
+#, python-format
+msgid "برای سفارش پروژه یا مشاوره، از <a href=\"%(request_page)s\">این صفحه</a> درخواست ثبت کنید."
+msgstr "To order a project or a consultation, send a request from <a href=\"%(request_page)s\">this page</a>."
+
+#: .\templates\partials\pagination.html:3
+msgid "صفحه‌بندی"
+msgstr "Pages"
+
+#: .\templates\partials\pagination.html:7
+#, python-format
+msgid "صفحه %(number)s از %(total)s"
+msgstr "Page %(number)s of %(total)s"
+
+#: .\templates\partials\product_card.html:9
+msgid "خریداری‌شده"
+msgstr "Purchased"
+
+#: .\templates\partials\product_card.html:11 .\templates\products\detail.html:111
+#, python-format
+msgid "%(percent)s٪ تخفیف"
+msgstr "%(percent)s%% off"
+
+#: .\templates\partials\product_card.html:28 .\templates\products\detail.html:133
+msgid "مدت کل"
+msgstr "Total length"
+
+#: .\templates\partials\product_card.html:38
+msgid "مشاهده محتوا"
+msgstr "Open content"
+
+#: .\templates\products\detail.html:9
+msgid "پیش‌نمایش: این محصول هنوز در فروشگاه نمایش داده نمی‌شود و فقط مدیران آن را می‌بینند."
+msgstr "Preview: this product is not in the store yet, and only managers can see it."
+
+#: .\templates\products\detail.html:25
+#, python-format
+msgid "ویدیوی معرفی %(title)s"
+msgstr "Introduction video: %(title)s"
+
+#: .\templates\products\detail.html:34
+#, python-format
+msgid "درباره‌ی این %(type)s"
+msgstr "About this %(type)s"
+
+#: .\templates\products\detail.html:41
+msgid "تصاویر"
+msgstr "Pictures"
+
+#: .\templates\products\detail.html:116
+#, python-format
+msgid "ورود به %(type)s"
+msgstr "Open the %(type)s"
+
+#: .\templates\products\detail.html:118
+msgid "مشاهده سبد خرید"
+msgstr "View cart"
+
+#: .\templates\products\detail.html:124 .\templates\products\detail.html:159
+msgid "دریافت رایگان"
+msgstr "Get it free"
+
+#: .\templates\products\detail.html:132
+msgid "تعداد درس"
+msgstr "Lessons"
+
+#: .\templates\products\detail.html:134
+msgid "دارد"
+msgstr "Included"
+
+#: .\templates\products\detail.html:159
+msgid "افزودن به سبد"
+msgstr "Add to cart"
+
+#: .\templates\products\detail.html:167
+msgid "پروژه‌ای مشابه دارید؟"
+msgstr "Have a similar project?"
+
+#: .\templates\products\detail.html:168
+msgid "می‌توانید انجام آن را به ما بسپارید یا قبل از شروع مشورت بگیرید."
+msgstr "You can hand it over to us, or get advice before you start."
+
+#: .\templates\products\list.html:9
+#, python-format
+msgid "حوزه‌ی %(name)s"
+msgstr "Field: %(name)s"
+
+#: .\templates\products\list.html:9
+msgid "دوره‌ها و پروژه‌ها"
+msgstr "Courses and projects"
+
+#: .\templates\products\list.html:15
+msgid "جستجو..."
+msgstr "Search..."
+
+#: .\templates\products\list.html:17
+msgid "همه‌ی انواع"
+msgstr "All types"
+
+#: .\templates\products\list.html:23
+msgid "همه‌ی حوزه‌ها"
+msgstr "All fields"
+
+#: .\templates\products\list.html:29
+msgid "رایگان و پولی"
+msgstr "Free and paid"
+
+#: .\templates\products\list.html:30
+msgid "فقط رایگان"
+msgstr "Free only"
+
+#: .\templates\products\list.html:31
+msgid "فقط پولی"
+msgstr "Paid only"
+
+#: .\templates\products\list.html:33
+msgid "مرتب‌سازی"
+msgstr "Sort"
+
+#: .\templates\products\list.html:38
+msgid "اعمال"
+msgstr "Apply"
+
+#: .\templates\products\list.html:47
+msgid "محصولی با این مشخصات پیدا نشد."
+msgstr "No products match these filters."
+
+#: .\templates\services\form.html:20
+msgid "روند کار"
+msgstr "How it works"
+
+#: .\templates\services\form.html:28
+msgid "پس از ثبت، یک کد پیگیری می‌گیرید و سپس با ما تماس می‌گیرید."
+msgstr "Once you send it, you get a tracking code; then you contact us."
+
+#: .\templates\services\form.html:47
+msgid "ثبت درخواست نیاز به حساب ندارد. اگر وارد شوید، وضعیت درخواست‌هایتان را در سایت می‌بینید."
+msgstr "You don't need an account to send a request. If you log in, you can follow your requests on the site."
+
+#: .\templates\services\form.html:48
+msgid "ورود / ثبت‌نام"
+msgstr "Log in / Sign up"
+
+#: .\templates\services\my_requests.html:14
+msgid "درخواست همکاری شما"
+msgstr "Your application"
+
+#: .\templates\services\my_requests.html:25
+msgid "درخواست تازه"
+msgstr "New application"
+
+#: .\templates\services\my_requests.html:39
+msgid "کد پیگیری:"
+msgstr "Tracking code:"
+
+#: .\templates\services\my_requests.html:44
+msgid "در حال بررسی توسط:"
+msgstr "Being reviewed by:"
+
+#: .\templates\services\my_requests.html:45
+msgid "، "
+msgstr ", "
+
+#: .\templates\services\my_requests.html:52
+#, python-format
+msgid "مبلغ کل: %(amount)s"
+msgstr "Total: %(amount)s"
+
+#: .\templates\services\my_requests.html:59
+#, python-format
+msgid "پرداخت %(amount)s"
+msgstr "Pay %(amount)s"
+
+#: .\templates\services\my_requests.html:63
+#, python-format
+msgid "پیش‌پرداخت %(percent)s٪ برای شروع کار"
+msgstr "%(percent)s%% prepayment to start the work"
+
+#: .\templates\services\my_requests.html:72
+msgid "درخواستی ثبت نکرده‌اید."
+msgstr "You haven't sent any requests."
+
+#: .\templates\services\my_requests.html:73
+msgid "یا"
+msgstr "or"
+
+#: .\templates\services\partials\channels.html:5
+msgid "برای ادامه‌ی کار، از یکی از این راه‌ها به ما پیام دهید."
+msgstr "To go on, message us through one of these."
+
+#: .\templates\services\partials\channels.html:17
+msgid "راه‌های ارتباطی به‌زودی اینجا قرار می‌گیرد."
+msgstr "Our contact details will be here soon."
+
+#: .\templates\services\submitted.html:4
+msgid "درخواست ثبت شد"
+msgstr "Request received"
+
+#: .\templates\services\submitted.html:10
+msgid "درخواست شما ثبت شد"
+msgstr "Your request was received"
+
+#: .\templates\services\submitted.html:11
+msgid "کد پیگیری شما:"
+msgstr "Your tracking code:"
+
+#: .\templates\services\submitted.html:15
+msgid "قدم بعدی:"
+msgstr "Next step:"
+
+#: .\templates\services\submitted.html:15
+msgid "از یکی از راه‌های ارتباطی زیر به ما پیام دهید و همین کد پیگیری را بفرستید. پروژه‌ی شما بررسی و زمان و هزینه‌ی آن اعلام می‌شود."
+msgstr "Message us through one of the channels below and send us this tracking code. We will look at your project and tell you how long it will take and what it will cost."

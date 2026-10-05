@@ -9,6 +9,7 @@ import logging
 import sys
 
 from django.conf import settings
+from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ def send(mobile_number, text):
         _echo(f"[SMS] to {mobile_number}: {text}")
         logger.info("SMS to %s: %s", mobile_number, text)
         return
-    raise SMSError(f"سرویس پیامک «{name}» هنوز تنظیم نشده است.")
+    raise SMSError(_("سرویس پیامک «%(name)s» هنوز تنظیم نشده است.") % {"name": name})
 
 
 def send_verification_code(mobile_number, code):

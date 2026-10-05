@@ -1,18 +1,26 @@
-{% load static %}
+{% load static i18n languages %}
+{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}{% page_languages as languages %}
 <!doctype html>
-<html lang="fa" dir="rtl" data-theme="light">
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token }}">
   <title>{% block title %}MAHAY{% endblock %} | MAHAY</title>
+  {# The same page in each language, for search engines #}
+  {% for language in languages %}<link rel="alternate" hreflang="{{ language.code }}" href="{{ request.scheme }}://{{ request.get_host }}{{ language.url }}">
+  {% endfor %}
   {# Apply the saved theme before the page is drawn (no flash of the wrong colors) #}
   <script>document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";</script>
   <link rel="stylesheet" href="{% static 'css/main.css' %}">
   <script src="{% static 'js/main.js' %}" defer></script>
   {% block extra_js %}{% endblock %}
 </head>
-<body class="{% block body_class %}{% endblock %}">
+{# data-text-*: the few words main.js writes on the page itself, in this page's language #}
+<body class="{% block body_class %}{% endblock %}"
+      data-text-show="{% translate 'نمایش' %}" data-text-hide="{% translate 'پنهان' %}"
+      data-text-close="{% translate 'بستن' %}" data-text-previous="{% translate 'قبلی' %}"
+      data-text-next="{% translate 'بعدی' %}" data-text-seconds="{% translate 'ثانیه' %}">
   <header class="site-header">
     <div class="container header-top">
       <a class="brand" href="{% url 'home' %}">
@@ -21,98 +29,103 @@
       </a>
 
       <form class="header-search" action="{% url 'products:list' %}" method="get" role="search">
-        <input type="search" name="q" value="{{ request.GET.q }}" placeholder="جستجو در دوره‌ها و پروژه‌ها..." aria-label="جستجو">
-        <button type="submit" aria-label="جستجو">
+        <input type="search" name="q" value="{{ request.GET.q }}" placeholder="{% translate 'جستجو در دوره‌ها و پروژه‌ها...' %}" aria-label="{% translate 'جستجو' %}">
+        <button type="submit" aria-label="{% translate 'جستجو' %}">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         </button>
       </form>
 
       <nav class="nav">
-        <a class="icon-btn cart-btn" href="{% url 'commerce:cart' %}" aria-label="سبد خرید">
+        {# The same page in the other language. Its name is written in that language, so its readers find it. #}
+        {% for language in languages %}{% if not language.is_current %}
+          <a class="btn btn-ghost btn-sm lang-switch" href="{{ language.url }}" hreflang="{{ language.code }}" lang="{{ language.code }}">{{ language.name }}</a>
+        {% endif %}{% endfor %}
+        <a class="icon-btn cart-btn" href="{% url 'commerce:cart' %}" aria-label="{% translate 'سبد خرید' %}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.4 10.4a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.6L20 7H6"/><circle cx="9.5" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/></svg>
           {% if cart_count %}<span class="cart-badge">{{ cart_count }}</span>{% endif %}
         </a>
-        <button type="button" class="icon-btn theme-toggle" aria-label="تغییر تم روشن و تیره">
+        <button type="button" class="icon-btn theme-toggle" aria-label="{% translate 'تغییر تم روشن و تیره' %}">
           <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
         </button>
         {% if user.is_authenticated %}
-          {# Only site admins and domain managers (members of a group) see this #}
+          {# Only site admins and domain managers (members of a group) see this. The panel itself is Persian only. #}
           {% if user.is_staff %}
             <a class="btn btn-ghost btn-sm btn-staff btn-inbox{% if inbox_unread %} has-unread{% endif %}"
                href="{% url 'admin:inbox_message_changelist' %}">
-              کارپوشه{% if inbox_unread %}<span class="unread-badge">{{ inbox_unread }}</span>{% endif %}
+              {% translate "کارپوشه" %}{% if inbox_unread %}<span class="unread-badge">{{ inbox_unread }}</span>{% endif %}
             </a>
             <a class="btn btn-ghost btn-sm btn-staff btn-inbox{% if pending_total %} has-unread{% endif %}"
                href="{% url 'admin:index' %}">
-              پنل مدیریت{% if pending_total %}<span class="unread-badge">{{ pending_total }}</span>{% endif %}
+              {% translate "پنل مدیریت" %}{% if pending_total %}<span class="unread-badge">{{ pending_total }}</span>{% endif %}
             </a>
           {% endif %}
           {# Everything to do with this person's own account lives under their name #}
           <div class="has-menu user-menu">
             <a class="nav-user" href="{% url 'accounts:profile' %}">
-              <span class="avatar">{{ user.first_name|first|default:"؟" }}</span>
-              <span class="nav-user-name">{{ user.get_short_name|default:"پروفایل" }}</span>
+              <span class="avatar">{{ user.first_name|first|default:"?" }}</span>
+              <span class="nav-user-name">{% firstof user.get_short_name _("پروفایل") %}</span>
             </a>
             <div class="menu">
-              <a href="{% url 'accounts:profile' %}">پروفایل</a>
-              <a href="{% url 'commerce:library' %}">خریدهای من</a>
-              <a href="{% url 'commerce:order_list' %}">سفارش‌ها</a>
-              <a href="{% url 'services:my_requests' %}">درخواست‌های من</a>
-              <a href="{% url 'commerce:cart' %}">سبد خرید</a>
+              <a href="{% url 'accounts:profile' %}">{% translate "پروفایل" %}</a>
+              <a href="{% url 'commerce:library' %}">{% translate "خریدهای من" %}</a>
+              <a href="{% url 'commerce:order_list' %}">{% translate "سفارش‌ها" %}</a>
+              <a href="{% url 'services:my_requests' %}">{% translate "درخواست‌های من" %}</a>
+              <a href="{% url 'commerce:cart' %}">{% translate "سبد خرید" %}</a>
               {# Not shown to people who already hold a role: they work here already #}
               {% if not user.is_staff %}
-                <a href="{% url 'collaboration:apply' %}">همکاری با مجموعه</a>
+                <a href="{% url 'collaboration:apply' %}">{% translate "همکاری با مجموعه" %}</a>
               {% endif %}
             </div>
           </div>
           {# Django 5: logout must be a POST request, not a simple link #}
           <form method="post" action="{% url 'accounts:logout' %}">
             {% csrf_token %}
-            <button type="submit" class="btn btn-ghost btn-sm">خروج</button>
+            <button type="submit" class="btn btn-ghost btn-sm">{% translate "خروج" %}</button>
           </form>
         {% else %}
-          <a class="btn btn-ghost btn-sm" href="{% url 'accounts:login' %}">ورود</a>
-          <a class="btn btn-primary btn-sm" href="{% url 'accounts:signup' %}">ثبت‌نام</a>
+          <a class="btn btn-ghost btn-sm" href="{% url 'accounts:login' %}">{% translate "ورود" %}</a>
+          <a class="btn btn-primary btn-sm" href="{% url 'accounts:signup' %}">{% translate "ثبت‌نام" %}</a>
         {% endif %}
       </nav>
     </div>
 
     <div class="header-nav">
-      <nav class="container main-links" aria-label="بخش‌های سایت">
+      <nav class="container main-links" aria-label="{% translate 'بخش‌های سایت' %}">
         <a class="home-link" href="{% url 'home' %}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.8V20h14V9.8"/><path d="M10 20v-5h4v5"/></svg>
-          خانه
+          {% translate "خانه" %}
         </a>
         <span class="divider"></span>
 
         {% comment %}
           Each section opens onto the domains it holds, so the bar stays short while every
-          domain is still one step away.
+          domain is still one step away. Domain names are content: they stay as they were written
+          (dir="auto" keeps a Persian name readable on an English page).
         {% endcomment %}
         <div class="has-menu">
-          <a href="{% url 'products:list' %}?type=course">دوره‌های آموزشی</a>
+          <a href="{% url 'products:list' %}?type=course">{% translate "دوره‌های آموزشی" %}</a>
           <div class="menu">
-            <a href="{% url 'products:list' %}?type=course">همه‌ی دوره‌ها</a>
+            <a href="{% url 'products:list' %}?type=course">{% translate "همه‌ی دوره‌ها" %}</a>
             {% for domain in nav_domains %}{% if domain.has_course %}
-              <a href="{% url 'products:list' %}?type=course&amp;domain={{ domain.slug }}">{{ domain.name }}</a>
+              <a href="{% url 'products:list' %}?type=course&amp;domain={{ domain.slug }}" dir="auto">{{ domain.name }}</a>
             {% endif %}{% endfor %}
           </div>
         </div>
 
         <div class="has-menu">
-          <a href="{% url 'products:list' %}?type=project">پروژه‌ها</a>
+          <a href="{% url 'products:list' %}?type=project">{% translate "پروژه‌ها" %}</a>
           <div class="menu">
-            <a href="{% url 'products:list' %}?type=project">همه‌ی پروژه‌ها</a>
+            <a href="{% url 'products:list' %}?type=project">{% translate "همه‌ی پروژه‌ها" %}</a>
             {% for domain in nav_domains %}{% if domain.has_project %}
-              <a href="{% url 'products:list' %}?type=project&amp;domain={{ domain.slug }}">{{ domain.name }}</a>
+              <a href="{% url 'products:list' %}?type=project&amp;domain={{ domain.slug }}" dir="auto">{{ domain.name }}</a>
             {% endif %}{% endfor %}
           </div>
         </div>
 
         <span class="divider"></span>
-        <a href="{% url 'services:project' %}">سفارش پروژه</a>
-        <a href="{% url 'services:consulting' %}">مشاوره تخصصی</a>
+        <a href="{% url 'services:project' %}">{% translate "سفارش پروژه" %}</a>
+        <a href="{% url 'services:consulting' %}">{% translate "مشاوره تخصصی" %}</a>
       </nav>
     </div>
   </header>
@@ -122,7 +135,7 @@
       {% for message in messages %}
         <div class="toast toast-{{ message.tags }}" role="status">
           <span>{{ message }}</span>
-          <button type="button" class="toast-close" aria-label="بستن">&times;</button>
+          <button type="button" class="toast-close" aria-label="{% translate 'بستن' %}">&times;</button>
         </div>
       {% endfor %}
     </div>
@@ -136,30 +149,30 @@
     <div class="container footer-grid">
       <div>
         <a class="brand" href="{% url 'home' %}"><span class="brand-mark">M</span><span>MAHAY</span></a>
-        <p class="muted">آموزش تخصصی و پروژه‌محور؛ دوره‌های آموزشی و پروژه‌های واقعی در حوزه‌های مختلف.</p>
+        <p class="muted">{% translate "آموزش تخصصی و پروژه‌محور؛ دوره‌های آموزشی و پروژه‌های واقعی در حوزه‌های مختلف." %}</p>
       </div>
       <div>
-        <h4>بخش‌ها</h4>
+        <h4>{% translate "بخش‌ها" %}</h4>
         <div class="footer-links">
-          <a href="{% url 'products:list' %}?type=course">دوره‌های آموزشی</a>
-          <a href="{% url 'products:list' %}?type=project">پروژه‌ها</a>
-          <a href="{% url 'services:project' %}">سفارش پروژه</a>
-          <a href="{% url 'services:consulting' %}">مشاوره تخصصی</a>
+          <a href="{% url 'products:list' %}?type=course">{% translate "دوره‌های آموزشی" %}</a>
+          <a href="{% url 'products:list' %}?type=project">{% translate "پروژه‌ها" %}</a>
+          <a href="{% url 'services:project' %}">{% translate "سفارش پروژه" %}</a>
+          <a href="{% url 'services:consulting' %}">{% translate "مشاوره تخصصی" %}</a>
         </div>
       </div>
 
       <div>
-        <h4>راهنما</h4>
+        <h4>{% translate "راهنما" %}</h4>
         <div class="footer-links">
           {% for page in footer_pages %}
-            <a href="{{ page.get_absolute_url }}">{{ page.title }}</a>
+            <a href="{{ page.get_absolute_url }}" dir="auto">{{ page.title }}</a>
           {% endfor %}
-          <a href="{% url 'pages:contact' %}">تماس با ما</a>
+          <a href="{% url 'pages:contact' %}">{% translate "تماس با ما" %}</a>
         </div>
       </div>
     </div>
     <div class="container footer-bottom">
-      © MAHAY — تمامی حقوق محفوظ است.
+      © MAHAY — {% translate "تمامی حقوق محفوظ است." %}
       {# The e-trust badge (اینماد) code goes here once it is issued #}
     </div>
   </footer>

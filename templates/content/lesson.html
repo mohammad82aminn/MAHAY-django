@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static store %}
+{% load i18n static store %}
 
 {% block title %}{{ lesson.title }}{% endblock %}
 
@@ -8,9 +8,9 @@
 {% block content %}
 <section class="container section">
   <nav class="breadcrumb">
-    <a href="{% url 'content:learn' product.slug %}">{{ product.title }}</a> › {{ lesson.section.title }}
+    <a href="{% url 'content:learn' product.slug %}" dir="auto">{{ product.title }}</a> › <span dir="auto">{{ lesson.section.title }}</span>
   </nav>
-  <h1 class="lesson-heading">{{ lesson.title }}</h1>
+  <h1 class="lesson-heading" dir="auto">{{ lesson.title }}</h1>
 
   {% if lesson.video_file %}
     {# The address is checked by the server on every request; the player saves the position #}
@@ -34,14 +34,14 @@
 
   {% if lesson.body %}
     <div class="card block">
-      <h2>توضیحات این درس</h2>
-      <div class="prose">{{ lesson.body|linebreaks }}</div>
+      <h2>{% translate "توضیحات این درس" %}</h2>
+      <div class="prose" dir="auto">{{ lesson.body|linebreaks }}</div>
     </div>
   {% endif %}
 
   {% if attachments %}
     <div class="card block">
-      <h2>فایل‌های این درس</h2>
+      <h2>{% translate "فایل‌های این درس" %}</h2>
       <ul class="file-list">
         {% for attachment in attachments %}
           <li><a href="{% url 'content:protected_file' 'attachment' attachment.pk %}">⬇ {{ attachment.title }}</a></li>
@@ -52,11 +52,11 @@
 
   <nav class="lesson-nav">
     {% if previous_lesson %}
-      <a class="btn btn-ghost" href="{% url 'content:lesson' product.slug previous_lesson.pk %}">درس قبلی ›</a>
+      <a class="btn btn-ghost" href="{% url 'content:lesson' product.slug previous_lesson.pk %}">{% translate "درس قبلی ›" %}</a>
     {% else %}<span></span>{% endif %}
-    <a href="{% url 'content:learn' product.slug %}">فهرست درس‌ها</a>
+    <a href="{% url 'content:learn' product.slug %}">{% translate "فهرست درس‌ها" %}</a>
     {% if next_lesson %}
-      <a class="btn btn-primary" href="{% url 'content:lesson' product.slug next_lesson.pk %}">‹ درس بعدی</a>
+      <a class="btn btn-primary" href="{% url 'content:lesson' product.slug next_lesson.pk %}">{% translate "‹ درس بعدی" %}</a>
     {% else %}<span></span>{% endif %}
   </nav>
 </section>

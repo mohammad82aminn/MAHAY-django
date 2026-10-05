@@ -5,43 +5,46 @@ from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from django.views.decorators.http import require_POST
 
 from accounts.throttle import client_ip
 from commerce import gateway
+from products.templatetags.store import money
 
 from . import payments, services
 from .forms import ServiceRequestForm
 from .models import ContactChannel, Referral, RequestPayment, ServiceRequest
 
-# Texts of the two service pages. Same flow, different wording.
+# Texts of the two service pages. Same flow, different wording. (Lazy: read in the page's language.)
 PAGES = {
     ServiceRequest.Kind.PROJECT: {
-        "title": "سفارش پروژه",
-        "lead": "پروژه‌ی خود را به تیم تخصصی MAHAY بسپارید.",
+        "title": gettext_lazy("سفارش پروژه"),
+        "lead": gettext_lazy("پروژه‌ی خود را به تیم تخصصی MAHAY بسپارید."),
         "intro": [
-            "پروژه‌های درسی، پایان‌نامه، صنعتی و استارتاپی را در حوزه‌های تخصصی خود انجام می‌دهیم.",
-            "کار می‌تواند انجام کامل پروژه، کمک در بخشی از آن، یا رفع اشکال کاری باشد که شروع کرده‌اید.",
+            gettext_lazy("پروژه‌های درسی، پایان‌نامه، صنعتی و استارتاپی را در حوزه‌های تخصصی خود انجام می‌دهیم."),
+            gettext_lazy("کار می‌تواند انجام کامل پروژه، کمک در بخشی از آن، یا رفع اشکال کاری باشد که شروع کرده‌اید."),
         ],
         "steps": [
-            "فرم زیر را پر کنید تا درخواست شما ثبت شود و کد پیگیری بگیرید.",
-            "از یکی از راه‌های ارتباطی با ما تماس بگیرید و کد پیگیری را بگویید.",
-            "پروژه بررسی می‌شود و زمان و هزینه‌ی آن به شما اعلام می‌گردد.",
-            "در صورت توافق، کار به کارشناس حوزه‌ی مربوطه سپرده می‌شود و مستقیم با او در ارتباط خواهید بود.",
+            gettext_lazy("فرم زیر را پر کنید تا درخواست شما ثبت شود و کد پیگیری بگیرید."),
+            gettext_lazy("از یکی از راه‌های ارتباطی با ما تماس بگیرید و کد پیگیری را بگویید."),
+            gettext_lazy("پروژه بررسی می‌شود و زمان و هزینه‌ی آن به شما اعلام می‌گردد."),
+            gettext_lazy("در صورت توافق، کار به کارشناس حوزه‌ی مربوطه سپرده می‌شود و مستقیم با او در ارتباط خواهید بود."),
         ],
     },
     ServiceRequest.Kind.CONSULTING: {
-        "title": "مشاوره تخصصی",
-        "lead": "قبل از شروع یا در میانه‌ی کار، با کارشناس همان حوزه مشورت کنید.",
+        "title": gettext_lazy("مشاوره تخصصی"),
+        "lead": gettext_lazy("قبل از شروع یا در میانه‌ی کار، با کارشناس همان حوزه مشورت کنید."),
         "intro": [
-            "انتخاب مسیر درست، بررسی امکان‌پذیری، انتخاب ابزار و سخت‌افزار، و رفع ابهام‌های فنی.",
-            "مشاوره با کارشناس همان حوزه انجام می‌شود و هزینه‌ی آن پس از بررسی موضوع اعلام می‌گردد.",
+            gettext_lazy("انتخاب مسیر درست، بررسی امکان‌پذیری، انتخاب ابزار و سخت‌افزار، و رفع ابهام‌های فنی."),
+            gettext_lazy("مشاوره با کارشناس همان حوزه انجام می‌شود و هزینه‌ی آن پس از بررسی موضوع اعلام می‌گردد."),
         ],
         "steps": [
-            "فرم زیر را پر کنید تا موضوع مشاوره ثبت شود و کد پیگیری بگیرید.",
-            "از یکی از راه‌های ارتباطی با ما تماس بگیرید و کد پیگیری را بگویید.",
-            "موضوع بررسی و هزینه‌ی مشاوره اعلام می‌شود.",
-            "در صورت توافق، به کارشناس همان حوزه معرفی می‌شوید.",
+            gettext_lazy("فرم زیر را پر کنید تا موضوع مشاوره ثبت شود و کد پیگیری بگیرید."),
+            gettext_lazy("از یکی از راه‌های ارتباطی با ما تماس بگیرید و کد پیگیری را بگویید."),
+            gettext_lazy("موضوع بررسی و هزینه‌ی مشاوره اعلام می‌شود."),
+            gettext_lazy("در صورت توافق، به کارشناس همان حوزه معرفی می‌شوید."),
         ],
     },
 }
@@ -67,7 +70,7 @@ def request_form(request, kind):
             number = form.cleaned_data["mobile_number"]
             address = client_ip(request)
             if services.too_many_requests(number, address):
-                messages.error(request, "درخواست‌های شما زیاد است. یک ساعت دیگر تلاش کنید.")
+                messages.error(request, _("درخواست‌های شما زیاد است. یک ساعت دیگر تلاش کنید."))
             else:
                 service_request = form.save(commit=False)
                 if request.user.is_authenticated:
@@ -137,7 +140,7 @@ def pay(request, code):
     try:
         _payment, payment_url = payments.start(service_request, callback_url)
     except (payments.PaymentNotAllowed, gateway.PaymentError) as error:
-        messages.error(request, str(error))
+        messages.error(request, _(str(error)))  # kept in Persian, see gateway.PaymentError
         return redirect("services:my_requests")
     return redirect(payment_url)
 
@@ -152,27 +155,27 @@ def payment_callback(request):
     """
     payment = RequestPayment.objects.filter(authority=request.GET.get("Authority", "")).first()
     if payment is None:
-        messages.error(request, "پرداخت مورد نظر پیدا نشد.")
+        messages.error(request, _("پرداخت مورد نظر پیدا نشد."))
         return redirect("home")
 
     if payment.status == RequestPayment.Status.PAID:  # e.g. the page was refreshed
-        messages.info(request, "این پرداخت قبلاً ثبت شده است.")
+        messages.info(request, _("این پرداخت قبلاً ثبت شده است."))
         return redirect("services:my_requests")
 
     if request.GET.get("Status") != "OK":
         payments.fail(payment, "پرداخت توسط کاربر لغو شد.")
-        messages.warning(request, "پرداخت لغو شد.")
+        messages.warning(request, _("پرداخت لغو شد."))
         return redirect("services:my_requests")
 
     try:
         data = gateway.confirm(payment.amount, payment.authority)
     except gateway.PaymentError as error:
         payments.fail(payment, str(error))
-        messages.error(request, f"پرداخت تأیید نشد: {error}")
+        messages.error(request, _("پرداخت تأیید نشد: %(error)s") % {"error": _(str(error))})
         return redirect("services:my_requests")
 
     payments.settle(payment, data)
-    messages.success(request, f"پرداخت {payment.amount:,} تومان با موفقیت انجام شد.")
+    messages.success(request, _("پرداخت %(amount)s با موفقیت انجام شد.") % {"amount": money(payment.amount)})
     return redirect("services:my_requests")
 
 

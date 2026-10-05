@@ -1,8 +1,9 @@
 {% extends "errors/layout.html" %}
+{% load i18n store %}
 
-{% block title %}خطای سرور{% endblock %}
-{% block code %}۵۰۰{% endblock %}
-{% block heading %}مشکلی پیش آمد{% endblock %}
+{% block title %}{% translate "خطای سرور" %}{% endblock %}
+{% block code %}{{ 500|num }}{% endblock %}
+{% block heading %}{% translate "مشکلی پیش آمد" %}{% endblock %}
 {% block text %}
-  <p>این خطا از طرف ماست، نه شما. خطا ثبت شد و بررسی می‌شود؛ چند دقیقه‌ی دیگر دوباره امتحان کنید.</p>
+  <p>{% translate "این خطا از طرف ماست، نه شما. خطا ثبت شد و بررسی می‌شود؛ چند دقیقه‌ی دیگر دوباره امتحان کنید." %}</p>
 {% endblock %}

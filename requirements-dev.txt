@@ -1,0 +1,5 @@
+# Development machine only (pip install -r requirements-dev.txt). Never on the live server.
+-r requirements.txt
+
+# Edit the English texts in the browser at /rosetta/ (switched on only while DEBUG is on)
+django-rosetta==0.10.3

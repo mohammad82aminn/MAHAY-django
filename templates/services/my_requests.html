@@ -1,28 +1,28 @@
 {% extends "base.html" %}
-{% load store %}
+{% load i18n store %}
 
-{% block title %}درخواست‌های من{% endblock %}
+{% block title %}{% translate "درخواست‌های من" %}{% endblock %}
 
 {% block content %}
 <section class="container section">
-  <div class="page-head"><h1>درخواست‌های من</h1></div>
+  <div class="page-head"><h1>{% translate "درخواست‌های من" %}</h1></div>
 
   {% if collaboration %}
     <div class="card block request-row">
       <div class="request-main">
-        <span class="badge badge-type">همکاری با مجموعه</span>
-        <h3>درخواست همکاری شما</h3>
-        <p class="muted">{{ collaboration.created_at|date:"Y/m/d"|fa_num }}</p>
+        <span class="badge badge-type">{% translate "همکاری با مجموعه" %}</span>
+        <h3>{% translate "درخواست همکاری شما" %}</h3>
+        <p class="muted">{{ collaboration.created_at|date:"Y/m/d"|num }}</p>
         {% if collaboration.wanted_work %}
-          <p class="muted">{{ collaboration.wanted_work }}</p>
+          <p class="muted" dir="auto">{{ collaboration.wanted_work }}</p>
         {% endif %}
       </div>
       <div class="request-side">
         <span class="status status-{{ collaboration.status }}">{{ collaboration.get_status_display }}</span>
         {% if collaboration.is_editable %}
-          <a class="btn btn-ghost btn-sm" href="{% url 'collaboration:apply' %}">ویرایش</a>
+          <a class="btn btn-ghost btn-sm" href="{% url 'collaboration:apply' %}">{% translate "ویرایش" %}</a>
         {% elif not collaboration.is_open and may_apply %}
-          <a class="btn btn-ghost btn-sm" href="{% url 'collaboration:apply' %}">درخواست تازه</a>
+          <a class="btn btn-ghost btn-sm" href="{% url 'collaboration:apply' %}">{% translate "درخواست تازه" %}</a>
         {% endif %}
       </div>
     </div>
@@ -34,33 +34,33 @@
         <div class="card block request-row">
           <div class="request-main">
             <span class="badge badge-type">{{ item.get_kind_display }}</span>
-            <h3>{{ item.title }}</h3>
+            <h3 dir="auto">{{ item.title }}</h3>
             <p class="muted">
-              کد پیگیری: <bdi dir="ltr">{{ item.tracking_code }}</bdi>
-              · {{ item.created_at|date:"Y/m/d"|fa_num }}
+              {% translate "کد پیگیری:" %} <bdi dir="ltr">{{ item.tracking_code }}</bdi>
+              · {{ item.created_at|date:"Y/m/d"|num }}
             </p>
             {% if item.referrals.all %}
               <p class="muted">
-                در حال بررسی توسط:
-                {% for referral in item.referrals.all %}{{ referral.domain }}{% if not forloop.last %}، {% endif %}{% endfor %}
+                {% translate "در حال بررسی توسط:" %}
+                {% for referral in item.referrals.all %}<bdi>{{ referral.domain }}</bdi>{% if not forloop.last %}{% translate "، " %}{% endif %}{% endfor %}
               </p>
             {% endif %}
           </div>
           <div class="request-side">
             <span class="status status-{{ item.status }}">{{ stage }}</span>
             {% if item.agreed_amount %}
-              <span class="muted">مبلغ کل: {{ item.agreed_amount|toman }}</span>
+              <span class="muted">{% blocktranslate with amount=item.agreed_amount|toman %}مبلغ کل: {{ amount }}{% endblocktranslate %}</span>
               <span class="muted">{{ item.payment_state }}</span>
             {% endif %}
             {% if due %}
               <form method="post" action="{% url 'services:pay' item.tracking_code %}">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-primary btn-sm">
-                  پرداخت {{ due|toman }}
+                  {% blocktranslate with amount=due|toman %}پرداخت {{ amount }}{% endblocktranslate %}
                 </button>
               </form>
               {% if item.paid_total == 0 and item.prepay_percent < 100 %}
-                <span class="muted">پیش‌پرداخت {{ item.prepay_percent|fa_num }}٪ برای شروع کار</span>
+                <span class="muted">{% blocktranslate with percent=item.prepay_percent|num %}پیش‌پرداخت {{ percent }}٪ برای شروع کار{% endblocktranslate %}</span>
               {% endif %}
             {% endif %}
           </div>
@@ -69,9 +69,9 @@
     </div>
   {% else %}
     <p class="empty">
-      درخواستی ثبت نکرده‌اید.
-      <a href="{% url 'services:project' %}">سفارش پروژه</a> یا
-      <a href="{% url 'services:consulting' %}">مشاوره تخصصی</a>
+      {% translate "درخواستی ثبت نکرده‌اید." %}
+      <a href="{% url 'services:project' %}">{% translate "سفارش پروژه" %}</a> {% translate "یا" %}
+      <a href="{% url 'services:consulting' %}">{% translate "مشاوره تخصصی" %}</a>
     </p>
   {% endif %}
 </section>

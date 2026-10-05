@@ -1,15 +1,16 @@
 {% extends "accounts/auth_layout.html" %}
+{% load i18n %}
 
-{% block title %}پروفایل{% endblock %}
-{% block heading %}حساب کاربری{% endblock %}
+{% block title %}{% translate "پروفایل" %}{% endblock %}
+{% block heading %}{% translate "حساب کاربری" %}{% endblock %}
 {% block subheading %}
-  شماره موبایل: <bdi dir="ltr">{{ user.mobile_display }}</bdi>
+  {% translate "شماره موبایل:" %} <bdi dir="ltr">{{ user.mobile_display }}</bdi>
 {% endblock %}
-{% block submit %}ذخیره تغییرات{% endblock %}
+{% block submit %}{% translate "ذخیره تغییرات" %}{% endblock %}
 
 {% block foot %}
-  <a href="{% url 'commerce:library' %}">خریدهای من</a> &nbsp;·&nbsp;
-  <a href="{% url 'commerce:order_list' %}">سفارش‌ها</a> &nbsp;·&nbsp;
-  <a href="{% url 'services:my_requests' %}">درخواست‌های من</a> &nbsp;·&nbsp;
-  <a href="{% url 'accounts:password_change' %}">تغییر رمز عبور</a>
+  <a href="{% url 'commerce:library' %}">{% translate "خریدهای من" %}</a> &nbsp;·&nbsp;
+  <a href="{% url 'commerce:order_list' %}">{% translate "سفارش‌ها" %}</a> &nbsp;·&nbsp;
+  <a href="{% url 'services:my_requests' %}">{% translate "درخواست‌های من" %}</a> &nbsp;·&nbsp;
+  <a href="{% url 'accounts:password_change' %}">{% translate "تغییر رمز عبور" %}</a>
 {% endblock %}

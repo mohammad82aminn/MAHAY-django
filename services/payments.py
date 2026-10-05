@@ -8,6 +8,7 @@ url proves only that somebody visited a url.
 """
 from django.db import transaction
 from django.utils import timezone
+from django.utils.translation import gettext_noop
 
 from commerce import gateway
 
@@ -43,7 +44,7 @@ def start(request_object, callback_url):
     """
     amount = request_object.due_now
     if amount <= 0:
-        raise PaymentNotAllowed("در حال حاضر مبلغی برای پرداخت وجود ندارد.")
+        raise PaymentNotAllowed(gettext_noop("در حال حاضر مبلغی برای پرداخت وجود ندارد."))
 
     RequestPayment.objects.filter(
         request=request_object, status=RequestPayment.Status.PENDING,

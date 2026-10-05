@@ -1,41 +1,41 @@
 {% extends "base.html" %}
-{% load store %}
-{% load static %}
-{% block title %}خانه{% endblock %}
+{% load i18n static store %}
+{% block title %}{% translate "خانه" %}{% endblock %}
 
 {% block content %}
 <section class="hero">
   <div class="container hero-inner">
     <div class="hero-text">
-      <span class="hero-kicker">آموزش تخصصی و پروژه‌محور</span>
-      <h1>یاد بگیر، بساز، <span>رشد کن</span></h1>
-      <p>دوره‌های آموزشی کاربردی و پروژه‌های واقعی در حوزه‌های تخصصی؛ از مبانی تا حرفه‌ای.</p>
+      <span class="hero-kicker">{% translate "آموزش تخصصی و پروژه‌محور" %}</span>
+      <h1>{% translate "یاد بگیر، بساز،" %} <span>{% translate "رشد کن" %}</span></h1>
+      <p>{% translate "دوره‌های آموزشی کاربردی و پروژه‌های واقعی در حوزه‌های تخصصی؛ از مبانی تا حرفه‌ای." %}</p>
       <form class="hero-search" action="{% url 'products:list' %}" method="get" role="search">
-        <input type="search" name="q" placeholder="چه چیزی می‌خواهید یاد بگیرید؟" aria-label="جستجو">
-        <button type="submit" class="btn btn-primary">جستجو</button>
+        <input type="search" name="q" placeholder="{% translate 'چه چیزی می‌خواهید یاد بگیرید؟' %}" aria-label="{% translate 'جستجو' %}">
+        <button type="submit" class="btn btn-primary">{% translate "جستجو" %}</button>
       </form>
       <div class="hero-stats">
-        <div><strong>{{ stats.courses|fa_num }}</strong><span>دوره‌ی آموزشی</span></div>
-        <div><strong>{{ stats.projects|fa_num }}</strong><span>پروژه</span></div>
-        <div><strong>{{ stats.domains|fa_num }}</strong><span>حوزه‌ی تخصصی</span></div>
+        {# "under a count": a label read after a number, plural in English ("12 Projects") #}
+        <div><strong>{{ stats.courses|num }}</strong><span>{% translate "دوره‌ی آموزشی" context "under a count" %}</span></div>
+        <div><strong>{{ stats.projects|num }}</strong><span>{% translate "پروژه" context "under a count" %}</span></div>
+        <div><strong>{{ stats.domains|num }}</strong><span>{% translate "حوزه‌ی تخصصی" context "under a count" %}</span></div>
       </div>
     </div>
 
 
   <div class="hero-art">
-      <img src="{% static 'images/new_hero.png' %}" alt="آموزش و پروژه">
+      <img src="{% static 'images/new_hero.png' %}" alt="{% translate 'آموزش و پروژه' %}">
     </div>
   </div>
 </section>
 
 {% if domains %}
   <section class="container section">
-    <div class="section-head"><h2>حوزه‌های آموزشی</h2></div>
+    <div class="section-head"><h2>{% translate "حوزه‌های آموزشی" %}</h2></div>
     <div class="domain-grid">
       {% for domain in domains %}
         <a class="domain-card" href="{% url 'products:list' %}?domain={{ domain.slug }}">
           <span class="domain-icon">{{ domain.name|first }}</span>
-          <span><strong>{{ domain.name }}</strong><span class="muted">{{ domain.product_count|fa_num }} محصول</span></span>
+          <span><strong dir="auto">{{ domain.name }}</strong><span class="muted">{% blocktranslate count count=domain.product_count with number=domain.product_count|num %}{{ number }} محصول{% plural %}{{ number }} محصول{% endblocktranslate %}</span></span>
         </a>
       {% endfor %}
     </div>
@@ -45,8 +45,8 @@
 {% if latest_courses %}
   <section class="container section">
     <div class="section-head">
-      <h2>جدیدترین دوره‌ها</h2>
-      <a href="{% url 'products:list' %}?type=course">مشاهده همه ←</a>
+      <h2>{% translate "جدیدترین دوره‌ها" %}</h2>
+      <a href="{% url 'products:list' %}?type=course">{% translate "مشاهده همه ←" %}</a>
     </div>
     <div class="product-grid">
       {% for product in latest_courses %}{% include "partials/product_card.html" %}{% endfor %}
@@ -57,8 +57,8 @@
 {% if latest_projects %}
   <section class="container section">
     <div class="section-head">
-      <h2>جدیدترین پروژه‌ها</h2>
-      <a href="{% url 'products:list' %}?type=project">مشاهده همه ←</a>
+      <h2>{% translate "جدیدترین پروژه‌ها" %}</h2>
+      <a href="{% url 'products:list' %}?type=project">{% translate "مشاهده همه ←" %}</a>
     </div>
     <div class="product-grid">
       {% for product in latest_projects %}{% include "partials/product_card.html" %}{% endfor %}
@@ -67,25 +67,25 @@
 {% endif %}
 
 {% if not latest_courses and not latest_projects %}
-  <section class="container section"><p class="empty">به‌زودی دوره‌ها و پروژه‌ها اینجا قرار می‌گیرند.</p></section>
+  <section class="container section"><p class="empty">{% translate "به‌زودی دوره‌ها و پروژه‌ها اینجا قرار می‌گیرند." %}</p></section>
 {% endif %}
 
 <section class="container section">
-  <div class="section-head"><h2>خدمات تخصصی</h2></div>
+  <div class="section-head"><h2>{% translate "خدمات تخصصی" %}</h2></div>
   <div class="service-cards">
     <a class="service-card" href="{% url 'services:project' %}">
       <span class="service-text">
-        <strong>سفارش پروژه</strong>
-        <span class="muted">پروژه‌ی درسی، پایان‌نامه، صنعتی یا استارتاپی خود را به تیم تخصصی ما بسپارید.</span>
-        <span class="service-more">ثبت درخواست ←</span>
+        <strong>{% translate "سفارش پروژه" %}</strong>
+        <span class="muted">{% translate "پروژه‌ی درسی، پایان‌نامه، صنعتی یا استارتاپی خود را به تیم تخصصی ما بسپارید." %}</span>
+        <span class="service-more">{% translate "ثبت درخواست ←" %}</span>
       </span>
       <img class="service-art" src="{% static 'images/service-project.webp' %}" alt="" width="900" height="838" loading="lazy">
     </a>
     <a class="service-card service-card--pop" href="{% url 'services:consulting' %}">
       <span class="service-text">
-        <strong>مشاوره تخصصی</strong>
-        <span class="muted">قبل از شروع یا در میانه‌ی کار، با کارشناس همان حوزه مشورت کنید.</span>
-        <span class="service-more">ثبت درخواست ←</span>
+        <strong>{% translate "مشاوره تخصصی" %}</strong>
+        <span class="muted">{% translate "قبل از شروع یا در میانه‌ی کار، با کارشناس همان حوزه مشورت کنید." %}</span>
+        <span class="service-more">{% translate "ثبت درخواست ←" %}</span>
       </span>
       <img class="service-art" src="{% static 'images/service-consulting.webp' %}" alt="" width="640" height="757" loading="lazy">
     </a>
@@ -94,10 +94,10 @@
 
 <section class="container section">
   <div class="features">
-    <div class="feature"><i>🎯</i><div><strong>یادگیری پروژه‌محور</strong><span>آموزش همراه با پروژه‌های واقعی</span></div></div>
-    <div class="feature"><i>♾️</i><div><strong>دسترسی همیشگی</strong><span>بعد از خرید، محتوا همیشه در دسترس است</span></div></div>
-    <div class="feature"><i>📦</i><div><strong>فایل‌ها و جزوه‌ها</strong><span>منابع کامل همراه هر دوره و پروژه</span></div></div>
-    <div class="feature"><i>🧑‍🏫</i><div><strong>متخصصان هر حوزه</strong><span>محتوای هر حوزه زیر نظر مدیر همان حوزه</span></div></div>
+    <div class="feature"><i>🎯</i><div><strong>{% translate "یادگیری پروژه‌محور" %}</strong><span>{% translate "آموزش همراه با پروژه‌های واقعی" %}</span></div></div>
+    <div class="feature"><i>♾️</i><div><strong>{% translate "دسترسی همیشگی" %}</strong><span>{% translate "بعد از خرید، محتوا همیشه در دسترس است" %}</span></div></div>
+    <div class="feature"><i>📦</i><div><strong>{% translate "فایل‌ها و جزوه‌ها" %}</strong><span>{% translate "منابع کامل همراه هر دوره و پروژه" %}</span></div></div>
+    <div class="feature"><i>🧑‍🏫</i><div><strong>{% translate "متخصصان هر حوزه" %}</strong><span>{% translate "محتوای هر حوزه زیر نظر مدیر همان حوزه" %}</span></div></div>
   </div>
 </section>
 {% endblock %}

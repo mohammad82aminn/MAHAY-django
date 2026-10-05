@@ -1,8 +1,9 @@
 {% extends "errors/layout.html" %}
+{% load i18n store %}
 
-{% block title %}درخواست نامعتبر{% endblock %}
-{% block code %}۴۰۰{% endblock %}
-{% block heading %}درخواست نامعتبر{% endblock %}
+{% block title %}{% translate "درخواست نامعتبر" %}{% endblock %}
+{% block code %}{{ 400|num }}{% endblock %}
+{% block heading %}{% translate "درخواست نامعتبر" %}{% endblock %}
 {% block text %}
-  <p>سایت نتوانست این درخواست را بخواند. صفحه را دوباره باز کنید یا از صفحه‌ی اصلی ادامه دهید.</p>
+  <p>{% translate "سایت نتوانست این درخواست را بخواند. صفحه را دوباره باز کنید یا از صفحه‌ی اصلی ادامه دهید." %}</p>
 {% endblock %}

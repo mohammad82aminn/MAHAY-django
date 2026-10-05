@@ -4,7 +4,11 @@ from django.contrib.auth.views import redirect_to_login
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.html import format_html_join
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
+from django.utils.translation import gettext_noop
 from django.views.decorators.http import require_POST
 
 from pages.models import Page
@@ -14,11 +18,16 @@ from . import gateway, services
 from .models import CartItem, Order, Purchase
 
 ADD_MESSAGES = {
-    "added": (messages.SUCCESS, "به سبد خرید اضافه شد."),
-    "already_in_cart": (messages.INFO, "این محصول از قبل در سبد خرید شما است."),
-    "already_owned": (messages.INFO, "شما این محصول را دارید؛ از «خریدهای من» ببینید."),
-    "unavailable": (messages.ERROR, "این محصول در حال حاضر قابل خرید نیست."),
+    "added": (messages.SUCCESS, gettext_lazy("به سبد خرید اضافه شد.")),
+    "already_in_cart": (messages.INFO, gettext_lazy("این محصول از قبل در سبد خرید شما است.")),
+    "already_owned": (messages.INFO, gettext_lazy("شما این محصول را دارید؛ از «خریدهای من» ببینید.")),
+    "unavailable": (messages.ERROR, gettext_lazy("این محصول در حال حاضر قابل خرید نیست.")),
 }
+
+# Kept on the order (gateway_message) in Persian, the site's own language, and translated where it
+# is shown (order_detail.html), so a buyer reads it in the language of the page they are on.
+CANCELED_BY_BUYER = gettext_noop("پرداخت توسط کاربر لغو شد.")
+FREE_ORDER = gettext_noop("سفارش رایگان")
 
 # The pages a buyer agrees to before paying (edited in the admin, under «صفحه‌ها»)
 TERMS_PAGES = ("terms", "refund")
@@ -32,11 +41,19 @@ def purchase_terms():
     return list(Page.objects.filter(slug__in=TERMS_PAGES, is_published=True))
 
 
+def terms_links(pages):
+    """«Terms» and «Refunds», each a link opening in a new tab, for the sentence the buyer agrees to."""
+    return format_html_join(
+        _(" و "), '«<a href="{}" target="_blank" rel="noopener">{}</a>»',
+        ((page.get_absolute_url(), page.title) for page in pages),
+    )
+
+
 @require_POST
 def add_to_cart(request, slug):
     product = get_object_or_404(Product, slug=slug)
     level, text = ADD_MESSAGES[services.add_to_cart(request, product)]
-    messages.add_message(request, level, text)
+    messages.add_message(request, level, str(text))
     # Only back to a page of this site: «next» comes from the form, so it can be made to point anywhere
     next_url = request.POST.get("next")
     if next_url and url_has_allowed_host_and_scheme(
@@ -51,7 +68,7 @@ def remove_from_cart(request, slug):
     cart = services.get_cart(request)
     if cart is not None:
         CartItem.objects.filter(cart=cart, product__slug=slug).delete()
-        messages.info(request, "از سبد خرید حذف شد.")
+        messages.info(request, _("از سبد خرید حذف شد."))
     return redirect("commerce:cart")
 
 
@@ -63,7 +80,7 @@ def cart_view(request):
         "total": sum(product.final_price for product in products),
         "owned_ids": services.owned_product_ids(request.user),
         # A visitor sees no box: they log in first, and come back to this page to tick it
-        "terms_pages": purchase_terms() if products and request.user.is_authenticated else [],
+        "terms_links": terms_links(purchase_terms()) if products and request.user.is_authenticated else "",
     })
 
 
@@ -76,19 +93,19 @@ def checkout(request):
         return redirect_to_login(reverse("commerce:cart"))
 
     if request.POST.get("accept_terms") != "on" and purchase_terms():
-        messages.error(request, "برای ثبت سفارش، قوانین را بخوانید و تیک پذیرش آن را بزنید.")
+        messages.error(request, _("برای ثبت سفارش، قوانین را بخوانید و تیک پذیرش آن را بزنید."))
         return redirect("commerce:cart")
 
     cart = services.get_cart(request)
     order = services.create_order(request.user, cart) if cart else None
     if order is None:
-        messages.error(request, "سبد خرید شما خالی است.")
+        messages.error(request, _("سبد خرید شما خالی است."))
         return redirect("commerce:cart")
 
     if order.is_free:  # ZarinPal can't process a zero payment
-        order.mark_paid(message="سفارش رایگان")
+        order.mark_paid(message=FREE_ORDER)
         services.clear_paid_items(cart, order)
-        messages.success(request, "محصولات رایگان به حساب شما اضافه شد.")
+        messages.success(request, _("محصولات رایگان به حساب شما اضافه شد."))
         return redirect("commerce:order_detail", number=order.number)
 
     callback_url = request.build_absolute_uri(reverse("commerce:payment_callback"))
@@ -98,7 +115,7 @@ def checkout(request):
         order.status = Order.Status.FAILED
         order.gateway_message = str(error)[:255]
         order.save()
-        messages.error(request, str(error))
+        messages.error(request, _(str(error)))
         return redirect("commerce:cart")
 
     order.save()
@@ -112,7 +129,7 @@ def payment_callback(request):
     """
     order = Order.objects.filter(authority=request.GET.get("Authority", "")).first()
     if order is None:
-        messages.error(request, "سفارش این پرداخت پیدا نشد.")
+        messages.error(request, _("سفارش این پرداخت پیدا نشد."))
         return redirect("home")
 
     if order.status == Order.Status.PAID:  # e.g. the user refreshed the callback page
@@ -120,9 +137,9 @@ def payment_callback(request):
 
     if request.GET.get("Status") != "OK":
         order.status = Order.Status.CANCELED
-        order.gateway_message = "پرداخت توسط کاربر لغو شد."
+        order.gateway_message = CANCELED_BY_BUYER
         order.save()
-        messages.warning(request, "پرداخت لغو شد. سبد خرید شما محفوظ است.")
+        messages.warning(request, _("پرداخت لغو شد. سبد خرید شما محفوظ است."))
         return redirect("commerce:cart")
 
     try:
@@ -131,7 +148,7 @@ def payment_callback(request):
         order.status = Order.Status.FAILED
         order.gateway_message = str(error)[:255]
         order.save()
-        messages.error(request, f"پرداخت تأیید نشد: {error}")
+        messages.error(request, _("پرداخت تأیید نشد: %(error)s") % {"error": _(str(error))})
         return redirect("commerce:cart")
 
     with transaction.atomic():
@@ -144,7 +161,7 @@ def payment_callback(request):
         if cart is not None:
             services.clear_paid_items(cart, order)
 
-    messages.success(request, "پرداخت با موفقیت انجام شد.")
+    messages.success(request, _("پرداخت با موفقیت انجام شد."))
     return redirect("commerce:order_detail", number=order.number)
 
 

@@ -3,6 +3,7 @@ Django settings for MAHAY project.
 All secrets and environment-specific values come from .env (python-decouple).
 """
 
+import importlib.util
 from pathlib import Path
 
 from decouple import Csv, config
@@ -57,6 +58,8 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    # After the session, before CommonMiddleware: picks the language from the address (/en/...)
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -129,10 +132,32 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # --- Internationalization -------------------------------------------------
 
+# The site speaks Persian at its usual addresses and English under /en/ (config/urls.py). The
+# admin panel and the content itself (course titles, pages, ...) stay Persian.
+# The texts are written in Persian in the code and templates, so Persian needs no translation
+# file: locale/en/ holds the English for each of them. After changing a text, run
+#   python manage.py makemessages -l en --ignore=venv   then fill it in, then   compilemessages
 LANGUAGE_CODE = "fa"
+LANGUAGES = [
+    ("fa", "فارسی"),
+    ("en", "English"),
+]
+LOCALE_PATHS = [BASE_DIR / "locale"]
 TIME_ZONE = "Asia/Tehran"
 USE_I18N = True
 USE_TZ = True
+
+# Rosetta: edit the English texts in the browser at /rosetta/ — development only (DEBUG), and
+# only for a superuser. It writes into locale/ on the machine it runs on; the edited file is then
+# committed like any other. On the live server a change made that way would be lost at the next
+# deploy, and a page that writes files on the server is one more way in, so it is never on there.
+ROSETTA_ENABLED = DEBUG and importlib.util.find_spec("rosetta") is not None
+if ROSETTA_ENABLED:
+    INSTALLED_APPS += ["rosetta"]
+    ROSETTA_ACCESS_CONTROL_FUNCTION = "config.translation.can_translate"
+    ROSETTA_LANGUAGES = [("en", "English")]  # Persian is the source: nothing to translate into it
+    ROSETTA_MESSAGES_SOURCE_LANGUAGE_CODE = "fa"
+    ROSETTA_MESSAGES_SOURCE_LANGUAGE_NAME = "فارسی"
 
 
 # --- Static files ---------------------------------------------------------

@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.translation import gettext as _
 from django.views.generic import CreateView, DetailView
 
 from accounts.models import User
@@ -28,5 +29,5 @@ class ContactView(CreateView):
 
     def form_valid(self, form):
         form.save()
-        messages.success(self.request, "پیام شما ثبت شد. به‌زودی پاسخ می‌دهیم.")
+        messages.success(self.request, _("پیام شما ثبت شد. به‌زودی پاسخ می‌دهیم."))
         return redirect("pages:contact")

@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-{% load store %}
+{% load i18n store %}
 
-{% block title %}خریدهای من{% endblock %}
+{% block title %}{% translate "خریدهای من" %}{% endblock %}
 
 {% block content %}
 <section class="container section">
   <div class="section-head">
-    <h2>خریدهای من</h2>
-    <a href="{% url 'commerce:order_list' %}">سفارش‌ها ←</a>
+    <h2>{% translate "خریدهای من" %}</h2>
+    <a href="{% url 'commerce:order_list' %}">{% translate "سفارش‌ها ←" %}</a>
   </div>
   {% if purchases %}
     <div class="product-grid">
@@ -18,24 +18,24 @@
             <span class="badge badge-type">{{ item.product.get_product_type_display }}</span>
           </a>
           <div class="owned-body">
-            <span class="product-card-domain">{{ item.product.primary_domain }}</span>
-            <h3><a href="{% url 'content:learn' item.product.slug %}">{{ item.product.title }}</a></h3>
+            <span class="product-card-domain" dir="auto">{{ item.product.primary_domain }}</span>
+            <h3 dir="auto"><a href="{% url 'content:learn' item.product.slug %}">{{ item.product.title }}</a></h3>
             <div class="owned-progress">
               <div class="bar"><span style="width: {{ item.percent }}%"></span></div>
               <div class="owned-progress-text muted">
-                <span>{{ item.completed|fa_num }} از {{ item.total|fa_num }} درس</span>
-                <span>{{ item.percent|fa_num }}٪</span>
+                <span>{% blocktranslate with done=item.completed|num total=item.total|num %}{{ done }} از {{ total }} درس{% endblocktranslate %}</span>
+                <span>{% blocktranslate with percent=item.percent|num %}{{ percent }}٪{% endblocktranslate %}</span>
               </div>
             </div>
             <a class="btn btn-primary btn-block" href="{% if item.next_lesson %}{% url 'content:lesson' item.product.slug item.next_lesson.pk %}{% else %}{% url 'content:learn' item.product.slug %}{% endif %}">
-              {% if item.percent == 100 %}مرور دوباره{% elif item.completed %}ادامه‌ی یادگیری{% else %}شروع یادگیری{% endif %}
+              {% if item.percent == 100 %}{% translate "مرور دوباره" %}{% elif item.completed %}{% translate "ادامه‌ی یادگیری" %}{% else %}{% translate "شروع یادگیری" %}{% endif %}
             </a>
           </div>
         </div>
       {% endfor %}
     </div>
   {% else %}
-    <p class="empty">هنوز محصولی نخریده‌اید. <a href="{% url 'products:list' %}">مشاهده محصولات</a></p>
+    <p class="empty">{% translate "هنوز محصولی نخریده‌اید." %} <a href="{% url 'products:list' %}">{% translate "مشاهده محصولات" %}</a></p>
   {% endif %}
 </section>
 {% endblock %}

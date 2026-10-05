@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from accounts.roles import is_site_admin, sees_everything
 from domains.access import has_managers, is_manager, managed_domains
@@ -59,17 +60,18 @@ def visible_requests(user):
 
 # Where a request has got to, worked out from what it already holds rather than stored: a saved
 # stage would be one more thing to keep in step, and it would quietly go wrong.
-STAGE_REVIEW = ("review", "منتظر بررسی و ارجاع", "شما")
-STAGE_ASSIGN = ("assign", "منتظر انتخاب کارشناس", "مدیر حوزه")
-STAGE_ASSIGN_ADMIN = ("assign", "منتظر انتخاب کارشناس", "شما")  # a domain with no manager
-STAGE_QUOTES = ("quotes", "منتظر قیمت حوزه‌ها", "کارشناس")
-STAGE_QUOTE_REVIEW = ("quote_review", "منتظر تأیید قیمت", "مدیر حوزه")
-STAGE_AMOUNT = ("amount", "منتظر تعیین مبلغ کل", "شما")
-STAGE_PREPAY = ("prepay", "منتظر پیش‌پرداخت", "مشتری")
-STAGE_WORKING = ("working", "در حال انجام", "کارشناس")
-STAGE_SETTLE = ("settle", "منتظر تسویه", "مشتری")
-STAGE_DONE = ("done", "تمام شد", "—")
-STAGE_CLOSED = ("closed", "بسته شد", "—")
+# The label is also shown to the customer (درخواست‌های من), so it follows the page's language.
+STAGE_REVIEW = ("review", _("منتظر بررسی و ارجاع"), "شما")
+STAGE_ASSIGN = ("assign", _("منتظر انتخاب کارشناس"), "مدیر حوزه")
+STAGE_ASSIGN_ADMIN = ("assign", _("منتظر انتخاب کارشناس"), "شما")  # a domain with no manager
+STAGE_QUOTES = ("quotes", _("منتظر قیمت حوزه‌ها"), "کارشناس")
+STAGE_QUOTE_REVIEW = ("quote_review", _("منتظر تأیید قیمت"), "مدیر حوزه")
+STAGE_AMOUNT = ("amount", _("منتظر تعیین مبلغ کل"), "شما")
+STAGE_PREPAY = ("prepay", _("منتظر پیش‌پرداخت"), "مشتری")
+STAGE_WORKING = ("working", _("در حال انجام"), "کارشناس")
+STAGE_SETTLE = ("settle", _("منتظر تسویه"), "مشتری")
+STAGE_DONE = ("done", _("تمام شد"), "—")
+STAGE_CLOSED = ("closed", _("بسته شد"), "—")
 
 
 def stage_of(request_object):

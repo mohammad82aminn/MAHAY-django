@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth import forms as auth_forms
+from django.utils.translation import gettext_lazy as _
 
 from .models import User
 from . import throttle
@@ -34,7 +35,7 @@ class SignUpForm(auth_forms.BaseUserCreationForm):
         self.fields["mobile_number"].widget.attrs["autofocus"] = True
         # The account is reached by mobile number; an email is only a way to contact the person.
         # Two people leaving it empty do not clash: the model stores an empty one as NULL.
-        self.fields["email"].help_text = "اختیاری"
+        self.fields["email"].help_text = _("اختیاری")
 
     def clean_mobile_number(self):
         number = self.cleaned_data["mobile_number"]
@@ -52,7 +53,7 @@ class PasswordResetRequestForm(forms.Form):
     this page into a way of finding out who is registered.
     """
 
-    mobile_number = forms.CharField(label="شماره موبایل", max_length=20,
+    mobile_number = forms.CharField(label=_("شماره موبایل"), max_length=20,
                                     widget=forms.TextInput(attrs={**MOBILE_ATTRS, "autofocus": True}))
 
     def clean_mobile_number(self):
@@ -63,7 +64,7 @@ class VerifyCodeForm(forms.Form):
     """The 6-digit code sent by SMS."""
 
     code = forms.CharField(
-        label="کد تأیید", max_length=CODE_LENGTH, min_length=CODE_LENGTH,
+        label=_("کد تأیید"), max_length=CODE_LENGTH, min_length=CODE_LENGTH,
         widget=forms.TextInput(attrs={
             "dir": "ltr", "inputmode": "numeric", "autocomplete": "one-time-code",
             "placeholder": "------", "autofocus": True, "class": "code-input",
@@ -74,7 +75,7 @@ class VerifyCodeForm(forms.Form):
         # Persian digits are typed on many phone keyboards
         code = self.cleaned_data["code"].translate(DIGIT_MAP).strip()
         if not code.isdigit():
-            raise forms.ValidationError("کد تأیید فقط عدد است.")
+            raise forms.ValidationError(_("کد تأیید فقط عدد است."))
         return code
 
 class LoginForm(auth_forms.AuthenticationForm):
@@ -82,8 +83,8 @@ class LoginForm(auth_forms.AuthenticationForm):
 
     error_messages = {
         **auth_forms.AuthenticationForm.error_messages,
-        "inactive": "شماره‌ی این حساب تأیید نشده است. دوباره ثبت‌نام کنید تا کد تأیید برایتان ارسال شود.",
-        "blocked": "تلاش‌های ناموفق زیادی انجام شده است. %(minutes)s دقیقه دیگر دوباره تلاش کنید.",
+        "inactive": _("شماره‌ی این حساب تأیید نشده است. دوباره ثبت‌نام کنید تا کد تأیید برایتان ارسال شود."),
+        "blocked": _("تلاش‌های ناموفق زیادی انجام شده است. %(minutes)s دقیقه دیگر دوباره تلاش کنید."),
     }
 
     def __init__(self, request=None, *args, **kwargs):

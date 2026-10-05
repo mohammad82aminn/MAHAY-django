@@ -1,28 +1,28 @@
 {% extends "base.html" %}
-{% load store %}
+{% load i18n store %}
 
 {% block title %}{{ product.title }}{% endblock %}
 {% block body_class %}has-mobile-buy{% endblock %}
 
 {% block content %}
 {% if is_preview %}
-  <div class="preview-bar">پیش‌نمایش: این محصول هنوز در فروشگاه نمایش داده نمی‌شود و فقط مدیران آن را می‌بینند.</div>
+  <div class="preview-bar">{% translate "پیش‌نمایش: این محصول هنوز در فروشگاه نمایش داده نمی‌شود و فقط مدیران آن را می‌بینند." %}</div>
 {% endif %}
 
 <section class="container section product-detail">
   <div class="product-main">
     <nav class="breadcrumb">
-      <a href="{% url 'products:list' %}">محصولات</a> ›
-      <a href="{% url 'products:list' %}?domain={{ product.primary_domain.slug }}">{{ product.primary_domain }}</a>
+      <a href="{% url 'products:list' %}">{% translate "محصولات" %}</a> ›
+      <a href="{% url 'products:list' %}?domain={{ product.primary_domain.slug }}" dir="auto">{{ product.primary_domain }}</a>
     </nav>
-    <h1>{{ product.title }}</h1>
-    {% if product.summary %}<p class="lead muted">{{ product.summary }}</p>{% endif %}
+    <h1 dir="auto">{{ product.title }}</h1>
+    {% if product.summary %}<p class="lead muted" dir="auto">{{ product.summary }}</p>{% endif %}
 
     {# Intro video (public, from Aparat); otherwise the cover image #}
     {% with embed=product.intro_video_url|aparat_embed %}
       {% if embed %}
         <div class="video-frame">
-          <iframe src="{{ embed }}" title="ویدیوی معرفی {{ product.title }}" allowfullscreen loading="lazy"></iframe>
+          <iframe src="{{ embed }}" title="{% blocktranslate with title=product.title %}ویدیوی معرفی {{ title }}{% endblocktranslate %}" allowfullscreen loading="lazy"></iframe>
         </div>
       {% elif product.cover %}
         <img class="detail-cover" src="{{ product.cover.url }}" alt="{{ product.title }}">
@@ -31,14 +31,14 @@
 
     {% if product.description %}
       <div class="card block">
-        <h2>درباره‌ی این {{ product.get_product_type_display }}</h2>
-        <div class="prose">{{ product.description|linebreaks }}</div>
+        <h2>{% blocktranslate with type=product.get_product_type_display|lower %}درباره‌ی این {{ type }}{% endblocktranslate %}</h2>
+        <div class="prose" dir="auto">{{ product.description|linebreaks }}</div>
       </div>
     {% endif %}
 
     {% if gallery %}
       <div class="card block">
-        <h2>تصاویر</h2>
+        <h2>{% translate "تصاویر" %}</h2>
         <div class="gallery">
           {% for image in gallery %}
             <a href="{{ image.image.url }}" data-lightbox="gallery" data-caption="{{ image.caption }}">
@@ -51,13 +51,13 @@
 
     {% if sections %}
       <div class="card block">
-        <h2>سرفصل‌ها</h2>
+        <h2>{% translate "سرفصل‌ها" %}</h2>
         <div class="outline">
           {% for section in sections %}
             <details {% if forloop.first %}open{% endif %}>
               <summary>
-                <span>{{ section.title }}</span>
-                <span class="muted">{{ section.visible_lessons|length|fa_num }} درس</span>
+                <span dir="auto">{{ section.title }}</span>
+                {% with count=section.visible_lessons|length %}<span class="muted">{% blocktranslate count count=count with number=count|num %}{{ number }} درس{% plural %}{{ number }} درس{% endblocktranslate %}</span>{% endwith %}
               </summary>
               <ul>
                 {% for lesson in section.visible_lessons %}
@@ -66,7 +66,7 @@
                       {# A sample (content.access.is_open_sample): anyone may watch it before buying #}
                       <span class="outline-sample">
                         <a href="{% url 'content:sample' product.slug lesson.pk %}">{{ lesson.title }}</a>
-                        <span class="badge badge-sample">رایگان ببینید</span>
+                        <span class="badge badge-sample">{% translate "رایگان ببینید" %}</span>
                       </span>
                     {% else %}
                       <span>{% if not product.is_free and not can_enter %}🔒 {% endif %}{{ lesson.title }}</span>
@@ -84,7 +84,7 @@
     {# The titles are on show, so a visitor knows what comes with it; the files open only after buying #}
     {% if companion_files %}
       <div class="card block">
-        <h2>فایل‌های همراه</h2>
+        <h2>{% translate "فایل‌های همراه" %}</h2>
         <ul class="file-list">
           {% for companion in companion_files %}
             <li>
@@ -108,34 +108,34 @@
       <div class="price price-lg">
         {% if product.sale_price is not None %}
           <del>{{ product.price|toman }}</del>
-          <span class="badge badge-discount">{{ product.discount_percent|fa_num }}٪ تخفیف</span>
+          <span class="badge badge-discount">{% blocktranslate with percent=product.discount_percent|num %}{{ percent }}٪ تخفیف{% endblocktranslate %}</span>
         {% endif %}
         <strong class="{% if product.is_free %}price-free{% endif %}">{{ product.final_price|toman }}</strong>
       </div>
       {% if can_enter %}
-        <a class="btn btn-primary btn-block" href="{% url 'content:learn' product.slug %}">ورود به {{ product.get_product_type_display }}</a>
+        <a class="btn btn-primary btn-block" href="{% url 'content:learn' product.slug %}">{% blocktranslate with type=product.get_product_type_display|lower %}ورود به {{ type }}{% endblocktranslate %}</a>
       {% elif in_cart %}
-        <a class="btn btn-primary btn-block" href="{% url 'commerce:cart' %}">مشاهده سبد خرید</a>
+        <a class="btn btn-primary btn-block" href="{% url 'commerce:cart' %}">{% translate "مشاهده سبد خرید" %}</a>
       {% else %}
         <form method="post" action="{% url 'commerce:add_to_cart' product.slug %}">
           {% csrf_token %}
           <input type="hidden" name="next" value="{{ request.path }}">
           <button type="submit" class="btn btn-primary btn-block">
-            {% if product.is_free %}دریافت رایگان{% else %}افزودن به سبد خرید{% endif %}
+            {% if product.is_free %}{% translate "دریافت رایگان" %}{% else %}{% translate "افزودن به سبد خرید" %}{% endif %}
           </button>
         </form>
       {% endif %}
       <ul class="facts">
-        <li><span>نوع</span><strong>{{ product.get_product_type_display }}</strong></li>
-        <li><span>حوزه</span><strong>{{ product.primary_domain }}</strong></li>
-        {% with names=product.instructor_names %}{% if names %}<li><span>مدرس</span><strong>{{ names }}</strong></li>{% endif %}{% endwith %}
-        {% if lesson_count %}<li><span>تعداد درس</span><strong>{{ lesson_count|fa_num }}</strong></li>{% endif %}
-        {% if total_seconds %}<li><span>مدت کل</span><strong>{{ total_seconds|duration }}</strong></li>{% endif %}
-        {% if product.thesis %}<li><span>پایان‌نامه</span><strong>دارد</strong></li>{% endif %}
+        <li><span>{% translate "نوع" %}</span><strong>{{ product.get_product_type_display }}</strong></li>
+        <li><span>{% translate "حوزه" %}</span><strong dir="auto">{{ product.primary_domain }}</strong></li>
+        {% with names=product.instructor_names %}{% if names %}<li><span>{% translate "مدرس" %}</span><strong>{{ names }}</strong></li>{% endif %}{% endwith %}
+        {% if lesson_count %}<li><span>{% translate "تعداد درس" %}</span><strong>{{ lesson_count|num }}</strong></li>{% endif %}
+        {% if total_seconds %}<li><span>{% translate "مدت کل" %}</span><strong>{{ total_seconds|duration }}</strong></li>{% endif %}
+        {% if product.thesis %}<li><span>{% translate "پایان‌نامه" %}</span><strong>{% translate "دارد" %}</strong></li>{% endif %}
       </ul>
       {% if product.thesis and can_enter %}
         <div class="included">
-          📄 <a href="{% url 'content:protected_file' 'thesis' product.pk %}">دانلود پایان‌نامه</a>
+          📄 <a href="{% url 'content:protected_file' 'thesis' product.pk %}">{% translate "دانلود پایان‌نامه" %}</a>
         </div>
       {% endif %}
     </div>
@@ -149,14 +149,14 @@
     <strong class="{% if product.is_free %}price-free{% endif %}">{{ product.final_price|toman }}</strong>
   </div>
   {% if can_enter %}
-    <a class="btn btn-primary btn-sm" href="{% url 'content:learn' product.slug %}">ورود</a>
+    <a class="btn btn-primary btn-sm" href="{% url 'content:learn' product.slug %}">{% translate "ورود" %}</a>
   {% elif in_cart %}
-    <a class="btn btn-primary btn-sm" href="{% url 'commerce:cart' %}">سبد خرید</a>
+    <a class="btn btn-primary btn-sm" href="{% url 'commerce:cart' %}">{% translate "سبد خرید" %}</a>
   {% else %}
     <form method="post" action="{% url 'commerce:add_to_cart' product.slug %}">
       {% csrf_token %}
       <input type="hidden" name="next" value="{{ request.path }}">
-      <button type="submit" class="btn btn-primary btn-sm">{% if product.is_free %}دریافت رایگان{% else %}افزودن به سبد{% endif %}</button>
+      <button type="submit" class="btn btn-primary btn-sm">{% if product.is_free %}{% translate "دریافت رایگان" %}{% else %}{% translate "افزودن به سبد" %}{% endif %}</button>
     </form>
   {% endif %}
 </div>
@@ -164,19 +164,19 @@
 <section class="container section">
   <div class="service-strip card">
     <div>
-      <strong>پروژه‌ای مشابه دارید؟</strong>
-      <span class="muted">می‌توانید انجام آن را به ما بسپارید یا قبل از شروع مشورت بگیرید.</span>
+      <strong>{% translate "پروژه‌ای مشابه دارید؟" %}</strong>
+      <span class="muted">{% translate "می‌توانید انجام آن را به ما بسپارید یا قبل از شروع مشورت بگیرید." %}</span>
     </div>
     <div class="service-strip-actions">
-      <a class="btn btn-ghost" href="{% url 'services:project' %}">سفارش پروژه</a>
-      <a class="btn btn-ghost" href="{% url 'services:consulting' %}">مشاوره تخصصی</a>
+      <a class="btn btn-ghost" href="{% url 'services:project' %}">{% translate "سفارش پروژه" %}</a>
+      <a class="btn btn-ghost" href="{% url 'services:consulting' %}">{% translate "مشاوره تخصصی" %}</a>
     </div>
   </div>
 </section>
 
 {% if related %}
   <section class="container section">
-    <div class="section-head"><h2>محصولات مرتبط</h2></div>
+    <div class="section-head"><h2>{% translate "محصولات مرتبط" %}</h2></div>
     <div class="product-grid">
       {% for item in related %}{% include "partials/product_card.html" with product=item %}{% endfor %}
     </div>

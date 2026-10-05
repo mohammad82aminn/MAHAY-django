@@ -1,10 +1,11 @@
 {% extends "accounts/auth_layout.html" %}
+{% load i18n %}
 
-{% block title %}ثبت‌نام{% endblock %}
-{% block heading %}ساخت حساب کاربری{% endblock %}
-{% block subheading %}با شماره موبایل خود ثبت‌نام کنید؛ یک کد تأیید برایتان پیامک می‌شود{% endblock %}
-{% block submit %}ثبت‌نام{% endblock %}
+{% block title %}{% translate "ثبت‌نام" %}{% endblock %}
+{% block heading %}{% translate "ساخت حساب کاربری" %}{% endblock %}
+{% block subheading %}{% translate "با شماره موبایل خود ثبت‌نام کنید؛ یک کد تأیید برایتان پیامک می‌شود" %}{% endblock %}
+{% block submit %}{% translate "ثبت‌نام" %}{% endblock %}
 
 {% block foot %}
-  حساب دارید؟ <a href="{% url 'accounts:login' %}">وارد شوید</a>
+  {% translate "حساب دارید؟" %} <a href="{% url 'accounts:login' %}">{% translate "وارد شوید" %}</a>
 {% endblock %}

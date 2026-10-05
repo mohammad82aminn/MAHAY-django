@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
+from django.conf.urls.i18n import i18n_patterns
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
@@ -33,7 +34,15 @@ admin.site.index_title = "پیشخوان"
 # a logged-in staff member, and «private» keeps it out of shared caches.
 admin.site.i18n_javascript = cache_control(private=True, max_age=60 * 60 * 24)(admin.site.i18n_javascript)
 
+# The admin panel stays Persian: it is outside i18n_patterns, so it has no /en/ address, and
+# LocaleMiddleware gives every address without a language prefix the default language.
 urlpatterns = [
+    path("admin/", admin.site.urls),
+]
+
+# The site itself: Persian at its usual addresses, English under /en/ (each page links to its
+# twin, see the languages template tags). Nothing is remembered: the address alone decides.
+urlpatterns += i18n_patterns(
     path("", HomeView.as_view(), name="home"),
     path("products/", include("products.urls")),
     path("accounts/", include("accounts.urls")),
@@ -42,9 +51,13 @@ urlpatterns = [
     path("collaboration/", include("collaboration.urls")),
     path("content/", include("content.urls")),
     path("approvals/", include("approvals.urls")),
-    path("admin/", admin.site.urls),
     path("p/", include("pages.urls")),  # last: /p/<slug>/ must not shadow the other sections
-]
+    prefix_default_language=False,
+)
+
+if settings.ROSETTA_ENABLED:
+    # Development only, superuser only (see settings)
+    urlpatterns += [path("rosetta/", include("rosetta.urls"))]
 
 # What a visitor sees on an error while DEBUG is off: our own page, no details (see config/errors.py)
 handler400 = "config.errors.bad_request"

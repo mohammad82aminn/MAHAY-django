@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% load store %}
+{% load i18n store %}
 
-{% block title %}سفارش {{ order.number }}{% endblock %}
+{% block title %}{% blocktranslate with number=order.number %}سفارش {{ number }}{% endblocktranslate %}{% endblock %}
 
 {% block content %}
 <section class="container section auth">
@@ -10,25 +10,25 @@
       {% if order.status == "paid" %}✓{% elif order.status == "pending" %}…{% else %}!{% endif %}
     </div>
     <h1>{{ order.get_status_display }}</h1>
-    <p class="muted">شماره سفارش: <bdi>{{ order.number|fa_num }}</bdi></p>
-    {% if order.paid_at %}<p class="muted">تاریخ: {{ order.paid_at|date:"Y/m/d H:i"|fa_num }}</p>{% endif %}
+    <p class="muted">{% translate "شماره سفارش:" %} <bdi>{{ order.number|num }}</bdi></p>
+    {% if order.paid_at %}<p class="muted">{% translate "تاریخ:" %} {{ order.paid_at|date:"Y/m/d H:i"|num }}</p>{% endif %}
 
     <ul class="facts">
       {% for item in order.items.all %}
-        <li><span>{{ item.title }}</span><strong>{{ item.price|toman }}</strong></li>
+        <li><span dir="auto">{{ item.title }}</span><strong>{{ item.price|toman }}</strong></li>
       {% endfor %}
-      <li><span>مبلغ کل</span><strong>{{ order.total|toman }}</strong></li>
-      {% if order.reference_id %}<li><span>شماره تراکنش</span><strong><bdi>{{ order.reference_id|fa_num }}</bdi></strong></li>{% endif %}
-      {% if order.card_pan %}<li><span>کارت</span><strong><bdi>{{ order.card_pan }}</bdi></strong></li>{% endif %}
+      <li><span>{% translate "مبلغ کل" %}</span><strong>{{ order.total|toman }}</strong></li>
+      {% if order.reference_id %}<li><span>{% translate "شماره تراکنش" %}</span><strong><bdi>{{ order.reference_id|num }}</bdi></strong></li>{% endif %}
+      {% if order.card_pan %}<li><span>{% translate "کارت" %}</span><strong><bdi>{{ order.card_pan }}</bdi></strong></li>{% endif %}
     </ul>
 
     {% if order.status == "paid" %}
-      <a class="btn btn-primary btn-block" href="{% url 'commerce:library' %}">مشاهده خریدهای من</a>
+      <a class="btn btn-primary btn-block" href="{% url 'commerce:library' %}">{% translate "مشاهده خریدهای من" %}</a>
     {% else %}
-      {% if order.gateway_message %}<p class="muted">{{ order.gateway_message }}</p>{% endif %}
-      <a class="btn btn-primary btn-block" href="{% url 'commerce:cart' %}">بازگشت به سبد خرید</a>
+      {% if order.gateway_message %}<p class="muted" dir="auto">{% translate order.gateway_message %}</p>{% endif %}
+      <a class="btn btn-primary btn-block" href="{% url 'commerce:cart' %}">{% translate "بازگشت به سبد خرید" %}</a>
     {% endif %}
-    <p class="auth-foot"><a href="{% url 'commerce:order_list' %}">همه‌ی سفارش‌ها</a></p>
+    <p class="auth-foot"><a href="{% url 'commerce:order_list' %}">{% translate "همه‌ی سفارش‌ها" %}</a></p>
   </div>
 </section>
 {% endblock %}

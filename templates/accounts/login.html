@@ -1,16 +1,17 @@
 {% extends "accounts/auth_layout.html" %}
+{% load i18n %}
 
-{% block title %}ورود{% endblock %}
-{% block heading %}خوش برگشتید{% endblock %}
-{% block subheading %}با شماره موبایل و رمز عبور وارد شوید{% endblock %}
-{% block submit %}ورود{% endblock %}
+{% block title %}{% translate "ورود" %}{% endblock %}
+{% block heading %}{% translate "خوش برگشتید" %}{% endblock %}
+{% block subheading %}{% translate "با شماره موبایل و رمز عبور وارد شوید" %}{% endblock %}
+{% block submit %}{% translate "ورود" %}{% endblock %}
 
 {% block extra_fields %}
   {# After login, send the user back to the page they came from #}
   <input type="hidden" name="next" value="{{ next }}">
-  <a class="field-link" href="{% url 'accounts:password_reset' %}">رمز عبور را فراموش کرده‌اید؟</a>
+  <a class="field-link" href="{% url 'accounts:password_reset' %}">{% translate "رمز عبور را فراموش کرده‌اید؟" %}</a>
 {% endblock %}
 
 {% block foot %}
-  حساب ندارید؟ <a href="{% url 'accounts:signup' %}">ثبت‌نام کنید</a>
+  {% translate "حساب ندارید؟" %} <a href="{% url 'accounts:signup' %}">{% translate "ثبت‌نام کنید" %}</a>
 {% endblock %}

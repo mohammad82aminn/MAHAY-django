@@ -8,6 +8,7 @@ Amounts are sent in Rial: ZarinPal works in Rial, our prices are in Toman (1 Tom
 """
 import requests
 from django.conf import settings
+from django.utils.translation import gettext_noop
 
 TIMEOUT = 20  # seconds
 RIAL_PER_TOMAN = 10
@@ -17,7 +18,12 @@ LIVE = "https://payment.zarinpal.com/pg/"
 
 
 class PaymentError(Exception):
-    """The gateway refused the request (its message is safe to show to the user)."""
+    """
+    The gateway refused the request (its message is safe to show to the user).
+
+    Our own messages are kept in Persian (they are stored on the order) and translated where they
+    are shown: gettext(str(error)). The gateway's own wording has no translation and stays as it came.
+    """
 
 
 def _base():
@@ -34,14 +40,14 @@ def _post(path, payload):
         response = requests.post(f"{_base()}v4/payment/{path}", json=payload, timeout=TIMEOUT)
         body = response.json()
     except (requests.RequestException, ValueError) as error:
-        raise PaymentError("ارتباط با درگاه پرداخت برقرار نشد. چند لحظه بعد دوباره تلاش کنید.") from error
+        raise PaymentError(gettext_noop("ارتباط با درگاه پرداخت برقرار نشد. چند لحظه بعد دوباره تلاش کنید.")) from error
 
     data = body.get("data") or {}
     if data:
         return data
     errors = body.get("errors") or {}
     message = errors.get("message") if isinstance(errors, dict) else None
-    raise PaymentError(message or "درگاه پرداخت درخواست را نپذیرفت.")
+    raise PaymentError(message or gettext_noop("درگاه پرداخت درخواست را نپذیرفت."))
 
 
 def start(amount, description, mobile, reference, callback_url):
@@ -59,7 +65,7 @@ def start(amount, description, mobile, reference, callback_url):
     })
     authority = data.get("authority")
     if not authority:
-        raise PaymentError("درگاه پرداخت کد پیگیری نداد.")
+        raise PaymentError(gettext_noop("درگاه پرداخت کد پیگیری نداد."))
     return authority, payment_page(authority)
 
 

@@ -1,7 +1,10 @@
-"""Template helpers for the store: Persian numbers, prices, lengths and Aparat videos."""
+"""Template helpers for the store: numbers, prices, lengths and Aparat videos, in the page's language."""
 import re
 
 from django import template
+from django.utils import translation
+from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 
 register = template.Library()
 
@@ -9,9 +12,13 @@ PERSIAN_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
 APARAT_HASH = re.compile(r"aparat\.com/v/([A-Za-z0-9]+)")
 
 
+def _is_english():
+    return (translation.get_language() or "").startswith("en")
+
+
 @register.filter
 def fa_num(value):
-    """12500 -> ۱۲٬۵۰۰"""
+    """Always Persian digits, whatever the page's language: 12500 -> ۱۲٬۵۰۰ (the admin panel, messages)."""
     if value is None or value == "":
         return ""
     if isinstance(value, int):
@@ -20,17 +27,27 @@ def fa_num(value):
 
 
 @register.filter
+def num(value):
+    """A number in the page's language: 12500 -> ۱۲٬۵۰۰ on a Persian page, 12,500 on an English one."""
+    if not _is_english():
+        return fa_num(value)
+    if value is None or value == "":
+        return ""
+    return f"{value:,}" if isinstance(value, int) else str(value)
+
+
+@register.filter
 def toman(value):
-    """Price text: 0 -> رایگان, 1500000 -> ۱٬۵۰۰٬۰۰۰ تومان"""
+    """Price text: 0 -> رایگان, 1500000 -> ۱٬۵۰۰٬۰۰۰ تومان (Free, 1,500,000 Toman in English)"""
     if not value:
-        return "رایگان"
-    return f"{fa_num(int(value))} تومان"
+        return _("رایگان")
+    return _("%(amount)s تومان") % {"amount": num(int(value))}
 
 
 @register.filter
 def money(value):
     """An amount of money, zero included: 0 -> ۰ تومان (a price uses `toman`, where zero means free)"""
-    return f"{fa_num(int(value or 0))} تومان"
+    return _("%(amount)s تومان") % {"amount": num(int(value or 0))}
 
 
 @register.filter
@@ -40,10 +57,12 @@ def duration(seconds):
         return ""
     minutes = max(1, round(int(seconds) / 60))  # a short clip still reads as a minute, never "۰ دقیقه"
     hours, minutes = divmod(minutes, 60)
-    parts = [f"{fa_num(hours)} ساعت"] if hours else []
+    parts = []
+    if hours:
+        parts.append(ngettext("%(count)s ساعت", "%(count)s ساعت", hours) % {"count": num(hours)})
     if minutes:
-        parts.append(f"{fa_num(minutes)} دقیقه")
-    return " و ".join(parts)
+        parts.append(ngettext("%(count)s دقیقه", "%(count)s دقیقه", minutes) % {"count": num(minutes)})
+    return _(" و ").join(parts)
 
 
 @register.filter

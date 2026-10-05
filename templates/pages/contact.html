@@ -1,12 +1,13 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}تماس با ما{% endblock %}
+{% block title %}{% translate "تماس با ما" %}{% endblock %}
 
 {% block content %}
 <section class="container section contact-layout">
   <div class="card block">
-    <h1>تماس با ما</h1>
-    <p class="muted">پیام خود را بنویسید؛ در اولین فرصت پاسخ می‌دهیم.</p>
+    <h1>{% translate "تماس با ما" %}</h1>
+    <p class="muted">{% translate "پیام خود را بنویسید؛ در اولین فرصت پاسخ می‌دهیم." %}</p>
 
     <form method="post" novalidate>
       {% csrf_token %}
@@ -16,20 +17,22 @@
         </div>
       {% endif %}
       {% for field in form %}{% include "partials/field.html" %}{% endfor %}
-      <button type="submit" class="btn btn-primary">ارسال پیام</button>
+      <button type="submit" class="btn btn-primary">{% translate "ارسال پیام" %}</button>
     </form>
   </div>
 
   <aside class="contact-info">
     {% include "services/partials/channels.html" with channels=contact_channels %}
     <div class="card block">
-      <h2>ساعت پاسخ‌گویی</h2>
+      <h2>{% translate "ساعت پاسخ‌گویی" %}</h2>
       <ul class="facts">
-        <li><span>روزها</span><strong>شنبه تا پنجشنبه</strong></li>
-        <li><span>ساعت</span><strong>۹ تا ۱۷</strong></li>
+        <li><span>{% translate "روزها" %}</span><strong>{% translate "شنبه تا پنجشنبه" %}</strong></li>
+        <li><span>{% translate "ساعت" %}</span><strong>{% translate "۹ تا ۱۷" %}</strong></li>
       </ul>
-      <p class="muted">برای سفارش پروژه یا مشاوره، از
-        <a href="{% url 'services:project' %}">این صفحه</a> درخواست ثبت کنید.</p>
+      {% url 'services:project' as request_page %}
+      <p class="muted">{% blocktranslate trimmed %}
+        برای سفارش پروژه یا مشاوره، از <a href="{{ request_page }}">این صفحه</a> درخواست ثبت کنید.
+      {% endblocktranslate %}</p>
     </div>
   </aside>
 </section>

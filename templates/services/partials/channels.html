@@ -1,7 +1,8 @@
+{% load i18n %}
 <div class="card block">
-  <h2>راه‌های ارتباطی</h2>
+  <h2>{% translate "راه‌های ارتباطی" %}</h2>
   {% if channels %}
-    <p class="muted">برای ادامه‌ی کار، از یکی از این راه‌ها به ما پیام دهید.</p>
+    <p class="muted">{% translate "برای ادامه‌ی کار، از یکی از این راه‌ها به ما پیام دهید." %}</p>
     <ul class="channel-list">
       {% for channel in channels %}
         <li>
@@ -13,6 +14,6 @@
       {% endfor %}
     </ul>
   {% else %}
-    <p class="muted">راه‌های ارتباطی به‌زودی اینجا قرار می‌گیرد.</p>
+    <p class="muted">{% translate "راه‌های ارتباطی به‌زودی اینجا قرار می‌گیرد." %}</p>
   {% endif %}
 </div>

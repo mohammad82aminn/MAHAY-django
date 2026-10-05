@@ -1,12 +1,13 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}همکاری با مجموعه{% endblock %}
+{% block title %}{% translate "همکاری با مجموعه" %}{% endblock %}
 
 {% block content %}
 <section class="container section">
   <div class="page-head">
-    <h1>همکاری با مجموعه</h1>
-    <p class="lead muted">اگر در حوزه‌ای تخصص دارید و دوست دارید با MAHAY کار کنید، این فرم را پر کنید.</p>
+    <h1>{% translate "همکاری با مجموعه" %}</h1>
+    <p class="lead muted">{% translate "اگر در حوزه‌ای تخصص دارید و دوست دارید با MAHAY کار کنید، این فرم را پر کنید." %}</p>
   </div>
 
   <div class="service-layout">
@@ -14,7 +15,7 @@
       <div class="card block">
         {% if existing %}
           <div class="alert alert-info">
-            درخواست شما ثبت شده است. تا وقتی بررسی شروع نشده می‌توانید اصلاحش کنید.
+            {% translate "درخواست شما ثبت شده است. تا وقتی بررسی شروع نشده می‌توانید اصلاحش کنید." %}
           </div>
         {% endif %}
 
@@ -27,13 +28,13 @@
           {% endif %}
 
           {# Grouped so a form this long does not read as one unbroken column of boxes #}
-          <h2 class="form-step">چه کاری از شما برمی‌آید</h2>
+          <h2 class="form-step">{% translate "چه کاری از شما برمی‌آید" %}</h2>
           {% with field=form.work %}{% include "partials/field.html" %}{% endwith %}
           {% with field=form.domains %}{% include "partials/field.html" %}{% endwith %}
           {% with field=form.other_domain %}{% include "partials/field.html" %}{% endwith %}
           {% with field=form.pitch %}{% include "partials/field.html" %}{% endwith %}
 
-          <h2 class="form-step">سابقه و تخصص <span class="muted">— اختیاری</span></h2>
+          <h2 class="form-step">{% translate "سابقه و تخصص" %} <span class="muted">— {% translate "اختیاری" %}</span></h2>
           {% with field=form.degree %}{% include "partials/field.html" %}{% endwith %}
           {% with field=form.field_of_study %}{% include "partials/field.html" %}{% endwith %}
           {% with field=form.experience %}{% include "partials/field.html" %}{% endwith %}
@@ -41,14 +42,14 @@
           {% with field=form.links %}{% include "partials/field.html" %}{% endwith %}
           {% with field=form.files %}{% include "partials/field.html" %}{% endwith %}
 
-          <h2 class="form-step">چطور با شما تماس بگیریم</h2>
+          <h2 class="form-step">{% translate "چطور با شما تماس بگیریم" %}</h2>
           {% with field=form.contact_channel %}{% include "partials/field.html" %}{% endwith %}
           {% with field=form.contact_id %}{% include "partials/field.html" %}{% endwith %}
           {% with field=form.heard_from %}{% include "partials/field.html" %}{% endwith %}
           {% with field=form.heard_from_other %}{% include "partials/field.html" %}{% endwith %}
 
           <button type="submit" class="btn btn-primary">
-            {% if existing %}ذخیره‌ی تغییرات{% else %}ثبت درخواست{% endif %}
+            {% if existing %}{% translate "ذخیره‌ی تغییرات" %}{% else %}{% translate "ثبت درخواست" %}{% endif %}
           </button>
         </form>
       </div>
@@ -56,19 +57,21 @@
 
     <aside class="service-side">
       <div class="card block">
-        <h2>چطور پیش می‌رود</h2>
+        <h2>{% translate "چطور پیش می‌رود" %}</h2>
         <ol class="steps">
-          <li>این فرم را پر می‌کنید.</li>
-          <li>درخواست شما برای مدیران مجموعه فرستاده می‌شود.</li>
-          <li>اگر مناسب بود، از همان راه ارتباطی که نوشته‌اید با شما تماس می‌گیریم.</li>
-          <li>وضعیت درخواست را همیشه در «درخواست‌های من» می‌بینید.</li>
+          <li>{% translate "این فرم را پر می‌کنید." %}</li>
+          <li>{% translate "درخواست شما برای مدیران مجموعه فرستاده می‌شود." %}</li>
+          <li>{% translate "اگر مناسب بود، از همان راه ارتباطی که نوشته‌اید با شما تماس می‌گیریم." %}</li>
+          <li>{% translate "وضعیت درخواست را همیشه در «درخواست‌های من» می‌بینید." %}</li>
         </ol>
       </div>
       <div class="card block">
-        <h2>نکته</h2>
+        <h2>{% translate "نکته" %}</h2>
         <p class="muted">
-          نام و شماره‌ی شما از حساب کاربری‌تان برداشته می‌شود و لازم نیست دوباره بنویسید.
-          جز نوع همکاری، معرفی کوتاه و راه ارتباطی، بقیه‌ی فیلدها اختیاری‌اند.
+          {% blocktranslate trimmed %}
+            نام و شماره‌ی شما از حساب کاربری‌تان برداشته می‌شود و لازم نیست دوباره بنویسید.
+            جز نوع همکاری، معرفی کوتاه و راه ارتباطی، بقیه‌ی فیلدها اختیاری‌اند.
+          {% endblocktranslate %}
         </p>
       </div>
     </aside>

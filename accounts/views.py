@@ -7,6 +7,8 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import CreateView, FormView, UpdateView
 
@@ -51,7 +53,7 @@ class SignUpView(CreateView):
             user.save()
             claim_guest_requests(user)
             login(self.request, user)
-            messages.success(self.request, f"{user.first_name} عزیز، به MAHAY خوش آمدید!")
+            messages.success(self.request, _("%(name)s عزیز، به MAHAY خوش آمدید!") % {"name": user.first_name})
             return redirect("home")
 
         user.is_active = False  # activated by the code
@@ -72,9 +74,9 @@ def send_code(request, mobile_number):
         messages.error(request, str(error))
         return
 
-    messages.success(request, "کد تأیید پیامک شد.")
+    messages.success(request, _("کد تأیید پیامک شد."))
     if settings.DEBUG:  # development only: the terminal is not in front of the tester
-        messages.info(request, f"حالت آزمایشی — کد شما: {code}")
+        messages.info(request, _("حالت آزمایشی — کد شما: %(code)s") % {"code": code})
 
 
 @method_decorator(SECRET_FIELDS, name="dispatch")
@@ -99,7 +101,7 @@ class VerifyView(FormView):
 
     def form_valid(self, form):
         if not otp.verify(self.mobile_number, VerificationCode.Purpose.SIGNUP, form.cleaned_data["code"]):
-            form.add_error("code", "کد تأیید نادرست یا منقضی شده است.")
+            form.add_error("code", _("کد تأیید نادرست یا منقضی شده است."))
             return self.form_invalid(form)
 
         user = User.objects.filter(mobile_number=self.mobile_number).first()
@@ -112,7 +114,7 @@ class VerifyView(FormView):
         claim_guest_requests(user)
         self.request.session.pop(PENDING_SESSION_KEY, None)
         login(self.request, user)
-        messages.success(self.request, f"{user.first_name} عزیز، شماره‌ی شما تأیید شد. به MAHAY خوش آمدید!")
+        messages.success(self.request, _("%(name)s عزیز، شماره‌ی شما تأیید شد. به MAHAY خوش آمدید!") % {"name": user.first_name})
         return redirect("home")
 
 
@@ -135,7 +137,7 @@ class ProfileView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     form_class = ProfileForm
     template_name = "accounts/profile.html"
     success_url = reverse_lazy("accounts:profile")
-    success_message = "اطلاعات شما ذخیره شد."
+    success_message = gettext_lazy("اطلاعات شما ذخیره شد.")
 
     def get_object(self, queryset=None):
         return self.request.user
@@ -144,7 +146,7 @@ class ProfileView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 class PasswordChangeView(SuccessMessageMixin, auth_views.PasswordChangeView):
     template_name = "accounts/password_change.html"
     success_url = reverse_lazy("accounts:profile")
-    success_message = "رمز عبور شما تغییر کرد."
+    success_message = gettext_lazy("رمز عبور شما تغییر کرد.")
 
 
 # --- Forgotten password, by SMS code ----------------------------------------------
@@ -188,7 +190,7 @@ class PasswordResetView(FormView):
                 messages.warning(self.request, str(error))
                 return super().form_valid(form)
             if settings.DEBUG:
-                messages.info(self.request, f"حالت آزمایشی — کد شما: {code}")
+                messages.info(self.request, _("حالت آزمایشی — کد شما: %(code)s") % {"code": code})
         return super().form_valid(form)
 
 
@@ -218,7 +220,7 @@ class PasswordResetVerifyView(FormView):
     def form_valid(self, form):
         code = form.cleaned_data["code"]
         if not otp.verify(self.mobile_number, VerificationCode.Purpose.PASSWORD_RESET, code):
-            form.add_error("code", "کد تأیید نادرست یا منقضی شده است.")
+            form.add_error("code", _("کد تأیید نادرست یا منقضی شده است."))
             return self.form_invalid(form)
 
         # Kept beside the number rather than as a bare flag, so a later step cannot be pointed
@@ -238,9 +240,9 @@ def resend_reset_code(request):
         except otp.TooManyRequests as error:
             messages.warning(request, str(error))
         else:
-            messages.success(request, "کد تأیید دوباره فرستاده شد.")
+            messages.success(request, _("کد تأیید دوباره فرستاده شد."))
             if settings.DEBUG:
-                messages.info(request, f"حالت آزمایشی — کد شما: {code}")
+                messages.info(request, _("حالت آزمایشی — کد شما: %(code)s") % {"code": code})
     return redirect("accounts:password_reset_verify")
 
 
@@ -269,5 +271,5 @@ class PasswordResetNewView(FormView):
         # The proof is spent: it must not reset a second password later
         self.request.session.pop(RESET_SESSION_KEY, None)
         self.request.session.pop(RESET_VERIFIED_KEY, None)
-        messages.success(self.request, "رمز عبور شما تغییر کرد. اکنون وارد شوید.")
+        messages.success(self.request, _("رمز عبور شما تغییر کرد. اکنون وارد شوید."))
         return super().form_valid(form)

@@ -13,6 +13,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.crypto import get_random_string
+from django.utils.functional import lazy
+from django.utils.translation import gettext, ngettext
 from django.utils.translation import gettext_lazy as _
 
 from accounts.heard_from import heard_from_field, heard_from_other_field
@@ -21,7 +23,9 @@ from content.storage import protected_storage
 from .validators import validate_attachment_extension, validate_attachment_size
 
 CONSULTING_UNIT_MINUTES = 15  # consulting is sold by the quarter of an hour
-CONSULTING_CHOICES = [(minutes, f"{minutes} دقیقه") for minutes in (15, 30, 45, 60)]
+# The labels are read when the form is drawn, so they come out in the page's language
+minutes_label = lazy(lambda minutes: ngettext("%(count)s دقیقه", "%(count)s دقیقه", minutes) % {"count": minutes}, str)
+CONSULTING_CHOICES = [(minutes, minutes_label(minutes)) for minutes in (15, 30, 45, 60)]
 
 
 class ServiceRequest(models.Model):
@@ -211,13 +215,13 @@ class ServiceRequest(models.Model):
     @property
     def payment_state(self):
         if self.agreed_amount is None:
-            return "مبلغ تعیین نشده"
+            return gettext("مبلغ تعیین نشده")
         paid = self.paid_total
         if paid == 0:
-            return "پرداخت نشده"
+            return gettext("پرداخت نشده")
         if paid >= self.agreed_amount:
-            return "تسویه شده"
-        return "پرداخت جزئی"
+            return gettext("تسویه شده")
+        return gettext("پرداخت جزئی")
 
     @property
     def quoted_total(self):

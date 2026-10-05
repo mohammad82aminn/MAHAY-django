@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% load store %}
+{% load i18n store %}
 
-{% block title %}سبد خرید{% endblock %}
+{% block title %}{% translate "سبد خرید" %}{% endblock %}
 
 {% block content %}
 <section class="container section">
-  <div class="page-head"><h1>سبد خرید</h1></div>
+  <div class="page-head"><h1>{% translate "سبد خرید" %}</h1></div>
 
   {% if products %}
     <div class="cart-layout">
@@ -16,8 +16,8 @@
               {% if product.cover %}<img src="{{ product.cover.url }}" alt="{{ product.title }}">{% endif %}
             </a>
             <div class="cart-info">
-              <span class="product-card-domain">{{ product.primary_domain }}</span>
-              <a href="{{ product.get_absolute_url }}"><strong>{{ product.title }}</strong></a>
+              <span class="product-card-domain" dir="auto">{{ product.primary_domain }}</span>
+              <a href="{{ product.get_absolute_url }}" dir="auto"><strong>{{ product.title }}</strong></a>
               <span class="muted">{{ product.get_product_type_display }}</span>
             </div>
             <div class="cart-price">
@@ -26,42 +26,40 @@
             </div>
             <form method="post" action="{% url 'commerce:remove_from_cart' product.slug %}">
               {% csrf_token %}
-              <button type="submit" class="btn btn-ghost btn-sm">حذف</button>
+              <button type="submit" class="btn btn-ghost btn-sm">{% translate "حذف" %}</button>
             </form>
           </div>
         {% endfor %}
       </div>
 
       <aside class="card cart-summary">
-        <h2>جمع سفارش</h2>
+        <h2>{% translate "جمع سفارش" %}</h2>
         <ul class="facts">
-          <li><span>تعداد</span><strong>{{ products|length|fa_num }}</strong></li>
-          <li><span>مبلغ قابل پرداخت</span><strong>{{ total|toman }}</strong></li>
+          <li><span>{% translate "تعداد" %}</span><strong>{{ products|length|num }}</strong></li>
+          <li><span>{% translate "مبلغ قابل پرداخت" %}</span><strong>{{ total|toman }}</strong></li>
         </ul>
         {# Login is checked by the view: an anonymous visitor is sent to the login page and comes back here #}
         <form method="post" action="{% url 'commerce:checkout' %}">
           {% csrf_token %}
-          {% if terms_pages %}
+          {% if terms_links %}
             {# Also checked by the view: «required» is only the browser's convenience #}
             <label class="terms-check">
               <input type="checkbox" name="accept_terms" required>
-              <span>
-                {% for page in terms_pages %}«<a href="{{ page.get_absolute_url }}" target="_blank" rel="noopener">{{ page.title }}</a>»{% if not forloop.last %} و {% endif %}{% endfor %}
-                را خوانده‌ام و می‌پذیرم.
-              </span>
+              {# The links are made in the view, so the sentence can put them where its language does #}
+              <span>{% blocktranslate %}{{ terms_links }} را خوانده‌ام و می‌پذیرم.{% endblocktranslate %}</span>
             </label>
           {% endif %}
           <button type="submit" class="btn btn-primary btn-block">
-            {% if total %}پرداخت و ثبت سفارش{% else %}ثبت سفارش رایگان{% endif %}
+            {% if total %}{% translate "پرداخت و ثبت سفارش" %}{% else %}{% translate "ثبت سفارش رایگان" %}{% endif %}
           </button>
         </form>
         {% if not user.is_authenticated %}
-          <p class="muted cart-note">برای ثبت سفارش باید وارد حساب خود شوید.</p>
+          <p class="muted cart-note">{% translate "برای ثبت سفارش باید وارد حساب خود شوید." %}</p>
         {% endif %}
       </aside>
     </div>
   {% else %}
-    <p class="empty">سبد خرید شما خالی است. <a href="{% url 'products:list' %}">مشاهده محصولات</a></p>
+    <p class="empty">{% translate "سبد خرید شما خالی است." %} <a href="{% url 'products:list' %}">{% translate "مشاهده محصولات" %}</a></p>
   {% endif %}
 </section>
 {% endblock %}

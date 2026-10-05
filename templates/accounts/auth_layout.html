@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 {% comment %}
   Shared layout for all account pages: a centered card with heading, form and footer links.
   Child templates fill: heading, subheading, submit, foot (and optionally body / extra_fields).
@@ -26,7 +27,7 @@
         {% endfor %}
         {% block extra_fields %}{% endblock %}
 
-        <button type="submit" class="btn btn-primary btn-block">{% block submit %}ثبت{% endblock %}</button>
+        <button type="submit" class="btn btn-primary btn-block">{% block submit %}{% translate "ثبت" %}{% endblock %}</button>
       </form>
     {% endblock %}
 

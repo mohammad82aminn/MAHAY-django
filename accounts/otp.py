@@ -12,6 +12,7 @@ from datetime import timedelta
 from django.contrib.auth.hashers import check_password, make_password
 from django.utils import timezone
 from django.utils.crypto import get_random_string
+from django.utils.translation import gettext as _
 
 from . import sms
 from .models import VerificationCode
@@ -53,9 +54,9 @@ def create_and_send(mobile_number, purpose=VerificationCode.Purpose.SIGNUP):
     """Make a code, send it, and return it (the caller only shows it when DEBUG is on)."""
     wait = seconds_until_resend(mobile_number, purpose)
     if wait:
-        raise TooManyRequests(f"برای ارسال کد جدید {wait} ثانیه صبر کنید.")
+        raise TooManyRequests(_("برای ارسال کد جدید %(seconds)s ثانیه صبر کنید.") % {"seconds": wait})
     if _recent(mobile_number, purpose).count() >= MAX_PER_HOUR:
-        raise TooManyRequests("تعداد درخواست‌های شما زیاد است. یک ساعت دیگر تلاش کنید.")
+        raise TooManyRequests(_("تعداد درخواست‌های شما زیاد است. یک ساعت دیگر تلاش کنید."))
 
     code = get_random_string(CODE_LENGTH, "0123456789")
     VerificationCode.objects.filter(mobile_number=mobile_number, purpose=purpose, used_at=None).update(

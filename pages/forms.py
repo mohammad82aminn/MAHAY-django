@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import gettext as _
 
 from accounts.forms import MOBILE_ATTRS
 from accounts.validators import normalize_mobile_number
@@ -24,5 +25,5 @@ class ContactForm(forms.ModelForm):
         super().clean()
         data = self.cleaned_data
         if not data.get("mobile_number") and not data.get("email"):
-            raise forms.ValidationError("برای پاسخ دادن، شماره تماس یا ایمیل خود را وارد کنید.")
+            raise forms.ValidationError(_("برای پاسخ دادن، شماره تماس یا ایمیل خود را وارد کنید."))
         return data

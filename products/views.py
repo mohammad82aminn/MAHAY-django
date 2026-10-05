@@ -1,6 +1,7 @@
 from django.db.models import Count, Prefetch, Q, Sum
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, ListView, TemplateView
 from commerce import services as commerce
 from commerce.models import CartItem
@@ -11,9 +12,9 @@ from domains.models import Domain
 from .models import Product, ProductImage
 
 SORTS = {
-    "new": ("-created_at", "جدیدترین"),
-    "cheap": ("price", "ارزان‌ترین"),
-    "expensive": ("-price", "گران‌ترین"),
+    "new": ("-created_at", _("جدیدترین")),
+    "cheap": ("price", _("ارزان‌ترین")),
+    "expensive": ("-price", _("گران‌ترین")),
 }
 
 
