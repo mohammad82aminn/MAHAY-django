@@ -377,3 +377,18 @@ class DraftAndAdminTests(ApprovalFlowTestCase):
 def tearDownModule():
     shutil.rmtree(TEMP_MEDIA, ignore_errors=True)
     shutil.rmtree(TEMP_PROTECTED, ignore_errors=True)
+
+class PriceInputTests(ApprovalFlowTestCase):
+    """Prices are typed with their digits grouped (1,200,000), in Persian or Latin digits."""
+
+    def test_a_grouped_price_is_stored_as_a_plain_number(self):
+        self.client.force_login(self.admin)
+        self.client.post(self.add_url, product_data(
+            primary_domain=self.fpga.pk, cover=image_file(), price="۱٬۲۰۰٬۰۰۰", sale_price="990,000",
+        ))
+        product = Product.objects.get()
+        self.assertEqual((product.price, product.sale_price), (1_200_000, 990_000))
+
+        page = self.client.get(self.change_url(product))
+        self.assertContains(page, 'value="1,200,000"')
+        self.assertContains(page, "۱ میلیون و ۲۰۰ هزار تومان")

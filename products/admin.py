@@ -5,6 +5,7 @@ from django.utils.html import format_html, format_html_join
 from django.utils.translation import gettext_lazy as _
 
 from approvals.admin_base import ApprovalModelAdmin
+from domains.widgets import MoneyInput
 
 from .models import Product, ProductImage
 
@@ -16,6 +17,9 @@ class ProductAdminForm(forms.ModelForm):
         widgets = {
             "slug": forms.TextInput(attrs={"dir": "ltr"}),
             "intro_video_url": forms.URLInput(attrs={"dir": "ltr"}),
+            # Typed with digit grouping (1,200,000) and read out in words; only the number is stored
+            "price": MoneyInput(),
+            "sale_price": MoneyInput(),
         }
 
     def clean(self):
