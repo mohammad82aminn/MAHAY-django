@@ -32,17 +32,24 @@ class SectionAdmin(ApprovalModelAdmin):
 @admin.register(Lesson)
 class LessonAdmin(ApprovalModelAdmin):
     domain_field = "section__product__primary_domain"
-    list_display = ("title", "section", "order", "video_type", "state")
-    list_filter = ("section__product__primary_domain", "section__product")
+    list_display = ("title", "section", "order", "video_type", "is_free_preview", "state")
+    list_filter = ("section__product__primary_domain", "section__product", "is_free_preview")
     search_fields = ("title", "section__title", "section__product__title")
     fields = (
-        "section", "title", "order", "body", "video_file", "video_preview", "duration_display",
+        "section", "title", "order", "is_free_preview", "body", "video_file", "video_preview", "duration_display",
         "video_url", "duration_minutes", "attachments_link", "is_published", "is_archived",
     )
     readonly_fields = ("video_preview", "duration_display", "attachments_link")
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("section__product")
+
+    def get_fields(self, request, obj=None):
+        fields = super().get_fields(request, obj)
+        if obj is not None and obj.section.product.is_free:
+            # A free product is ordered for nothing and opened whole: no lesson of it is a sample
+            fields = [name for name in fields if name != "is_free_preview"]
+        return fields
 
     @admin.display(description=_("ویدیو"))
     def video_type(self, obj):

@@ -4,6 +4,8 @@ Who may open protected files (videos, attachments, thesis) of a product:
 - the people of the product's domain (its managers and experts), site admins (to check the content),
   and the technical admins (to see why a video won't play)
 
+A lesson ticked «قابل مشاهده بدون خرید» opens its video and text to everyone (is_open_sample).
+
 A buyer gets only what has been approved: a lesson, a lesson's file or a companion file still
 waiting for review (or removed) is not theirs yet, even if they guess its address. The people who
 review it see it as it is.
@@ -46,6 +48,20 @@ def is_live(item):
     if isinstance(item, ProductFile):
         return shown(item)
     return True
+
+
+def is_open_sample(lesson):
+    """
+    A lesson anyone may watch without buying: ticked «قابل مشاهده بدون خرید», approved and on show
+    (with its section), in a paid product that is in the store. A free product has no samples: it is
+    ordered for nothing and opened whole.
+    """
+    from products.models import Product
+
+    if not lesson.is_free_preview or not is_live(lesson):
+        return False
+    product = lesson.product
+    return not product.is_free and Product.objects.visible().filter(pk=product.pk).exists()
 
 
 def can_open_item(user, item):

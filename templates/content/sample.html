@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load store %}
+{% comment %}
+  A lesson anyone may watch before buying (content.views.sample_lesson). No progress is saved and
+  no attachment is listed: those are the buyers'.
+{% endcomment %}
+
+{% block title %}{{ lesson.title }}{% endblock %}
+
+{% block content %}
+<section class="container section">
+  <nav class="breadcrumb">
+    <a href="{{ product.get_absolute_url }}">{{ product.title }}</a> › {{ lesson.section.title }}
+  </nav>
+  <h1 class="lesson-heading">{{ lesson.title }} <span class="badge badge-sample">رایگان ببینید</span></h1>
+
+  {% if lesson.video_file %}
+    <video class="player" controls preload="metadata" src="{% url 'content:protected_file' 'video' lesson.pk %}"></video>
+  {% elif lesson.video_url %}
+    {% with embed=lesson.video_url|aparat_embed %}
+      {% if embed %}
+        <div class="video-frame">
+          <iframe src="{{ embed }}" title="{{ lesson.title }}" allowfullscreen></iframe>
+        </div>
+      {% endif %}
+    {% endwith %}
+  {% endif %}
+
+  {% if lesson.body %}
+    <div class="card block">
+      <h2>توضیحات این درس</h2>
+      <div class="prose">{{ lesson.body|linebreaks }}</div>
+    </div>
+  {% endif %}
+
+  <div class="card block sample-buy">
+    <div>
+      <h2>این درس نمونه‌ای از {{ product.get_product_type_display }} است</h2>
+      <p class="muted">برای دیدن همه‌ی درس‌ها و دریافت فایل‌ها، {{ product.get_product_type_display }} را بخرید.</p>
+    </div>
+    <div class="sample-buy-action">
+      <strong>{{ product.final_price|toman }}</strong>
+      <form method="post" action="{% url 'commerce:add_to_cart' product.slug %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">افزودن به سبد خرید</button>
+      </form>
+    </div>
+  </div>
+
+  <nav class="lesson-nav">
+    {% if previous_sample %}
+      <a class="btn btn-ghost" href="{% url 'content:sample' product.slug previous_sample.pk %}">درس رایگان قبلی ›</a>
+    {% else %}<span></span>{% endif %}
+    <a href="{{ product.get_absolute_url }}">همه‌ی سرفصل‌ها</a>
+    {% if next_sample %}
+      <a class="btn btn-primary" href="{% url 'content:sample' product.slug next_sample.pk %}">‹ درس رایگان بعدی</a>
+    {% else %}<span></span>{% endif %}
+  </nav>
+</section>
+{% endblock %}

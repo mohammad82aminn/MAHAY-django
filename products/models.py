@@ -151,14 +151,19 @@ class Product(models.Model):
             # An Aparat video is public; once the product costs money, anyone could skip paying
             raise ValidationError(
                 _("این محصول درس‌هایی با لینک آپارات دارد که برای همه قابل مشاهده است. "
-                  "برای پولی کردن محصول، اول ویدیوی آن درس‌ها را آپلود کنید: %(lessons)s"),
+                  "برای پولی کردن محصول، اول ویدیوی آن درس‌ها را آپلود کنید، "
+                  "یا آن‌ها را «قابل مشاهده بدون خرید» کنید: %(lessons)s"),
                 params={"lessons": "، ".join(self.aparat_lessons().values_list("title", flat=True)[:5])},
             )
 
     def aparat_lessons(self):
+        """Lessons whose Aparat video would give away paid content (a sample is open on purpose)."""
         from content.models import Lesson
 
-        return Lesson.objects.filter(section__product=self, is_archived=False).exclude(video_url="")
+        return (
+            Lesson.objects.filter(section__product=self, is_archived=False, is_free_preview=False)
+            .exclude(video_url="")
+        )
 
     @property
     def instructor_names(self):

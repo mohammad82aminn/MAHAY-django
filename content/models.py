@@ -56,15 +56,23 @@ class Lesson(PublishState):
 
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name="lessons", verbose_name=_("بخش"))
     title = models.CharField(_("عنوان درس"), max_length=200)
+    # A sample: lets a visitor try the course before buying it (see content.access.is_open_sample)
+    is_free_preview = models.BooleanField(
+        _("قابل مشاهده بدون خرید"), default=False,
+        help_text=_("ویدیو و متن این درس برای همه باز است، بدون خرید و بدون ورود به حساب؛ فایل‌های ضمیمه‌ی "
+                    "درس همچنان فقط برای خریداران است. مثلاً دو سه درس اول هر فصل، تا بازدیدکننده نمونه‌ی کار را ببیند."),
+    )
     body = models.TextField(_("متن توضیحی"), blank=True)
     video_file = models.FileField(
         _("فایل ویدیو"), upload_to="videos/%Y/%m/", storage=protected_storage, blank=True,
         validators=[FileExtensionValidator(["mp4"], message=_("فقط ویدیوی MP4 پذیرفته می‌شود."))],
-        help_text=_("فقط MP4. مدت ویدیو خودکار از روی فایل خوانده می‌شود. فقط خریداران می‌توانند ببینند."),
+        help_text=_("فقط MP4. مدت ویدیو خودکار از روی فایل خوانده می‌شود. فقط خریداران می‌توانند ببینند، "
+                    "مگر درس «قابل مشاهده بدون خرید» باشد."),
     )
     video_url = models.URLField(
         _("لینک ویدیو در آپارات"), blank=True, validators=[validate_aparat_url],
-        help_text=_("فقط برای محصولات رایگان؛ ویدیوی آپارات برای همه قابل مشاهده است."),
+        help_text=_("ویدیوی آپارات برای همه قابل مشاهده است؛ پس فقط برای محصولات رایگان، "
+                    "یا درسی که «قابل مشاهده بدون خرید» است."),
     )
     duration_minutes = models.PositiveSmallIntegerField(
         _("مدت ویدیوی آپارات (دقیقه)"), null=True, blank=True,
@@ -113,9 +121,10 @@ class Lesson(PublishState):
             product = self.section.product
         except Section.DoesNotExist:  # no section chosen yet (the form shows that error)
             product = None
-        if self.video_url and product is not None and not product.is_free:
+        if self.video_url and product is not None and not product.is_free and not self.is_free_preview:
             raise ValidationError({"video_url": _(
-                "این محصول پولی است و ویدیوی آپارات برای همه قابل مشاهده است؛ ویدیو را آپلود کنید."
+                "این محصول پولی است و ویدیوی آپارات برای همه قابل مشاهده است؛ ویدیو را آپلود کنید، "
+                "یا این درس را «قابل مشاهده بدون خرید» کنید."
             )})
 
     def save(self, *args, **kwargs):

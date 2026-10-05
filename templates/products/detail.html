@@ -62,7 +62,15 @@
               <ul>
                 {% for lesson in section.visible_lessons %}
                   <li>
-                    <span>{% if not product.is_free and not can_enter %}🔒 {% endif %}{{ lesson.title }}</span>
+                    {% if lesson.is_free_preview and not product.is_free and not can_enter %}
+                      {# A sample (content.access.is_open_sample): anyone may watch it before buying #}
+                      <span class="outline-sample">
+                        <a href="{% url 'content:sample' product.slug lesson.pk %}">{{ lesson.title }}</a>
+                        <span class="badge badge-sample">رایگان ببینید</span>
+                      </span>
+                    {% else %}
+                      <span>{% if not product.is_free and not can_enter %}🔒 {% endif %}{{ lesson.title }}</span>
+                    {% endif %}
                     {% if lesson.duration_seconds %}<span class="muted">{{ lesson.duration_seconds|duration }}</span>{% endif %}
                   </li>
                 {% endfor %}

@@ -2,6 +2,7 @@ import os
 
 from django.apps import apps
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import redirect_to_login
 from django.db.models import Prefetch
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -10,7 +11,7 @@ from django.views.decorators.http import require_POST
 from products.models import Product
 
 from . import progress as progress_service
-from .access import can_open, can_open_item
+from .access import can_open, can_open_item, is_open_sample
 from .models import Attachment, Lesson, LessonProgress, ProductFile, Section
 
 # kind in the URL -> (model, file field). A Product is its own product, hence the getattr below.
@@ -25,10 +26,10 @@ PROTECTED_FIELDS = {
 DOWNLOADED = {"attachment", "product_file"}
 
 
-@login_required
 def protected_file(request, kind, pk):
     """
     Send a paid file after checking access. Files have no public URL, so this is the only way to them.
+    The one thing open without logging in is the video of a sample lesson (is_open_sample).
     (Production: the web server (nginx) will send the file itself via X-Accel-Redirect; the check stays here.)
     """
     if kind not in PROTECTED_FIELDS:
@@ -36,8 +37,14 @@ def protected_file(request, kind, pk):
     model, field_name = PROTECTED_FIELDS[kind]
     if isinstance(model, str):
         model = apps.get_model(model)
-    obj = get_object_or_404(model, pk=pk)
-    if not can_open_item(request.user, obj):
+    obj = model._default_manager.filter(pk=pk).first()
+    allowed = obj is not None and (
+        can_open_item(request.user, obj) or (kind == "video" and is_open_sample(obj))
+    )
+    if not allowed:
+        if not request.user.is_authenticated:
+            # Asked to log in whether the file exists or not, so this tells a visitor nothing
+            return redirect_to_login(request.get_full_path())
         raise Http404  # don't reveal that the file exists (or that a draft does)
     file = getattr(obj, field_name)
     if not file:
@@ -107,6 +114,34 @@ def lesson_view(request, slug, pk):
         "previous_lesson": lessons[index - 1] if index else None,
         "next_lesson": lessons[index + 1] if index + 1 < len(lessons) else None,
         "position": row.position_seconds,
+    })
+
+
+def sample_lesson(request, slug, pk):
+    """
+    A lesson open to everyone, logged in or not: its video and text, the product's other open
+    lessons, and the way to buy the rest. Its attachments stay with the buyers.
+
+    The same rule as is_open_sample, asked of the whole product at once: in the store, not free,
+    and the lesson ticked and live. Whoever can already open the product is sent to the full lesson
+    page instead, where their progress is kept.
+    """
+    product = get_object_or_404(Product.objects.visible(), slug=slug)
+    if can_open(request.user, product):
+        return redirect("content:lesson", slug=slug, pk=pk)
+    if product.is_free:
+        raise Http404  # ordered for nothing and opened whole: it has no samples
+
+    samples = list(progress_service.open_samples(product))
+    lesson = next((item for item in samples if item.pk == pk), None)
+    if lesson is None:
+        raise Http404
+    index = samples.index(lesson)
+    return render(request, "content/sample.html", {
+        "product": product,
+        "lesson": lesson,
+        "previous_sample": samples[index - 1] if index else None,
+        "next_sample": samples[index + 1] if index + 1 < len(samples) else None,
     })
 
 

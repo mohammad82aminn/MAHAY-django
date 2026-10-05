@@ -9,6 +9,17 @@ def published_lessons(product):
     )
 
 
+def open_samples(product):
+    """
+    The lessons of this product anyone may watch (content.access.is_open_sample), in course order.
+    The product's own side of that rule, in the store and not free, is the caller's to check.
+    """
+    return (
+        published_lessons(product).filter(is_free_preview=True).select_related("section")
+        .order_by("section__order", "section__id", "order", "id")
+    )
+
+
 def progress_map(user, product):
     """{lesson_id: LessonProgress} for this product (one query)."""
     if not user.is_authenticated:
