@@ -46,6 +46,19 @@ class AddressTests(LanguageTestCase):
         self.assertContains(response, 'href="/en/products/ml/"')
         self.assertContains(response, "یادگیری ماشین")
 
+    def test_the_switch_is_under_the_account_and_in_the_footer_for_visitors(self):
+        switch = 'href="/en/accounts/profile/" hreflang="en"'
+        member = User.objects.create_user("09124444444", PASSWORD)
+        self.client.force_login(member)
+        response = self.client.get(reverse("accounts:profile"))
+        self.assertContains(response, 'class="menu-language" ' + switch)  # the menu under their name
+        self.assertContains(response, "زبان سایت:")  # and on the profile page itself
+        self.assertNotContains(response, "lang-switch")  # no longer a button of its own in the header
+
+        self.client.logout()
+        response = self.client.get(reverse("products:list"))
+        self.assertContains(response, 'href="/en/products/" hreflang="en"', count=1)
+
     def test_the_address_alone_decides_not_the_browser(self):
         response = self.client.get("/products/", HTTP_ACCEPT_LANGUAGE="en")
         self.assertContains(response, '<html lang="fa" dir="rtl"')

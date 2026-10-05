@@ -36,10 +36,6 @@
       </form>
 
       <nav class="nav">
-        {# The same page in the other language. Its name is written in that language, so its readers find it. #}
-        {% for language in languages %}{% if not language.is_current %}
-          <a class="btn btn-ghost btn-sm lang-switch" href="{{ language.url }}" hreflang="{{ language.code }}" lang="{{ language.code }}">{{ language.name }}</a>
-        {% endif %}{% endfor %}
         <a class="icon-btn cart-btn" href="{% url 'commerce:cart' %}" aria-label="{% translate 'سبد خرید' %}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.4 10.4a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.6L20 7H6"/><circle cx="9.5" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/></svg>
           {% if cart_count %}<span class="cart-badge">{{ cart_count }}</span>{% endif %}
@@ -76,6 +72,7 @@
               {% if not user.is_staff %}
                 <a href="{% url 'collaboration:apply' %}">{% translate "همکاری با مجموعه" %}</a>
               {% endif %}
+              {% include "partials/language_switch.html" with css_class="menu-language" %}
             </div>
           </div>
           {# Django 5: logout must be a POST request, not a simple link #}
@@ -168,6 +165,8 @@
             <a href="{{ page.get_absolute_url }}" dir="auto">{{ page.title }}</a>
           {% endfor %}
           <a href="{% url 'pages:contact' %}">{% translate "تماس با ما" %}</a>
+          {# A visitor has no account menu: their way to the other language is here #}
+          {% if not user.is_authenticated %}{% include "partials/language_switch.html" %}{% endif %}
         </div>
       </div>
     </div>

@@ -13,4 +13,6 @@
   <a href="{% url 'commerce:order_list' %}">{% translate "سفارش‌ها" %}</a> &nbsp;·&nbsp;
   <a href="{% url 'services:my_requests' %}">{% translate "درخواست‌های من" %}</a> &nbsp;·&nbsp;
   <a href="{% url 'accounts:password_change' %}">{% translate "تغییر رمز عبور" %}</a>
+  {# Also under the name in the header; on a phone that menu does not open, so it is here too #}
+  <p class="profile-language">{% translate "زبان سایت:" %} {% include "partials/language_switch.html" %}</p>
 {% endblock %}

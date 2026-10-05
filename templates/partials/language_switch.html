@@ -1,0 +1,10 @@
+{% load languages %}
+{% comment %}
+  A link to this same page in the site's other language. The language's name is written in that
+  language («English» on a Persian page, «فارسی» on an English one), so its readers find it.
+  Shown under the account's name (header menu, profile page), and in the footer for visitors.
+{% endcomment %}
+{% page_languages as languages %}
+{% for language in languages %}{% if not language.is_current %}
+  <a class="{{ css_class }}" href="{{ language.url }}" hreflang="{{ language.code }}" lang="{{ language.code }}">{{ language.name }}</a>
+{% endif %}{% endfor %}

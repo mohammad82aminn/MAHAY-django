@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-05 16:39+0330\n"
+"POT-Creation-Date: 2026-10-05 19:49+0330\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -694,7 +694,7 @@ msgstr "The payment gateway did not return a tracking code."
 msgid "تاریخ ایجاد"
 msgstr ""
 
-#: .\commerce\models.py:25 .\templates\base.html:43 .\templates\base.html:74 .\templates\commerce\cart.html:4 .\templates\commerce\cart.html:8 .\templates\products\detail.html:154
+#: .\commerce\models.py:25 .\templates\base.html:39 .\templates\base.html:70 .\templates\commerce\cart.html:4 .\templates\commerce\cart.html:8 .\templates\products\detail.html:154
 msgid "سبد خرید"
 msgstr "Cart"
 
@@ -778,7 +778,7 @@ msgstr ""
 msgid "سفارش"
 msgstr ""
 
-#: .\commerce\models.py:94 .\templates\accounts\profile.html:13 .\templates\base.html:72
+#: .\commerce\models.py:94 .\templates\accounts\profile.html:13 .\templates\base.html:68
 msgid "سفارش‌ها"
 msgstr "Orders"
 
@@ -1956,11 +1956,11 @@ msgstr "Choose a field, or write yours in the next box."
 msgid "برای مشاوره فقط یک حوزه را انتخاب کنید."
 msgstr "For a consultation, choose only one field."
 
-#: .\services\models.py:33 .\services\views.py:23 .\templates\base.html:128 .\templates\base.html:160 .\templates\home.html:78 .\templates\products\detail.html:171 .\templates\services\my_requests.html:73
+#: .\services\models.py:33 .\services\views.py:23 .\templates\base.html:125 .\templates\base.html:157 .\templates\home.html:78 .\templates\products\detail.html:171 .\templates\services\my_requests.html:73
 msgid "سفارش پروژه"
 msgstr "Order a project"
 
-#: .\services\models.py:34 .\services\views.py:37 .\templates\base.html:129 .\templates\base.html:161 .\templates\home.html:86 .\templates\products\detail.html:172 .\templates\services\my_requests.html:74
+#: .\services\models.py:34 .\services\views.py:37 .\templates\base.html:126 .\templates\base.html:158 .\templates\home.html:86 .\templates\products\detail.html:172 .\templates\services\my_requests.html:74
 msgid "مشاوره تخصصی"
 msgstr "Expert consulting"
 
@@ -2517,7 +2517,7 @@ msgstr "This error is on our side, not yours. It has been logged and will be loo
 msgid "ثبت"
 msgstr "Submit"
 
-#: .\templates\accounts\login.html:4 .\templates\accounts\login.html:7 .\templates\base.html:87 .\templates\products\detail.html:152
+#: .\templates\accounts\login.html:4 .\templates\accounts\login.html:7 .\templates\base.html:84 .\templates\products\detail.html:152
 msgid "ورود"
 msgstr "Log in"
 
@@ -2618,7 +2618,7 @@ msgstr "Wrong number?"
 msgid "اصلاح شماره"
 msgstr "Change it"
 
-#: .\templates\accounts\profile.html:4 .\templates\base.html:67 .\templates\base.html:70
+#: .\templates\accounts\profile.html:4 .\templates\base.html:63 .\templates\base.html:66
 msgid "پروفایل"
 msgstr "Profile"
 
@@ -2634,15 +2634,20 @@ msgstr "Mobile number:"
 msgid "ذخیره تغییرات"
 msgstr "Save changes"
 
-#: .\templates\accounts\profile.html:12 .\templates\base.html:71 .\templates\commerce\library.html:4 .\templates\commerce\library.html:9 .\templates\content\learn.html:9
+#: .\templates\accounts\profile.html:12 .\templates\base.html:67 .\templates\commerce\library.html:4 .\templates\commerce\library.html:9 .\templates\content\learn.html:9
 msgid "خریدهای من"
 msgstr "My purchases"
 
-#: .\templates\accounts\profile.html:14 .\templates\base.html:73 .\templates\services\my_requests.html:4 .\templates\services\my_requests.html:8 .\templates\services\submitted.html:25
+#: .\templates\accounts\profile.html:14 .\templates\base.html:69 .\templates\services\my_requests.html:4 .\templates\services\my_requests.html:8 .\templates\services\submitted.html:25
 msgid "درخواست‌های من"
 msgstr "My requests"
 
-#: .\templates\accounts\signup.html:4 .\templates\accounts\signup.html:7 .\templates\base.html:88
+#: .\templates\accounts\profile.html:17
+#| msgid "بخش‌های سایت"
+msgid "زبان سایت:"
+msgstr "Site language:"
+
+#: .\templates\accounts\signup.html:4 .\templates\accounts\signup.html:7 .\templates\base.html:85
 msgid "ثبت‌نام"
 msgstr "Sign up"
 
@@ -2784,7 +2789,7 @@ msgstr "Show"
 msgid "پنهان"
 msgstr "Hide"
 
-#: .\templates\base.html:22 .\templates\base.html:139
+#: .\templates\base.html:22 .\templates\base.html:136
 msgid "بستن"
 msgstr "Close"
 
@@ -2808,67 +2813,67 @@ msgstr "Search courses and projects..."
 msgid "جستجو"
 msgstr "Search"
 
-#: .\templates\base.html:47
+#: .\templates\base.html:43
 msgid "تغییر تم روشن و تیره"
 msgstr "Switch between light and dark theme"
 
-#: .\templates\base.html:56
+#: .\templates\base.html:52
 msgid "کارپوشه"
 msgstr "Inbox"
 
-#: .\templates\base.html:60
+#: .\templates\base.html:56
 msgid "پنل مدیریت"
 msgstr "Admin panel"
 
-#: .\templates\base.html:77 .\templates\collaboration\apply.html:4 .\templates\collaboration\apply.html:9 .\templates\services\my_requests.html:13
+#: .\templates\base.html:73 .\templates\collaboration\apply.html:4 .\templates\collaboration\apply.html:9 .\templates\services\my_requests.html:13
 msgid "همکاری با مجموعه"
 msgstr "Work with us"
 
-#: .\templates\base.html:84
+#: .\templates\base.html:81
 msgid "خروج"
 msgstr "Log out"
 
-#: .\templates\base.html:94
+#: .\templates\base.html:91
 msgid "بخش‌های سایت"
 msgstr "Site sections"
 
-#: .\templates\base.html:97 .\templates\home.html:3
+#: .\templates\base.html:94 .\templates\home.html:3
 msgid "خانه"
 msgstr "Home"
 
-#: .\templates\base.html:108 .\templates\base.html:158
+#: .\templates\base.html:105 .\templates\base.html:155
 msgid "دوره‌های آموزشی"
 msgstr "Courses"
 
-#: .\templates\base.html:110
+#: .\templates\base.html:107
 msgid "همه‌ی دوره‌ها"
 msgstr "All courses"
 
-#: .\templates\base.html:118 .\templates\base.html:159
+#: .\templates\base.html:115 .\templates\base.html:156
 msgid "پروژه‌ها"
 msgstr "Projects"
 
-#: .\templates\base.html:120
+#: .\templates\base.html:117
 msgid "همه‌ی پروژه‌ها"
 msgstr "All projects"
 
-#: .\templates\base.html:153
+#: .\templates\base.html:150
 msgid "آموزش تخصصی و پروژه‌محور؛ دوره‌های آموزشی و پروژه‌های واقعی در حوزه‌های مختلف."
 msgstr "Specialist, project-based learning: courses and real projects across many fields."
 
-#: .\templates\base.html:156
+#: .\templates\base.html:153
 msgid "بخش‌ها"
 msgstr "Sections"
 
-#: .\templates\base.html:166
+#: .\templates\base.html:163
 msgid "راهنما"
 msgstr "Help"
 
-#: .\templates\base.html:171 .\templates\pages\contact.html:4 .\templates\pages\contact.html:9
+#: .\templates\base.html:168 .\templates\pages\contact.html:4 .\templates\pages\contact.html:9
 msgid "تماس با ما"
 msgstr "Contact us"
 
-#: .\templates\base.html:176
+#: .\templates\base.html:175
 msgid "تمامی حقوق محفوظ است."
 msgstr "All rights reserved."
 
