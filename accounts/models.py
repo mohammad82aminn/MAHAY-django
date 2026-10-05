@@ -145,3 +145,19 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return self.first_name
+
+class StaffDefaultGiven(models.Model):
+    """
+    A starting permission a staff group has already been given (see roles.ensure_site_admins_group).
+
+    Each migrate gives the staff groups only the starting permissions they were never given: those
+    of a new model, say. One a site admin took away is on this list, so it stays taken away.
+    """
+
+    group = models.ForeignKey("auth.Group", on_delete=models.CASCADE, related_name="+")
+    permission = models.ForeignKey("auth.Permission", on_delete=models.CASCADE, related_name="+")
+
+    class Meta:
+        verbose_name = _("دسترسی پیش‌فرض داده‌شده")
+        verbose_name_plural = _("دسترسی‌های پیش‌فرض داده‌شده")
+        constraints = [models.UniqueConstraint(fields=("group", "permission"), name="staff_default_given_once")]

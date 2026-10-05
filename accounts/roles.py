@@ -3,13 +3,17 @@ Access rules of MAHAY (group based — permissions are never given to individual
 
 - Site admins: members of "مدیران کل" -> every permission of the site (kept automatically). They
   alone make the decisions: approving, referring, pricing, payments, roles.
-- Staff (ستاد), each with a group of its own and nothing beyond it:
+- Staff (ستاد), each with a group of its own. Each starts with the permissions of its job
+  (staff_default_permissions); the site admins can change them in the panel afterwards, though
+  never to a change of accounts, groups or permissions (STAFF_WRITE_FORBIDDEN_APPS):
   - "مدیران فنی": support. Sees the whole panel read-only to find what is wrong (sees_everything),
     edits only the site's own pages and contact channels, and runs «درخواست‌های فنی». Never the
     money, the office reports, anyone's CV or anyone's کارپوشه.
-  - "مدیران مالی": the finance pages (see can_see_finance).
+  - "مدیران مالی": the finance pages (see can_see_finance), and the store's orders, read only.
   - "مدیران اداری": watches the staff — directory, activity, performance — and reports to the site
     admins; decides nothing.
+  Some doors are opened by the role in code, whatever the permissions: finance (can_see_finance),
+  office (sees_office), «درخواست‌های فنی» and the کارپوشه.
 - Domain managers and experts: members of a domain's «مدیران حوزه» / «کارشناسان حوزه» group
   (both created automatically for each domain; see domains.access).
   WHAT they may do is chosen by site admins in the admin panel (group permissions);
@@ -106,30 +110,95 @@ def is_system_group(group):
     return group.name in OWNER_ONLY_GROUPS or is_domain_group(group)
 
 
-def ensure_site_admins_group():
+# What the finance managers start with besides the finance app: the store's money records, read only
+FINANCE_VIEWS = (("commerce", "order"), ("commerce", "orderitem"), ("commerce", "purchase"))
+
+# Never given to a staff group, whoever ticks it: changing accounts, groups and permissions (a
+# staff member could raise their own access with it), sessions, the admin's log, or the domains
+# (making or removing one makes or removes its groups). Viewing any of these is allowed.
+STAFF_WRITE_FORBIDDEN_APPS = ("auth", "contenttypes", "sessions", "admin", "accounts", "domains")
+
+
+def staff_default_permissions(name):
     """
-    Create the system's groups if missing and keep their permissions whole (runs after every
-    migrate, so new models are covered): everything for the site admins; for the technical admins,
-    viewing all but TECH_HIDDEN_APPS and changing TECH_EDITS; the finance app for the finance
-    managers; the office app for the office managers.
+    What a staff group starts with. Site admins may change it in the panel afterwards; nothing
+    puts it back by itself (the «دسترسی‌های پیش‌فرض» action does, when asked):
+    - technical admins: viewing all but TECH_HIDDEN_APPS / TECH_HIDDEN_MODELS, changing TECH_EDITS
+    - finance managers: the finance app, and viewing FINANCE_VIEWS
+    - office managers: the office app
     """
     from django.db.models import Q
+
+    if name == TECH_ADMINS_GROUP:
+        edits = Q()
+        for app_label, model in TECH_EDITS:
+            edits |= Q(content_type__app_label=app_label, content_type__model=model)
+        hidden = Q(content_type__app_label__in=TECH_HIDDEN_APPS)
+        for app_label, model in TECH_HIDDEN_MODELS:
+            hidden |= Q(content_type__app_label=app_label, content_type__model=model)
+        return staff_permission_choices().exclude(hidden).filter(Q(codename__startswith="view_") | edits)
+    if name == FINANCE_GROUP:
+        views = Q()
+        for app_label, model in FINANCE_VIEWS:
+            views |= Q(content_type__app_label=app_label, content_type__model=model, codename__startswith="view_")
+        return staff_permission_choices().filter(Q(content_type__app_label="finance") | views)
+    if name == OFFICE_GROUP:
+        return staff_permission_choices().filter(content_type__app_label="office")
+    return Permission.objects.none()
+
+
+def staff_permission_choices():
+    """The permissions a staff group may be given: any view, and any change outside the forbidden apps."""
+    from django.db.models import Q
+
+    return Permission.objects.filter(
+        Q(codename__startswith="view_") | ~Q(content_type__app_label__in=STAFF_WRITE_FORBIDDEN_APPS)
+    )
+
+
+def _record_given(group, permissions):
+    from .models import StaffDefaultGiven
+
+    StaffDefaultGiven.objects.bulk_create(
+        [StaffDefaultGiven(group=group, permission=permission) for permission in permissions],
+        ignore_conflicts=True,
+    )
+
+
+def apply_staff_default_permissions(group):
+    """
+    Give a staff group back whatever of its starting permissions it lacks (asked for in the panel);
+    report what it holds beyond them. Only ever adds: one granted by hand was somebody's decision.
+    """
+    wanted = set(staff_default_permissions(group.name))
+    held = set(group.permissions.all())
+    missing = wanted - held
+    group.permissions.add(*missing)
+    _record_given(group, wanted)
+    return missing, held - wanted
+
+
+def ensure_site_admins_group():
+    """
+    Create the system's groups if missing (runs after every migrate). The site admins always hold
+    every permission, new models' included.
+
+    A staff group's permissions are the site admins' to set in the panel. A migrate only gives it
+    the starting permissions it was never given before (StaffDefaultGiven) — a new model's, say —
+    so one a site admin took away stays away.
+    """
+    from .models import StaffDefaultGiven
 
     site_admins, _ = Group.objects.get_or_create(name=SITE_ADMINS_GROUP)
     site_admins.permissions.set(Permission.objects.all())
 
-    edits = Q()
-    for app_label, model in TECH_EDITS:
-        edits |= Q(content_type__app_label=app_label, **({"content_type__model": model} if model else {}))
-    hidden = Q(content_type__app_label__in=TECH_HIDDEN_APPS)
-    for app_label, model in TECH_HIDDEN_MODELS:
-        hidden |= Q(content_type__app_label=app_label, content_type__model=model)
-    tech, _ = Group.objects.get_or_create(name=TECH_ADMINS_GROUP)
-    tech.permissions.set(Permission.objects.exclude(hidden).filter(Q(codename__startswith="view_") | edits))
-
-    for name, app_label in ((FINANCE_GROUP, "finance"), (OFFICE_GROUP, "office")):
+    for name in STAFF_GROUPS:
         group, _ = Group.objects.get_or_create(name=name)
-        group.permissions.set(Permission.objects.filter(content_type__app_label=app_label))
+        given = StaffDefaultGiven.objects.filter(group=group).values("permission")
+        new = list(staff_default_permissions(name).exclude(pk__in=given))
+        if new:
+            group.permissions.add(*new)
+            _record_given(group, new)
     return site_admins
 
 

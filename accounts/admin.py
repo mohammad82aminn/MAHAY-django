@@ -16,8 +16,8 @@ from .formatting import ltr
 from .models import User
 from .roles import (
     DOMAIN_MANAGER_APPS, DOMAIN_MANAGER_FORBIDDEN, FINANCE_GROUP, FULL_ACCESS_GROUPS, OFFICE_GROUP,
-    OWNER_ONLY_GROUPS, TECH_ADMINS_GROUP,
-    is_system_group, role_label,
+    OWNER_ONLY_GROUPS, STAFF_GROUPS, TECH_ADMINS_GROUP,
+    apply_staff_default_permissions, is_system_group, role_label, staff_permission_choices,
 )
 from domains.access import domain_of_group, is_domain_group
 
@@ -235,10 +235,13 @@ admin.site.unregister(Group)
 
 @admin.register(Group)
 class GroupAdmin(BaseGroupAdmin):
-    """f obj.name == SITE_ADMINS_GROUP
+    """
     - Site admins group: always has every permission (read-only here).
+    - Staff groups (technical, finance, office): site admins choose their permissions, starting from
+      roles.staff_default_permissions; never a change to accounts, groups or permissions.
     - Domain groups: site admins choose their permissions, limited to content apps (DOMAIN_MANAGER_APPS).
     - System groups can't be renamed or deleted here (they're managed through domains).
+    Who is IN a staff or full-access group stays the system owner's decision (see UserAdmin).
     """
 
     list_display = ("name", "group_type", "member_count")
@@ -246,10 +249,10 @@ class GroupAdmin(BaseGroupAdmin):
     # No bulk delete: system groups must not be deleted by mistake
     actions = ("restore_default_permissions",)
 
-    @admin.action(description=_("اعمال دسترسی‌های پیش‌فرض گروه‌های حوزه"))
+    @admin.action(description=_("اعمال دسترسی‌های پیش‌فرض (گروه‌های حوزه و ستاد)"))
     def restore_default_permissions(self, request, queryset):
         """
-        Bring a domain group back to what the role needs.
+        Bring a domain or staff group back to what the role needs.
 
         Hand-picking two dozen checkboxes per domain is how these drift apart, which is how a
         domain ends up unable to price its own referrals. Extra permissions are reported rather
@@ -258,12 +261,15 @@ class GroupAdmin(BaseGroupAdmin):
         from domains.services import apply_default_permissions
 
         for group in queryset:
-            if not is_domain_group(group):
+            if group.name in STAFF_GROUPS:
+                added, extra = apply_staff_default_permissions(group)
+            elif is_domain_group(group):
+                added, extra = apply_default_permissions(group)
+            else:
                 self.message_user(
-                    request, f"«{group.name}» گروه حوزه نیست و تغییری نکرد.", messages.WARNING,
+                    request, f"«{group.name}» گروه حوزه یا ستاد نیست و تغییری نکرد.", messages.WARNING,
                 )
                 continue
-            added, extra = apply_default_permissions(group)
             self.message_user(
                 request,
                 f"«{group.name}»: {len(added)} دسترسی اضافه شد."
@@ -279,8 +285,10 @@ class GroupAdmin(BaseGroupAdmin):
         )
 
     def get_fields(self, request, obj=None):
-        if obj is not None and obj.name in OWNER_ONLY_GROUPS:
+        if obj is not None and obj.name in FULL_ACCESS_GROUPS:
             return ("name", "site_admins_note")
+        if obj is not None and obj.name in STAFF_GROUPS:
+            return ("name", "site_admins_note", "permissions")
         return ("name", "permissions")
 
     def get_readonly_fields(self, request, obj=None):
@@ -297,7 +305,11 @@ class GroupAdmin(BaseGroupAdmin):
     def get_form(self, request, obj=None, change=False, **kwargs):
         form = super().get_form(request, obj, change=change, **kwargs)
         permissions = form.base_fields.get("permissions")
-        if isinstance(permissions, PermissionChoiceField) and obj is not None and is_domain_group(obj):
+        if isinstance(permissions, PermissionChoiceField) and obj is not None and obj.name in STAFF_GROUPS:
+            # Staff groups: anything to view, but never a change to accounts, groups or permissions —
+            # a staff member could otherwise raise their own access
+            permissions.queryset = staff_permission_choices().select_related("content_type")
+        elif isinstance(permissions, PermissionChoiceField) and obj is not None and is_domain_group(obj):
             # Domain groups: only content permissions (never users, groups, logs...)
             permissions.queryset = (
                 Permission.objects.filter(content_type__app_label__in=DOMAIN_MANAGER_APPS)
@@ -327,14 +339,21 @@ class GroupAdmin(BaseGroupAdmin):
     def member_count(self, obj):
         return obj._member_count
 
-    @admin.display(description=_("دسترسی‌ها"))
+    @admin.display(description=_("درباره‌ی این گروه"))
     def site_admins_note(self, obj):
-        notes = {
-            FINANCE_GROUP: "این گروه به‌صورت خودکار همه‌ی دسترسی‌های بخش «امور مالی» را دارد و قابل تغییر نیست.",
-            TECH_ADMINS_GROUP: "این گروه به‌صورت خودکار همه‌ی پنل را فقط می‌بیند (به‌جز امور مالی، گزارش‌های اداری، "
-                               "کارپوشه‌ها و درخواست‌های همکاری) و فقط صفحه‌های ثابت و راه‌های ارتباطی را ویرایش می‌کند.",
-            OFFICE_GROUP: "این گروه به‌صورت خودکار دسترسی‌های بخش «امور اداری» را دارد و قابل تغییر نیست.",
+        defaults = {
+            TECH_ADMINS_GROUP: "همه‌ی پنل را فقط می‌بیند (به‌جز امور مالی، امور اداری، کارپوشه‌ها، درخواست‌های همکاری، "
+                               "سفارش‌ها و پرداخت‌ها) و فقط صفحه‌های ثابت و راه‌های ارتباطی را ویرایش می‌کند.",
+            FINANCE_GROUP: "همه‌ی بخش «امور مالی»، و دیدن سفارش‌ها و خریدهای فروشگاه (بدون ویرایش).",
+            OFFICE_GROUP: "بخش «امور اداری».",
         }
-        if obj.name in notes:
-            return notes[obj.name]
+        if obj.name in defaults:
+            return (
+                f"پیش‌فرض این گروه: {defaults[obj.name]} "
+                "دسترسی‌ها را از فهرست پایین کم و زیاد کنید؛ با migrate هم دست نمی‌خورند. برای برگرداندن پیش‌فرض‌ها، "
+                "در فهرست گروه‌ها کار «اعمال دسترسی‌های پیش‌فرض» را بزنید. "
+                "تغییر حساب‌ها، گروه‌ها و دسترسی‌ها به این گروه داده نمی‌شود. چند بخش هم جدا از این فهرست، فقط "
+                "برای نقش خودشان باز است: امور مالی برای مدیران مالی، امور اداری برای مدیران اداری، و کارپوشه "
+                "برای صاحبش. عضو این گروه را فقط مالک سیستم تعیین می‌کند."
+            )
         return "این گروه به‌صورت خودکار همه‌ی دسترسی‌های سایت را دارد و قابل تغییر نیست."
