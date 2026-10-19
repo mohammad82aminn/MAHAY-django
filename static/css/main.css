@@ -87,11 +87,8 @@ h2, h3, h4 { line-height: 1.6; }
 
 .brand { display: flex; align-items: center; gap: .6rem; font-size: 1.2rem; font-weight: 900; color: var(--text); }
 .brand:hover { color: var(--text); }
-.brand-mark {
-  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px;
-  color: #fff; background: linear-gradient(135deg, var(--primary), #7c3aed);
-  box-shadow: 0 6px 14px rgb(37 99 235 / .3);
-}
+/* The logo (static/images/logo.svg): an open book with a block on it — learning, and building */
+.brand-mark { display: block; width: 40px; height: 40px; flex-shrink: 0; }
 
 .header-search {
   display: flex; align-items: center; flex: 1; max-width: 560px; height: 46px;

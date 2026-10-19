@@ -6,7 +6,7 @@
 {% block branding %}
 <div id="site-name">
   <a href="{% url 'admin:index' %}" class="brand">
-    <span class="brand-mark" aria-hidden="true">M</span>
+    <img class="brand-mark" src="{% static 'images/logo.svg' %}" alt="" width="36" height="36">
     <span class="brand-text">{{ site_header|default:_('Django administration') }}</span>
   </a>
 </div>
@@ -57,6 +57,7 @@ Loaded here rather than in extrastyle: this block comes after Django's rtl.css a
 stylesheets, so the panel's own look wins without !important.
 {% endcomment %}
 {% block responsive %}{{ block.super }}
+<link rel="icon" href="{% static 'images/logo.svg' %}" type="image/svg+xml">
 <link rel="stylesheet" href="{% static 'css/admin.css' %}">
 <link rel="preload" href="{% static 'fonts/Vazirmatn.woff2' %}" as="font" type="font/woff2" crossorigin>
 {% if not is_popup and is_nav_sidebar_enabled %}<script src="{% static 'js/admin_nav.js' %}" defer></script>
